@@ -1,0 +1,328 @@
+================================================================================
+   GUIA DE INICIO RAPIDO — CINEFSA
+   Para: Agustin, Ulises y cualquier colaborador del proyecto
+================================================================================
+
+REQUISITOS PREVIOS
+------------------
+- Tener instalado Python 3.10+ (https://www.python.org/downloads/)
+- Tener instalado XAMPP (https://www.apachefriends.org/es/index.html)
+- Tener instalado Git
+
+
+================================================================================
+PASO 1 — CLONAR EL REPOSITORIO
+=================================================== =============================
+
+Abrir una terminal (cmd o PowerShell) y ejecutar:
+
+    git clone <URL_DEL_REPOSITORIO>
+    cd cinefsa
+
+
+================================================================================
+PASO 2 — CREAR EL ENTORNO VIRTUAL E INSTALAR DEPENDENCIAS
+================================================================================
+
+El entorno virtual (venv) aisla las dependencias del proyecto para que no
+interfieran con otros proyectos de Python en tu PC.
+
+    python -m venv venv
+    .\venv\Scripts\activate
+    pip install django==4.2.30 mysqlclient python-decouple Pillow
+
+*** IMPORTANTE: EL ENTORNO VIRTUAL ***
+
+El entorno virtual se debe activar SIEMPRE, ANTES de ejecutar cualquier
+comando de Python del proyecto (manage.py, iniciar_bd.py, etc.).
+
+Si NO lo activas, vas a ver este error:
+    ModuleNotFoundError: No module named 'django'
+
+Para activarlo, ejecuta esto CADA VEZ que abras una terminal nueva:
+
+    .\venv\Scripts\activate
+
+Sabras que esta activo porque veras (venv) al inicio de la linea:
+
+    SIN activar:  PS C:\xampp\htdocs\cinefsa>
+    CON activar:  (venv) PS C:\xampp\htdocs\cinefsa>    <-- asi debe verse
+
+Si ves el error de arriba, es porque te olvidaste de activar el venv.
+
+
+================================================================================
+PASO 3 — INICIAR MYSQL EN XAMPP
+================================================================================
+
+1. Abrir XAMPP Control Panel.
+2. Hacer clic en "Start" en la fila de MySQL.
+3. Esperar a que la luz quede en VERDE.
+
+NO es necesario iniciar Apache (solo MySQL).
+NO es necesario crear la base de datos manualmente.
+
+
+================================================================================
+PASO 4 — CREAR LA BASE DE DATOS Y LAS TABLAS
+================================================================================
+
+Con el entorno virtual activado y MySQL corriendo, ejecutar:
+
+    .\venv\Scripts\activate        <-- si no lo activaste todavia
+    python iniciar_bd.py
+
+Este script hace TODO automaticamente:
+  1. Conecta a MySQL con usuario root (sin contraseña, puerto 3306).
+  2. Crea la base de datos "sistema_cine" si no existe.
+  3. Genera las migraciones de Django (archivos que describen las tablas).
+  4. Ejecuta las migraciones (crea las tablas en MySQL).
+
+Si todo salio bien vas a ver:
+  [OK] Base de datos 'sistema_cine' verificada/creada correctamente.
+  [OK] Todas las tablas fueron creadas correctamente en MySQL.
+
+
+================================================================================
+PASO 5 — VERIFICAR QUE TODO FUNCIONA
+================================================================================
+
+Levantar el servidor de desarrollo (con el venv activado):
+
+    .\venv\Scripts\activate        <-- si no lo activaste todavia
+    python manage.py runserver
+
+Abrir el navegador en: http://127.0.0.1:8000/admin/
+
+Si ves la pagina de login del admin de Django, esta todo funcionando.
+Cerrar el servidor con Ctrl+C.
+
+Si ves "ModuleNotFoundError: No module named 'django'", es porque
+no activaste el entorno virtual. Ejecuta .\venv\Scripts\activate primero.
+
+
+================================================================================
+COMO FUNCIONA DJANGO (explicacion para los 4)
+================================================================================
+
+Django es un framework de Python para crear aplicaciones web. Pensalo como
+un "esqueleto" que ya tiene resueltas las partes repetitivas de cualquier
+sistema web (conectar a la base de datos, manejar URLs, procesar formularios,
+manejar sesiones de usuario, etc.) para que nosotros solo escribamos la
+logica especifica de nuestro cine.
+
+
+--- QUE PASA CUANDO UN USUARIO ABRE UNA PAGINA ---
+
+Cuando alguien escribe una URL en el navegador (ej: /panel/salas/), Django
+hace lo siguiente internamente:
+
+    Navegador                    Django                         MySQL
+    --------                    ------                         -----
+    1. Pide /panel/salas/  -->  2. Busca esa URL en urls.py
+                                3. Encuentra la VISTA asociada
+                                4. La vista pide datos      --> 5. Consulta la tabla
+                                6. Recibe los datos         <-- 7. Devuelve resultados
+                                8. Los mete en un TEMPLATE HTML
+    10. Muestra la pagina  <--  9. Envia el HTML completo
+
+En resumen: URL --> VISTA --> MODELO --> TEMPLATE --> HTML al navegador
+
+
+--- LAS 3 PIEZAS FUNDAMENTALES (Patron MVT) ---
+
+Django usa un patron llamado MVT (Modelo - Vista - Template):
+
+  MODELO (modelos/)
+    - Es una clase de Python que representa una TABLA en la base de datos.
+    - Cada atributo de la clase = una COLUMNA de la tabla.
+    - Django se encarga de crear la tabla en MySQL automaticamente.
+    - Nosotros NUNCA escribimos SQL. Todo se hace con Python.
+
+    Ejemplo: la clase Sala tiene los atributos nombre_sala, capacidad_maxima, etc.
+    Django crea la tabla "sala" en MySQL con esas columnas.
+
+    Para pedir datos a la base de datos, se usa asi:
+
+        Sala.objects.all()                  = SELECT * FROM sala
+        Sala.objects.filter(estado='activa') = SELECT * FROM sala WHERE estado='activa'
+        Sala.objects.get(id=3)              = SELECT * FROM sala WHERE id=3
+
+    Para guardar datos:
+
+        sala = Sala(nombre_sala='Sala 1', capacidad_maxima=200, estado='activa')
+        sala.save()                         = INSERT INTO sala VALUES (...)
+
+    Para actualizar:
+
+        sala.nombre_sala = 'Sala VIP'
+        sala.save()                         = UPDATE sala SET nombre_sala='Sala VIP' WHERE id=...
+
+    Para eliminar:
+
+        sala.delete()                       = DELETE FROM sala WHERE id=...
+
+
+  VISTA (vistas/)
+    - Es una funcion de Python que recibe una peticion HTTP (request)
+      y devuelve una respuesta (generalmente una pagina HTML).
+    - Aqui va la LOGICA: consultar la BD, procesar datos, decidir que mostrar.
+
+    Ejemplo simplificado:
+
+        def lista_salas(request):
+            salas = Sala.objects.all()       # Pide todas las salas a la BD
+            return render(request, 'lista_salas.html', {'salas': salas})
+                                             # Envia los datos al HTML
+
+
+  TEMPLATE (plantillas/)
+    - Es un archivo HTML normal, pero con "huecos" que Django rellena
+      con los datos que le manda la vista.
+    - Usa etiquetas especiales entre {{ }} y {% %}.
+
+    Ejemplo simplificado (lista_salas.html):
+
+        <h1>Salas del Cine</h1>
+        {% for sala in salas %}
+            <p>{{ sala.nombre_sala }} - Capacidad: {{ sala.capacidad_maxima }}</p>
+        {% endfor %}
+
+    Django reemplaza {{ sala.nombre_sala }} por "Sala 1", "Sala VIP", etc.
+    y genera el HTML final que ve el usuario en su navegador.
+
+
+--- COMO SE CONECTAN ENTRE SI ---
+
+    urls.py          -->  vistas/          -->  modelos/         -->  MySQL
+    (que URL va       (que hacer con       (que datos           (donde estan
+     a que vista)      la peticion)         pedir/guardar)       los datos)
+         |                  |                    |
+         v                  v                    v
+    plantillas/       formularios/         sistema_cine/
+    (como se ve        (como validar       migrations/
+     la pagina)        los datos que       (instrucciones
+                       manda el usuario)    para crear tablas)
+
+
+--- LAS MIGRACIONES (como llegan los modelos a MySQL) ---
+
+Los modelos que escribimos en Python NO se convierten solos en tablas.
+Hay un proceso de 2 pasos:
+
+    Paso 1: python manage.py makemigrations
+    - Django LEE los modelos y GENERA un archivo con las instrucciones
+      SQL necesarias (crear tabla, agregar columna, etc.).
+    - Estos archivos se guardan en sistema_cine/migrations/
+
+    Paso 2: python manage.py migrate
+    - Django EJECUTA esas instrucciones contra MySQL.
+    - Las tablas se crean o modifican en la base de datos.
+
+    Si modificas un modelo (ej: agregas un campo nuevo), hay que correr
+    los dos comandos de nuevo. Django detecta que cambio y genera SOLO
+    la instruccion para ese cambio (no recrea todo desde cero).
+
+    IMPORTANTE: Los archivos de migrations/ se suben al repositorio.
+    Asi cuando un compañero hace git pull y corre "migrate", su MySQL
+    se actualiza con los mismos cambios.
+
+
+--- EL SERVIDOR DE DESARROLLO ---
+
+    python manage.py runserver
+
+    Esto levanta un servidor web LOCAL en tu computadora.
+    Solo vos podes acceder (desde http://127.0.0.1:8000/).
+    Cada vez que guardas un archivo .py, el servidor se reinicia
+    automaticamente para reflejar los cambios (no hace falta cerrarlo
+    y abrirlo de nuevo).
+
+    Para pararlo: Ctrl+C en la terminal.
+
+
+================================================================================
+ESTRUCTURA DEL PROYECTO — DONDE VA CADA COSA
+================================================================================
+
+cinefsa/
+|
+|-- manage.py              ← Punto de entrada de Django (no tocar)
+|-- iniciar_bd.py          ← Script que auto-crea la BD (no tocar)
+|
+|-- configuracion/         ← Configuracion global del proyecto
+|   |-- configuracion.py   ← Settings (BD, apps, idioma, rutas)
+|   |-- urls.py            ← Tabla de rutas principal
+|   |-- wsgi.py            ← Entrada para servidores de produccion
+|
+|-- sistema_cine/          ← App Django (puente tecnico)
+|   |-- apps.py            ← Configuracion de la app
+|   |-- models.py          ← RE-EXPORTA los modelos desde modelos/
+|   |-- migrations/        ← Migraciones auto-generadas (no editar a mano)
+|
+|-- modelos/               ← MODELOS DE DATOS (aqui se definen las tablas)
+|   |-- contenido/
+|   |   |-- pelicula.py    ← Modelo Pelicula
+|   |   |-- genero.py      ← Modelo Genero
+|   |-- sala/
+|   |   |-- sala.py        ← Modelo Sala
+|   |   |-- asiento.py     ← Modelo Asiento
+|   |-- funcion/
+|   |   |-- funcion.py     ← Modelo Funcion
+|
+|-- vistas/                ← VISTAS (logica que procesa las peticiones HTTP)
+|   |-- urls_panel.py      ← URLs del panel de administracion
+|
+|-- plantillas/            ← TEMPLATES HTML
+|   |-- base/              ← Templates base (header, footer, layout)
+|   |-- panel_interno/     ← Templates del panel admin
+|   |-- autenticacion/     ← Templates de login/registro
+|
+|-- formularios/           ← FORMULARIOS Django (validacion de datos)
+|
+|-- estaticos/             ← ARCHIVOS ESTATICOS
+|   |-- css/               ← Hojas de estilo
+|   |-- imagenes/          ← Iconos e imagenes de interfaz
+|
+|-- multimedia/            ← ARCHIVOS SUBIDOS (posters, QR, etc.)
+|
+|-- servicios/             ← LOGICA DE NEGOCIO (funciones auxiliares)
+
+================================================================================
+REGLAS IMPORTANTES
+================================================================================
+
+1. SIEMPRE agregar app_label = 'sistema_cine' en la clase Meta de cada modelo.
+   Sin esto, Django no sabe a que app pertenece el modelo.
+
+2. SIEMPRE registrar los modelos nuevos en sistema_cine/models.py.
+   Sin esto, Django no los descubre al hacer makemigrations.
+
+3. NUNCA editar los archivos dentro de sistema_cine/migrations/ a mano.
+   Son auto-generados por Django.
+
+4. SIEMPRE trabajar con el entorno virtual activado (venv).
+
+5. Despues de modificar un modelo (agregar campo, cambiar tipo, etc.):
+       python manage.py makemigrations
+       python manage.py migrate
+
+6. Si hay conflictos de migraciones entre compañeros, avisar al grupo.
+
+
+================================================================================
+RESUMEN DEL FLUJO DIARIO DE TRABAJO
+================================================================================
+
+    1. Abrir XAMPP --> Iniciar MySQL (boton Start, esperar luz verde)
+    2. Abrir terminal en la carpeta del proyecto (cd c:\xampp\htdocs\cinefsa)
+    3. Activar venv:  .\venv\Scripts\activate   (OBLIGATORIO, siempre)
+       --> Verificar que aparezca (venv) al inicio de la linea
+    4. Si hay cambios del repo:  git pull
+    5. Si hay migraciones nuevas:  python manage.py migrate
+    6. Levantar servidor:  python manage.py runserver
+    7. Trabajar en tu modulo (modelos, vistas, templates)
+    8. Si modificaste modelos:  python manage.py makemigrations && python manage.py migrate
+    9. Commitear y pushear:  git add . && git commit -m "descripcion" && git push
+
+
