@@ -139,6 +139,7 @@ DATABASES = {
             # utf8mb4 es el conjunto completo de Unicode (incluye emojis y caracteres especiales),
             # necesario para almacenar correctamente nombres, sinopsis y títulos en español.
             'charset': 'utf8mb4',
+            'sql_mode': 'STRICT_TRANS_TABLES',
         },
     }
 }
