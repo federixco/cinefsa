@@ -48,6 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Botón "Limpiar Grilla": resetea todas las celdas a tipo 'pasillo' (vacío).
     const btnLimpiar = document.getElementById('btn-limpiar');
 
+    // Botón "Seleccionar Todo": rellena TODAS las celdas con el pincel actualmente seleccionado.
+    // A diferencia de "Limpiar" (que siempre aplica 'pasillo'), este botón aplica el tipo
+    // del pincel activo (general, vip, discapacitado o pasillo).
+    const btnSeleccionarTodo = document.getElementById('btn-seleccionar-todo');
+
     // Botón "Guardar Layout": dispara la petición AJAX para persistir el diseño en la BD.
     const btnGuardar = document.getElementById('btn-guardar');
 
@@ -132,6 +137,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Botón "Limpiar Grilla": rellena TODAS las celdas con tipo 'pasillo' (vacío).
         // Equivale a un "borrar todo" sin cambiar las dimensiones de la grilla.
         btnLimpiar.addEventListener('click', () => llenarGrilla('pasillo'));
+
+        // Botón "Seleccionar Todo": rellena toda la grilla con el pincel actual.
+        // Usa la misma función llenarGrilla() pero con pincelActual en vez de 'pasillo'.
+        btnSeleccionarTodo.addEventListener('click', () => llenarGrilla(pincelActual));
 
         // Botón "Guardar Layout": inicia el proceso asíncrono de guardado via AJAX.
         btnGuardar.addEventListener('click', guardarLayout);
