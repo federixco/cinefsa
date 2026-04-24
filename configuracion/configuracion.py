@@ -176,7 +176,8 @@ STATIC_URL = '/estaticos/'
 # STATICFILES_DIRS: Directorios del filesystem donde Django buscará archivos estáticos
 # durante el desarrollo (con collectstatic en producción). Apunta a /estaticos/ en la raíz.
 # Aquí se almacenan: hojas de estilo (CSS), scripts (JS) e íconos de la interfaz.
-STATICFILES_DIRS = [BASE_DIR / 'estaticos']
+# ⚠️  Desactivado temporalmente: se habilitará cuando se integren los estilos CSS.
+# STATICFILES_DIRS = [BASE_DIR / 'estaticos']
 
 
 # ─── ARCHIVOS MULTIMEDIA (SUBIDOS POR USUARIOS / ADMIN) ──────────────────────

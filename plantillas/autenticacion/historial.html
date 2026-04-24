@@ -1,0 +1,67 @@
+{% extends 'base/base.html' %}
+{# ──────────────────────────────────────────────────────────────────────────
+   historial.html — Página de historial de transacciones (RF-C01).
+
+   Muestra las compras realizadas por el usuario logueado.
+   Cuando los modelos Venta y Ticket se implementen, esta plantilla
+   mostrará una tabla con los detalles de cada transacción.
+   Mientras tanto, muestra un estado vacío informativo.
+   ────────────────────────────────────────────────────────────────────────── #}
+
+{% block titulo %}{{ titulo_pagina }} — CineFSA{% endblock %}
+
+{% block contenido %}
+<div>
+
+    <h1>Mi historial de compras</h1>
+    <p>Revisá todas tus entradas y transacciones anteriores</p>
+
+    {% if ventas %}
+    <!-- ═══════════════════════════════════════════════════════════════════
+         TABLA DE TRANSACCIONES
+         Se mostrará cuando existan los modelos Venta y Ticket.
+         ═══════════════════════════════════════════════════════════════════ -->
+    <table border="1" id="tabla-historial">
+        <thead>
+            <tr>
+                <th>Nº Venta</th>
+                <th>Fecha</th>
+                <th>Película</th>
+                <th>Sala</th>
+                <th>Asiento</th>
+                <th>Monto</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for venta in ventas %}
+            <tr>
+                <td>#{{ venta.id_venta }}</td>
+                <td>{{ venta.fecha_hora_transaccion|date:"d/m/Y H:i" }}</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>${{ venta.monto_total }}</td>
+                <td>{{ venta.estado_pago }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% else %}
+    <!-- ═══════════════════════════════════════════════════════════════════
+         ESTADO VACÍO
+         Se muestra cuando el usuario no tiene transacciones.
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div id="historial-vacio">
+        <p>🎟️</p>
+        <h2>Aún no tenés compras</h2>
+        <p>
+            Cuando compres tus entradas, van a aparecer acá con todos
+            los detalles: película, sala, asiento y código QR.
+        </p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
