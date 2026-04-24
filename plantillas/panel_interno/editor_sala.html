@@ -1,0 +1,100 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Editor de Sala: {{ sala.nombre_sala }}{% endblock %}
+
+{% block extra_css %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/editor.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="editor-header">
+    <div>
+        <a href="{% url 'panel:lista_salas' %}" class="back-link">← Volver a Salas</a>
+        <h1>{{ sala.nombre_sala }}</h1>
+        <p style="color: var(--text-secondary);">La capacidad de la sala se calculará automáticamente al guardar.</p>
+    </div>
+    <div class="editor-actions">
+        <button id="btn-limpiar" class="btn btn-secondary">Limpiar Grilla</button>
+        <button id="btn-guardar" class="btn btn-primary">Guardar Layout</button>
+    </div>
+</div>
+
+<div class="editor-layout">
+    <!-- Panel Izquierdo: Herramientas -->
+    <div class="editor-sidebar card">
+        <h3>Herramientas</h3>
+        <p class="sidebar-desc">Selecciona un pincel y haz clic en la grilla para dibujar.</p>
+        
+        <div class="tool-group">
+            <label class="tool-btn active" data-tipo="general">
+                <input type="radio" name="pincel" value="general" checked>
+                <div class="color-box bg-general"></div>
+                General
+            </label>
+            <label class="tool-btn" data-tipo="vip">
+                <input type="radio" name="pincel" value="vip">
+                <div class="color-box bg-vip"></div>
+                VIP
+            </label>
+            <label class="tool-btn" data-tipo="discapacitado">
+                <input type="radio" name="pincel" value="discapacitado">
+                <div class="color-box bg-discapacitado"></div>
+                Discapacitado
+            </label>
+            <label class="tool-btn" data-tipo="pasillo">
+                <input type="radio" name="pincel" value="pasillo">
+                <div class="color-box bg-pasillo"></div>
+                Pasillo (Borrar)
+            </label>
+        </div>
+
+        <div class="stats-box">
+            <h4>Estadísticas</h4>
+            <ul class="stats-list">
+                <li><span>General:</span> <span id="stat-general">0</span></li>
+                <li><span>VIP:</span> <span id="stat-vip">0</span></li>
+                <li><span>Discapacitados:</span> <span id="stat-discapacitado">0</span></li>
+                <li class="stat-total"><span>Total asignadas:</span> <span id="stat-total">0</span></li>
+            </ul>
+        </div>
+        
+        <div class="dimensiones-box">
+            <h4>Dimensiones de la Grilla</h4>
+            <div class="input-group">
+                <label>Filas</label>
+                <input type="number" id="input-filas" value="10" min="1" max="30">
+            </div>
+            <div class="input-group">
+                <label>Columnas</label>
+                <input type="number" id="input-columnas" value="15" min="1" max="30">
+            </div>
+            <button id="btn-redimensionar" class="btn btn-secondary btn-sm" style="width: 100%; margin-top: 0.5rem;">Aplicar</button>
+        </div>
+    </div>
+
+    <!-- Panel Derecho: Grilla Interactiva -->
+    <div class="editor-workspace card">
+        <div class="workspace-scroll">
+            <div id="pantalla" class="screen">PANTALLA</div>
+            <div id="grilla-asientos" class="grid-container">
+                <!-- Javascript inyectará los cuadrados aquí -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSRF Token para peticiones AJAX -->
+{% csrf_token %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Inyectar datos de Django a JS
+    const SALA_ID = {{ sala.id }};
+    const CAPACIDAD_MAXIMA = {{ sala.capacidad_maxima }};
+    // Parseo seguro de JSON en caso de que este vacio (None/null)
+    const LAYOUT_GUARDADO = {{ sala.layout_config|default:"null"|safe }};
+</script>
+<script src="{% static 'js/editor_sala.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,172 @@
+/* 
+ * base.css - Estilos globales del Panel de Administracion CineFSA
+ * Utiliza variables CSS para mantener un esquema de colores consistente.
+ */
+
+:root {
+    /* Paleta de Colores - Tema Oscuro Moderno (Glassmorphism) */
+    --bg-main: #0f172a;        /* Azul muy oscuro (Fondo principal) */
+    --bg-surface: #1e293b;     /* Azul oscuro (Tarjetas, modales) */
+    --bg-surface-hover: #334155;
+    
+    --text-primary: #f8fafc;   /* Blanco roto */
+    --text-secondary: #94a3b8; /* Gris azulado (labels, subtitulos) */
+    
+    --accent-primary: #3b82f6; /* Azul brillante (Botones principales) */
+    --accent-hover: #2563eb;
+    
+    /* Colores del editor de grilla */
+    --seat-empty: #334155;
+    --seat-general: #3b82f6;
+    --seat-vip: #f59e0b;       /* Dorado */
+    --seat-disabled: #10b981;  /* Verde esmeralda */
+    --seat-corridor: transparent;
+
+    --border-color: #334155;
+    --border-radius: 8px;
+    --transition-speed: 0.2s;
+}
+
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ─── NAVBAR ─────────────────────────────────────────────────────────────── */
+.navbar {
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 2rem;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-brand {
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.brand-cine {
+    color: var(--text-primary);
+}
+
+.brand-fsa {
+    color: var(--accent-primary);
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color var(--transition-speed);
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: var(--text-primary);
+}
+
+.nav-user {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+}
+
+/* ─── LAYOUT PRINCIPAL ───────────────────────────────────────────────────── */
+.main-content {
+    flex: 1;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Tipografía global */
+h1, h2, h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+h1 {
+    font-size: 2rem;
+    letter-spacing: -0.5px;
+}
+
+/* Contenedores tipo Tarjeta (Glassmorphism sutil) */
+.card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Botones genéricos */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: none;
+    transition: all var(--transition-speed);
+    text-decoration: none;
+}
+
+.btn-primary {
+    background-color: var(--accent-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-surface-hover);
+}

@@ -1,0 +1,262 @@
+/* 
+ * editor.css - Estilos específicos para el Editor Dinámico de Salas
+ */
+
+ .editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+}
+
+.back-link {
+    display: inline-block;
+    color: var(--text-secondary);
+    text-decoration: none;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    transition: color var(--transition-speed);
+}
+
+.back-link:hover {
+    color: var(--accent-primary);
+}
+
+.editor-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+/* ─── LAYOUT DEL EDITOR ─────────────────────────────────────────────────── */
+.editor-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+/* ─── SIDEBAR (Panel Izquierdo) ─────────────────────────────────────────── */
+.editor-sidebar {
+    position: sticky;
+    top: 80px;
+}
+
+.sidebar-desc {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+}
+
+.tool-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.tool-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.tool-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.tool-btn.active {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.tool-btn input[type="radio"] {
+    display: none;
+}
+
+.color-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+/* ─── COLORES DE BUTACAS ────────────────────────────────────────────────── */
+.bg-general { background-color: var(--seat-general); }
+.bg-vip { background-color: var(--seat-vip); }
+.bg-discapacitado { background-color: var(--seat-discapacitado); }
+.bg-pasillo { 
+    background-color: var(--seat-corridor); 
+    border: 1px dashed var(--text-secondary);
+}
+
+/* ─── ESTADÍSTICAS Y DIMENSIONES ────────────────────────────────────────── */
+.stats-box, .dimensiones-box {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.stats-list {
+    list-style: none;
+    margin-top: 1rem;
+}
+
+.stats-list li {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.stat-total {
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed var(--border-color);
+    font-weight: 600;
+    color: var(--text-primary) !important;
+}
+
+.alert {
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    font-size: 0.85rem;
+    margin-top: 1rem;
+}
+
+.alert.error {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.hidden {
+    display: none;
+}
+
+.input-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    margin-top: 1rem;
+}
+
+.input-group label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.input-group input {
+    width: 70px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 0.4rem;
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* ─── ESPACIO DE TRABAJO (Panel Derecho) ────────────────────────────────── */
+.editor-workspace {
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden; /* Evita que crezca la tarjeta */
+}
+
+.workspace-scroll {
+    width: 100%;
+    overflow: auto; /* Permite scroll si la grilla es muy grande */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+}
+
+.screen {
+    width: 80%;
+    max-width: 600px;
+    height: 40px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    border-top: 4px solid var(--text-secondary);
+    border-radius: 50% 50% 0 0 / 20px 20px 0 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-secondary);
+    font-weight: 600;
+    letter-spacing: 5px;
+    margin-bottom: 3rem;
+    flex-shrink: 0;
+}
+
+/* ─── GRILLA DE ASIENTOS ────────────────────────────────────────────────── */
+.grid-container {
+    display: grid;
+    gap: 8px; /* Espacio entre butacas */
+    margin: 0 auto;
+    padding: 1rem;
+    background-color: rgba(0,0,0,0.1);
+    border-radius: 12px;
+}
+
+.seat {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px 6px 4px 4px; /* Forma de butaca (mas redonda arriba) */
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.6rem;
+    font-weight: bold;
+    color: rgba(255,255,255,0.7);
+    user-select: none;
+}
+
+.seat:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 8px rgba(255,255,255,0.2);
+    z-index: 10;
+}
+
+.seat:active {
+    transform: scale(0.95);
+}
+
+/* Clases aplicadas dinamicamente por JS */
+.seat.pasillo {
+    background-color: var(--seat-corridor);
+    border: 1px dashed rgba(255,255,255,0.1);
+    color: transparent;
+}
+
+.seat.pasillo:hover {
+    border-color: rgba(255,255,255,0.4);
+}
+
+.seat.general {
+    background-color: var(--seat-general);
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2); /* Efecto 3D asiento */
+}
+
+.seat.vip {
+    background-color: var(--seat-vip);
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2);
+}
+
+.seat.discapacitado {
+    background-color: var(--seat-disabled);
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2);
+}

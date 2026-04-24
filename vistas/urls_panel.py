@@ -8,12 +8,17 @@ Aquí se registran las rutas del panel de gestión:
 """
 
 from django.urls import path
-
+from vistas.editor_sala import lista_salas, editor_sala, guardar_layout
 
 # app_name: Namespace para las URLs del panel.
 # Permite referenciar las URLs con {% url 'panel:nombre_url' %} en las plantillas.
 app_name = 'panel'
 
 urlpatterns = [
-    # Las URLs se irán agregando a medida que se construyan las vistas.
+    # URL: /panel/salas/
+    path('salas/', lista_salas, name='lista_salas'),
+    # URL: /panel/salas/1/editor/
+    path('salas/<int:sala_id>/editor/', editor_sala, name='editor_sala'),
+    # URL: /panel/salas/1/guardar-layout/
+    path('salas/<int:sala_id>/guardar-layout/', guardar_layout, name='guardar_layout'),
 ]

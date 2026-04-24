@@ -1,0 +1,132 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Gestión de Salas{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos especificos para la grilla de tarjetas de salas */
+    .salas-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .salas-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .sala-card {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sala-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.5rem;
+    }
+
+    .sala-card-title {
+        font-size: 1.25rem;
+        margin: 0;
+        color: var(--text-primary);
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .badge-activa {
+        background-color: rgba(16, 185, 129, 0.2);
+        color: #10b981; /* Verde */
+    }
+
+    .badge-mantenimiento {
+        background-color: rgba(245, 158, 11, 0.2);
+        color: #f59e0b; /* Naranja */
+    }
+
+    .sala-info {
+        flex: 1;
+        margin-bottom: 1.5rem;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+    }
+
+    .sala-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: auto;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background-color: var(--bg-surface);
+        border: 1px dashed var(--border-color);
+        border-radius: var(--border-radius);
+        grid-column: 1 / -1;
+    }
+
+    .empty-state h3 {
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="salas-header">
+    <div>
+        <h1>Gestión de Salas</h1>
+        <p style="color: var(--text-secondary);">Administra la capacidad y el diseño de asientos del complejo.</p>
+    </div>
+    <!-- Por ahora este boton no hace nada, despues podemos hacer un modal -->
+    <button class="btn btn-primary">+ Nueva Sala</button>
+</div>
+
+<div class="salas-grid">
+    {% for sala in salas %}
+    <div class="card sala-card">
+        <div class="sala-card-header">
+            <h2 class="sala-card-title">{{ sala.nombre_sala }}</h2>
+            {% if sala.estado == 'activa' %}
+                <span class="badge badge-activa">Operativa</span>
+            {% else %}
+                <span class="badge badge-mantenimiento">Mantenimiento</span>
+            {% endif %}
+        </div>
+        
+        <div class="sala-info">
+            <p><strong>Capacidad Máxima:</strong> {{ sala.capacidad_maxima }} butacas</p>
+            <p><strong>Layout configurado:</strong> 
+                {% if sala.layout_config %}
+                    Sí (Personalizado)
+                {% else %}
+                    <span style="color: #ef4444;">No (Pendiente)</span>
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="sala-actions">
+            <!-- Link apunta al editor interactivo de la sala -->
+            <a href="{% url 'panel:editor_sala' sala.id %}" class="btn btn-primary" style="flex: 1;">Diseñar Layout</a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <h3>No hay salas creadas todavía</h3>
+        <p style="color: var(--text-secondary);">Para probar el editor, primero crea una sala desde el botón superior o desde el panel /admin/.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

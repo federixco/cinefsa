@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Panel de Control{% endblock %} | CineFSA</title>
+    
+    <!-- Google Fonts: Inter para un look limpio y moderno -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    {% load static %}
+    <!-- Estilos base globales -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    
+    <!-- Bloque para cargar CSS especifico de cada pagina -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar / Menu superior -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                <span class="brand-cine">Cine</span><span class="brand-fsa">FSA</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#" class="active">Salas</a></li>
+                <!-- Aqui los compañeros agregaran sus links (Cartelera, Ventas, etc.) -->
+                <li><a href="#">Cartelera</a></li>
+                <li><a href="#">Ventas</a></li>
+            </ul>
+            <div class="nav-user">
+                <span>Panel Admin</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+        {% block content %}
+        <!-- Aqui se inyecta el contenido de cada pagina hija -->
+        {% endblock %}
+    </main>
+
+    <!-- Bloque para cargar JS especifico de cada pagina -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
