@@ -1,63 +1,125 @@
 /* 
- * editor.css - Estilos específicos para el Editor Dinámico de Salas
+ * editor.css — Estilos específicos del Editor Dinámico de Salas (RF-A01)
+ * ======================================================================
+ *
+ * PROPÓSITO:
+ *   Define la apariencia visual completa del editor interactivo de butacas.
+ *   Este CSS se carga SOLO en la página del editor (editor_sala.html),
+ *   sumándose a los estilos base definidos en base.css.
+ *
+ * LAYOUT GENERAL:
+ *   La página del editor usa un CSS Grid de 2 columnas:
+ *     ┌─────────────────┬──────────────────────────────────────┐
+ *     │   SIDEBAR (300px)│         WORKSPACE (1fr)              │
+ *     │   - Herramientas │   ┌────────────────────────────┐    │
+ *     │   - Estadísticas │   │        PANTALLA             │    │
+ *     │   - Dimensiones  │   ├────────────────────────────┤    │
+ *     │                  │   │    GRILLA DE ASIENTOS       │    │
+ *     │                  │   │    (CSS Grid dinámico)      │    │
+ *     │                  │   └────────────────────────────┘    │
+ *     └─────────────────┴──────────────────────────────────────┘
+ *
+ * COMPONENTES:
+ *   - Header del editor (título + botones de acción)
+ *   - Sidebar izquierdo (herramientas de pincel, estadísticas, dimensiones)
+ *   - Workspace derecho (pantalla decorativa + grilla interactiva de asientos)
+ *   - Celdas individuales de la grilla (.seat) con estados dinámicos
  */
 
- .editor-header {
+/* ═══════════════════════════════════════════════════════════════════════════
+   HEADER DEL EDITOR
+   Barra superior con el título de la sala a la izquierda y los botones
+   de acción (Limpiar / Guardar) a la derecha.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.editor-header {
     display: flex;
     justify-content: space-between;
+    /* Título a la izquierda, botones a la derecha */
     align-items: flex-end;
+    /* Alinear al borde inferior (el título tiene subtexto) */
     margin-bottom: 2rem;
+    /* Separación con el layout del editor debajo */
 }
 
+/* Link "← Volver a Salas": navegación de retroceso al listado de salas */
 .back-link {
     display: inline-block;
     color: var(--text-secondary);
+    /* Gris para no competir con el título */
     text-decoration: none;
     margin-bottom: 0.5rem;
+    /* Separación con el <h1> debajo */
     font-size: 0.9rem;
     transition: color var(--transition-speed);
 }
 
+/* Hover del back-link: se colorea con el azul de acento para indicar que es clickeable */
 .back-link:hover {
     color: var(--accent-primary);
 }
 
+/* Contenedor de los botones de acción del header ("Limpiar Grilla" y "Guardar Layout") */
 .editor-actions {
     display: flex;
     gap: 1rem;
+    /* Espaciado entre los botones */
 }
 
-/* ─── LAYOUT DEL EDITOR ─────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   LAYOUT PRINCIPAL DEL EDITOR (Grid de 2 columnas)
+   Divide la pantalla en sidebar izquierdo (herramientas) y workspace derecho (grilla).
+   ═══════════════════════════════════════════════════════════════════════════ */
 .editor-layout {
     display: grid;
     grid-template-columns: 300px 1fr;
+    /* Sidebar fijo 300px + workspace flexible */
     gap: 2rem;
+    /* Espacio entre sidebar y workspace */
     align-items: start;
+    /* Alinear ambos paneles al inicio (top) */
 }
 
-/* ─── SIDEBAR (Panel Izquierdo) ─────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   SIDEBAR — Panel Izquierdo de Herramientas
+   Contiene: selector de pincel, estadísticas en tiempo real, control de dimensiones.
+   Es sticky: se mantiene fijo en pantalla al hacer scroll vertical.
+   ═══════════════════════════════════════════════════════════════════════════ */
 .editor-sidebar {
     position: sticky;
     top: 80px;
+    /* Offset de 80px desde el top (64px del navbar + 16px de margen) */
 }
 
+/* Texto descriptivo debajo del título "Herramientas" */
 .sidebar-desc {
     color: var(--text-secondary);
     font-size: 0.85rem;
     margin-bottom: 1.5rem;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   GRUPO DE HERRAMIENTAS (Pinceles)
+   Contenedor vertical que agrupa los 4 botones de selección de pincel:
+   General, VIP, Discapacitado, Pasillo (Borrar).
+   ═══════════════════════════════════════════════════════════════════════════ */
 .tool-group {
     display: flex;
     flex-direction: column;
+    /* Apilados verticalmente */
     gap: 0.5rem;
+    /* Espacio entre cada botón de herramienta */
     margin-bottom: 2rem;
+    /* Separación con la sección de estadísticas */
 }
 
+/* Cada botón de herramienta: es un <label> que envuelve un radio button oculto.
+   El label actúa como botón visual clickeable.
+   Al hacer clic, se selecciona el radio (cambia el pincel) y JS agrega la clase 'active'. */
 .tool-btn {
     display: flex;
     align-items: center;
     gap: 10px;
+    /* Espacio entre el cuadro de color y el texto */
     padding: 0.75rem 1rem;
     border-radius: var(--border-radius);
     border: 1px solid var(--border-color);
@@ -65,66 +127,117 @@
     transition: all var(--transition-speed);
     font-size: 0.95rem;
     color: var(--text-secondary);
+    /* Texto gris cuando no está seleccionado */
 }
 
+/* Hover de botón de herramienta: fondo semi-transparente sutil */
 .tool-btn:hover {
     background-color: rgba(255, 255, 255, 0.05);
 }
 
+/* Estado activo del botón de herramienta (pincel actualmente seleccionado).
+   Clase 'active' aplicada dinámicamente por JavaScript al cambiar el radio.
+   Se destaca con fondo azul sutil, borde azul y texto blanco. */
 .tool-btn.active {
     background-color: rgba(59, 130, 246, 0.1);
+    /* Azul con 10% de opacidad */
     border-color: var(--accent-primary);
+    /* Borde azul brillante */
     color: var(--text-primary);
+    /* Texto blanco */
     font-weight: 500;
+    /* Ligeramente más grueso */
 }
 
+/* Ocultar visualmente los radio buttons nativos del navegador.
+   La interacción se hace a través del <label> padre (tool-btn). */
 .tool-btn input[type="radio"] {
     display: none;
 }
 
+/* Cuadro de color indicador al lado de cada nombre de pincel.
+   Muestra el color que tendrá la celda al ser pintada con ese pincel. */
 .color-box {
     width: 20px;
     height: 20px;
     border-radius: 4px;
+    /* Esquinas ligeramente redondeadas */
 }
 
-/* ─── COLORES DE BUTACAS ────────────────────────────────────────────────── */
-.bg-general { background-color: var(--seat-general); }
-.bg-vip { background-color: var(--seat-vip); }
-.bg-discapacitado { background-color: var(--seat-discapacitado); }
-.bg-pasillo { 
-    background-color: var(--seat-corridor); 
+/* ═══════════════════════════════════════════════════════════════════════════
+   COLORES DE BUTACAS — Clases auxiliares para los cuadros indicadores
+   Se usan en los .color-box del sidebar para mostrar el color de cada tipo.
+   Referencia directa a las variables CSS definidas en base.css :root.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bg-general {
+    background-color: var(--seat-general);
+}
+
+/* Azul */
+.bg-vip {
+    background-color: var(--seat-vip);
+}
+
+/* Dorado */
+.bg-discapacitado {
+    background-color: var(--seat-discapacitado);
+}
+
+/* Verde */
+.bg-pasillo {
+    background-color: var(--seat-corridor);
+    /* Transparente */
     border: 1px dashed var(--text-secondary);
+    /* Borde punteado para indicar "vacío" */
 }
 
-/* ─── ESTADÍSTICAS Y DIMENSIONES ────────────────────────────────────────── */
-.stats-box, .dimensiones-box {
+/* ═══════════════════════════════════════════════════════════════════════════
+   ESTADÍSTICAS Y DIMENSIONES — Secciones inferiores del sidebar
+   Muestran contadores en tiempo real y controles para redimensionar la grilla.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Ambas secciones comparten el mismo estilo: separadas por una línea superior */
+.stats-box,
+.dimensiones-box {
     margin-top: 2rem;
     padding-top: 1.5rem;
     border-top: 1px solid var(--border-color);
+    /* Línea divisoria horizontal */
 }
 
+/* Lista de estadísticas (General: X, VIP: Y, Discapacitados: Z) */
 .stats-list {
     list-style: none;
+    /* Sin viñetas */
     margin-top: 1rem;
 }
 
+/* Cada ítem de la lista: nombre a la izquierda, valor numérico a la derecha */
 .stats-list li {
     display: flex;
     justify-content: space-between;
+    /* Distribuir nombre y valor en extremos opuestos */
     margin-bottom: 0.5rem;
     color: var(--text-secondary);
     font-size: 0.9rem;
 }
 
+/* Fila "Total asignadas": visualmente destacada con borde superior, negrita y texto blanco */
 .stat-total {
     margin-top: 1rem;
     padding-top: 0.5rem;
     border-top: 1px dashed var(--border-color);
+    /* Línea punteada para separar del detalle */
     font-weight: 600;
     color: var(--text-primary) !important;
+    /* Forzar blanco (overridea el gris del padre) */
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPONENTE: ALERTA
+   Mensaje de advertencia/error que puede aparecer debajo de las estadísticas.
+   Actualmente preparado para alertas de capacidad excedida.
+   ═══════════════════════════════════════════════════════════════════════════ */
 .alert {
     padding: 0.75rem;
     border-radius: var(--border-radius);
@@ -132,131 +245,233 @@
     margin-top: 1rem;
 }
 
+/* Variante de alerta de error: fondo rojo translúcido, texto rojo, borde rojo sutil */
 .alert.error {
     background-color: rgba(239, 68, 68, 0.1);
+    /* Rojo con 10% opacidad */
     color: #ef4444;
+    /* Texto rojo */
     border: 1px solid rgba(239, 68, 68, 0.2);
+    /* Borde rojo con 20% opacidad */
 }
 
+/* Clase utilitaria para ocultar elementos (usada por JS para show/hide de alertas) */
 .hidden {
     display: none;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   GRUPO DE INPUTS — Controles de dimensiones (Filas / Columnas)
+   Cada input-group contiene un label y un input numérico alineados horizontalmente.
+   ═══════════════════════════════════════════════════════════════════════════ */
 .input-group {
     display: flex;
     justify-content: space-between;
+    /* Label a la izquierda, input a la derecha */
     align-items: center;
     margin-bottom: 0.75rem;
     margin-top: 1rem;
 }
 
+/* Label descriptivo del input (ej: "Filas", "Columnas") */
 .input-group label {
     font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
+/* Input numérico con estilo oscuro coherente con el tema.
+   Ancho fijo de 70px para que los inputs queden alineados verticalmente. */
 .input-group input {
     width: 70px;
     background-color: rgba(0, 0, 0, 0.2);
+    /* Fondo ligeramente más oscuro que la tarjeta */
     border: 1px solid var(--border-color);
     color: white;
     padding: 0.4rem;
     border-radius: 4px;
     text-align: center;
+    /* Centrar el número dentro del input */
 }
 
-/* ─── ESPACIO DE TRABAJO (Panel Derecho) ────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   WORKSPACE — Panel Derecho (Espacio de Trabajo del Editor)
+   Contiene la representación visual de la pantalla del cine y la grilla
+   interactiva de asientos. Permite scroll cuando la grilla excede el espacio.
+   ═══════════════════════════════════════════════════════════════════════════ */
 .editor-workspace {
     min-height: 500px;
+    /* Altura mínima para que no colapse con grillas pequeñas */
     display: flex;
     flex-direction: column;
     align-items: center;
-    overflow: hidden; /* Evita que crezca la tarjeta */
+    overflow: hidden;
+    /* Evita que la tarjeta crezca más allá de su contenido */
 }
 
+/* Contenedor scrollable dentro del workspace.
+   Si la grilla tiene más filas/columnas de las que caben, aparece scroll. */
 .workspace-scroll {
     width: 100%;
-    overflow: auto; /* Permite scroll si la grilla es muy grande */
+    overflow: auto;
+    /* Scroll horizontal y vertical automático */
     display: flex;
     flex-direction: column;
     align-items: center;
+    /* Centrar la pantalla y la grilla horizontalmente */
     padding: 1rem;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   PANTALLA — Elemento decorativo que simula la pantalla del cine
+   Se ubica arriba de la grilla como referencia visual para el usuario.
+   Tiene forma semicircular (curva arriba) lograda con border-radius elíptico.
+   ═══════════════════════════════════════════════════════════════════════════ */
 .screen {
     width: 80%;
     max-width: 600px;
     height: 40px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+
+    /* Gradiente vertical que simula el brillo de una pantalla de cine:
+       blanco tenue arriba → transparente abajo (como luz proyectada). */
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+
+    /* Borde superior grueso que representa el borde real de la pantalla */
     border-top: 4px solid var(--text-secondary);
+
+    /* border-radius elíptico: crea una curva convexa en la parte superior.
+       Sintaxis: top-left top-right bottom-right bottom-left / vertical-radii
+       50% horizontal + 20px vertical arriba → curva semicircular suave. */
     border-radius: 50% 50% 0 0 / 20px 20px 0 0;
+
     display: flex;
     justify-content: center;
     align-items: center;
     color: var(--text-secondary);
     font-weight: 600;
     letter-spacing: 5px;
+    /* Espaciado entre letras para efecto "cine" */
     margin-bottom: 3rem;
+    /* Separación entre la pantalla y la primera fila de asientos */
     flex-shrink: 0;
+    /* No permitir que se comprima si hay poco espacio */
 }
 
-/* ─── GRILLA DE ASIENTOS ────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   GRILLA DE ASIENTOS — Contenedor CSS Grid
+   El contenedor usa CSS Grid cuyas columnas se definen dinámicamente desde JS
+   con: gridContainer.style.gridTemplateColumns = `repeat(${columnas}, 32px)`.
+   Cada celda hija (.seat) es un cuadrado de 32x32px.
+   ═══════════════════════════════════════════════════════════════════════════ */
 .grid-container {
     display: grid;
-    gap: 8px; /* Espacio entre butacas */
+    gap: 8px;
+    /* Espacio entre celdas (simula el espacio entre butacas reales) */
     margin: 0 auto;
+    /* Centrado horizontal */
     padding: 1rem;
-    background-color: rgba(0,0,0,0.1);
+
+    /* Fondo sutil para delimitar el área de la grilla visualmente */
+    background-color: rgba(0, 0, 0, 0.1);
     border-radius: 12px;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   CELDA INDIVIDUAL — Representa una butaca o un espacio vacío (pasillo)
+   Cada celda es un <div> creado dinámicamente por JavaScript.
+   El tipo de asiento se controla mediante clases CSS aplicadas por JS:
+   .pasillo, .general, .vip, .discapacitado
+   ═══════════════════════════════════════════════════════════════════════════ */
 .seat {
     width: 32px;
     height: 32px;
-    border-radius: 6px 6px 4px 4px; /* Forma de butaca (mas redonda arriba) */
+
+    /* Forma de butaca: más redondeada arriba (respaldo) que abajo (asiento).
+       Simula la silueta de una butaca de cine vista desde arriba. */
+    border-radius: 6px 6px 4px 4px;
+
     cursor: pointer;
+
+    /* Transiciones rápidas para hover/active — feedback inmediato al usuario */
     transition: transform 0.1s, box-shadow 0.1s;
+
+    /* Centrar contenido interno (íconos ★ y ♿) */
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 0.6rem;
     font-weight: bold;
-    color: rgba(255,255,255,0.7);
+    color: rgba(255, 255, 255, 0.7);
+    /* Íconos semi-transparentes para no saturar visualmente */
+
+    /* Evitar que el usuario seleccione texto al arrastrar el mouse sobre las celdas */
     user-select: none;
 }
 
+/* Hover sobre cualquier celda: se agranda ligeramente (110%) y brilla con sombra blanca.
+   Provee feedback visual inmediato de que la celda es interactiva. */
 .seat:hover {
     transform: scale(1.1);
-    box-shadow: 0 0 8px rgba(255,255,255,0.2);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+    /* Resplandor sutil */
     z-index: 10;
+    /* Capa alta para que no quede debajo de celdas adyacentes al agrandarse */
 }
 
+/* Al hacer clic (active): la celda se contrae brevemente (95%) creando un efecto "press".
+   Micro-animación que da sensación táctil al pintar. */
 .seat:active {
     transform: scale(0.95);
 }
 
-/* Clases aplicadas dinamicamente por JS */
+/* ═══════════════════════════════════════════════════════════════════════════
+   ESTADOS DE LAS CELDAS — Clases aplicadas dinámicamente por JavaScript
+   Cada clase define el color de fondo y estilo visual del tipo de asiento.
+   JS alterna estas clases mediante aplicarTipoAsiento() al pintar.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* PASILLO: Espacio vacío, sin butaca asignada.
+   Fondo transparente con borde punteado tenue para indicar que la celda existe
+   pero no tiene asiento. Es el estado "borrado" o por defecto de cada celda. */
 .seat.pasillo {
     background-color: var(--seat-corridor);
-    border: 1px dashed rgba(255,255,255,0.1);
+    /* Transparente */
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    /* Borde punteado muy sutil */
     color: transparent;
+    /* Ocultar cualquier ícono residual */
 }
 
+/* Hover del pasillo: el borde se hace más visible para indicar que se puede pintar */
 .seat.pasillo:hover {
-    border-color: rgba(255,255,255,0.4);
+    border-color: rgba(255, 255, 255, 0.4);
 }
 
+/* GENERAL: Asiento estándar (el más común en una sala).
+   Fondo azul brillante con sombra interior inferior que simula volumen 3D,
+   como si la butaca tuviera profundidad (el "asiento" es más oscuro que el "respaldo"). */
 .seat.general {
     background-color: var(--seat-general);
-    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2); /* Efecto 3D asiento */
+    /* Azul (#3b82f6) */
+    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.2);
+    /* Sombra interior inferior → efecto 3D */
 }
 
+/* VIP: Asiento premium con color dorado.
+   Se distingue visualmente de los generales con el color ámbar y muestra
+   un ícono de estrella (★) inyectado por JavaScript. */
 .seat.vip {
     background-color: var(--seat-vip);
-    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2);
+    /* Dorado (#f59e0b) */
+    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.2);
+    /* Mismo efecto 3D */
 }
 
+/* DISCAPACITADO: Asiento adaptado para personas con movilidad reducida.
+   Color verde esmeralda para diferenciarlo claramente. Muestra el ícono
+   de accesibilidad (♿) inyectado por JavaScript. */
 .seat.discapacitado {
     background-color: var(--seat-disabled);
-    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2);
+    /* Verde (#10b981) */
+    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.2);
+    /* Mismo efecto 3D */
 }
