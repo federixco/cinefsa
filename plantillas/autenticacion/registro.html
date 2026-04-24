@@ -1,0 +1,123 @@
+{% extends 'base/base.html' %}
+{# ──────────────────────────────────────────────────────────────────────────
+   registro.html — Página de registro de nuevos clientes (RF-C01).
+
+   Muestra el formulario de registro con los campos: nombre completo,
+   email, fecha de nacimiento, contraseña y confirmación.
+   Al completarse, crea un Usuario (supertipo) y un Cliente (subtipo).
+   Incluye un enlace al formulario de login para usuarios existentes.
+   ────────────────────────────────────────────────────────────────────────── #}
+
+{% block titulo %}{{ titulo_pagina }} — CineFSA{% endblock %}
+
+{% block contenido %}
+<div id="tarjeta-registro">
+
+    <h1>Crear cuenta</h1>
+    <p>Registrate para comprar tus entradas online y evitar las filas</p>
+
+    <!-- Errores generales del formulario -->
+    {% if formulario.non_field_errors %}
+    <ul id="errores-registro">
+        {% for error in formulario.non_field_errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- Formulario -->
+    <form method="post" action="{% url 'autenticacion:registro' %}" id="formulario-registro" novalidate>
+        {% csrf_token %}
+
+        <!-- Campo: Nombre completo -->
+        <div>
+            <label for="id_nombre_completo">{{ formulario.nombre_completo.label }}</label><br>
+            {{ formulario.nombre_completo }}
+            {% if formulario.nombre_completo.help_text %}
+            <br><small>{{ formulario.nombre_completo.help_text }}</small>
+            {% endif %}
+            {% if formulario.nombre_completo.errors %}
+            <ul>
+                {% for error in formulario.nombre_completo.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        <br>
+
+        <!-- Campo: Correo electrónico -->
+        <div>
+            <label for="id_email">{{ formulario.email.label }}</label><br>
+            {{ formulario.email }}
+            {% if formulario.email.help_text %}
+            <br><small>{{ formulario.email.help_text }}</small>
+            {% endif %}
+            {% if formulario.email.errors %}
+            <ul>
+                {% for error in formulario.email.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        <br>
+
+        <!-- Campo: Fecha de nacimiento -->
+        <div>
+            <label for="id_fecha_nacimiento">{{ formulario.fecha_nacimiento.label }}</label><br>
+            {{ formulario.fecha_nacimiento }}
+            {% if formulario.fecha_nacimiento.help_text %}
+            <br><small>{{ formulario.fecha_nacimiento.help_text }}</small>
+            {% endif %}
+            {% if formulario.fecha_nacimiento.errors %}
+            <ul>
+                {% for error in formulario.fecha_nacimiento.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        <br>
+
+        <hr>
+
+        <!-- Campo: Contraseña -->
+        <div>
+            <label for="id_password1">{{ formulario.password1.label }}</label><br>
+            {{ formulario.password1 }}
+            {% if formulario.password1.errors %}
+            <ul>
+                {% for error in formulario.password1.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        <br>
+
+        <!-- Campo: Confirmar contraseña -->
+        <div>
+            <label for="id_password2">{{ formulario.password2.label }}</label><br>
+            {{ formulario.password2 }}
+            {% if formulario.password2.errors %}
+            <ul>
+                {% for error in formulario.password2.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        <br>
+
+        <!-- Botón de envío -->
+        <button type="submit" id="btn-crear-cuenta">Crear cuenta</button>
+    </form>
+
+    <p>
+        ¿Ya tenés cuenta?
+        <a href="{% url 'autenticacion:login' %}" id="enlace-ir-login">Iniciar sesión</a>
+    </p>
+
+</div>
+{% endblock %}

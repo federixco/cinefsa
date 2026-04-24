@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+    <!--
+        base.html — Plantilla base del sistema CineFSA.
+
+        Todas las páginas del sistema extienden esta plantilla usando
+        la etiqueta 'extends base/base.html'. Define la estructura HTML común:
+        cabecera con navegación, área de mensajes flash, contenido principal
+        y pie de página.
+
+        NOTA: Los estilos CSS se integrarán en un paso posterior del proyecto.
+        Por ahora se utiliza HTML puro sin estilización.
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CineFSA — Sistema de gestión cinematográfica de Formosa. Comprá tus entradas online y evitá las filas.">
+
+    <title>{% block titulo %}CineFSA{% endblock %}</title>
+</head>
+<body>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         BARRA DE NAVEGACIÓN SUPERIOR
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <nav id="barra-navegacion">
+        <a href="{% url 'inicio' %}" id="logo-cinefsa">🎬 Cine<strong>FSA</strong></a>
+
+        {% if user.is_authenticated %}
+            <!-- Menú para usuarios logueados -->
+            <span id="info-usuario">
+                {{ user.nombre_completo }} |
+                <a href="{% url 'autenticacion:historial' %}" id="enlace-historial">Mi historial</a> |
+                <form method="post" action="{% url 'autenticacion:logout' %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" id="btn-cerrar-sesion">Cerrar sesión</button>
+                </form>
+            </span>
+        {% else %}
+            <!-- Menú para visitantes -->
+            <span>
+                <a href="{% url 'autenticacion:login' %}" id="enlace-login">Iniciar sesión</a> |
+                <a href="{% url 'autenticacion:registro' %}" id="enlace-registro">Crear cuenta</a>
+            </span>
+        {% endif %}
+    </nav>
+
+    <hr>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         MENSAJES FLASH (notificaciones temporales)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    {% if messages %}
+    <div id="contenedor-mensajes">
+        {% for mensaje in messages %}
+        <p id="mensaje-{{ forloop.counter }}">
+            <strong>[{{ mensaje.tags }}]</strong> {{ mensaje }}
+        </p>
+        {% endfor %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         CONTENIDO PRINCIPAL
+         Cada página define su contenido dentro de este bloque.
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <main id="contenido-principal">
+        {% block contenido %}{% endblock %}
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         PIE DE PÁGINA
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <hr>
+    <footer id="pie-pagina">
+        <p>&copy; 2026 CineFSA — Sistema de Gestión Cinematográfica</p>
+        <p><small>Proyecto académico — Base de Datos — UFASTA Sede Formosa</small></p>
+    </footer>
+
+</body>
+</html>
