@@ -95,8 +95,7 @@ class Usuario(AbstractUser):
         unique=True,
         verbose_name='Email'
     )
-
-     
+    
     # ─── DESACTIVACIÓN DE CAMPOS HEREDADOS NO UTILIZADOS ──────────────────────
 
     # Se anulan first_name y last_name porque el sistema usa 'nombre_completo'.
