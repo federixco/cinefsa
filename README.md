@@ -1,4 +1,4 @@
-<<<<<<< Updated upstream
+<<<<<< Updated upstream
 # Sistema general de administracion de cine
 =======
 
