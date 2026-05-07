@@ -31,6 +31,19 @@
             <span id="info-usuario">
                 {{ user.nombre_completo }} |
                 <a href="{% url 'autenticacion:historial' %}" id="enlace-historial">Mi historial</a> |
+
+                <!--
+                    Enlace al panel de administración (RF-A05).
+                    Se muestra solo si el usuario logueado tiene registro en la tabla 'administrador'.
+                    Se verifica con la relación inversa definida en el modelo Administrador
+                    (related_name='administrador' → accesible como user.administrador.exists()).
+                -->
+                {% if user.administrador.exists %}
+                    <a href="{% url 'panel:gestion_usuarios' %}" id="enlace-panel-admin">
+                        ⚙️ Panel de Administración
+                    </a> |
+                {% endif %}
+
                 <form method="post" action="{% url 'autenticacion:logout' %}" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" id="btn-cerrar-sesion">Cerrar sesión</button>
