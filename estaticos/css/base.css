@@ -1,25 +1,55 @@
 /* 
- * base.css - Estilos globales del Panel de Administracion CineFSA
- * Utiliza variables CSS para mantener un esquema de colores consistente.
+ * base.css — Estilos globales del Panel de Administración CineFSA
+ * ================================================================
+ * 
+ * PROPÓSITO:
+ *   Hoja de estilos raíz que define el sistema de diseño completo del panel
+ *   de administración. Establece la paleta de colores (tema oscuro moderno),
+ *   la tipografía global (Inter), el reset CSS, y los componentes reutilizables
+ *   (navbar, tarjetas, botones) que se heredan en todas las páginas del sistema.
+ *
+ * ARQUITECTURA CSS:
+ *   - Se utiliza un sistema de variables CSS (custom properties) en :root
+ *     para centralizar colores, radios de borde y velocidades de transición.
+ *   - Cualquier cambio en :root se propaga automáticamente a todos los componentes.
+ *   - Este archivo se carga en TODAS las páginas via base.html.
+ *   - Los estilos específicos de cada página (ej: editor.css) se cargan
+ *     adicionalmente mediante el bloque {% block extra_css %} del template.
+ *
+ * TEMA VISUAL:
+ *   Tema oscuro inspirado en interfaces modernas tipo dashboard (estilo Vercel/Linear).
+ *   Usa tonalidades de azul oscuro como fondos y un azul brillante como color de acento.
  */
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   VARIABLES CSS GLOBALES (Custom Properties)
+   Definidas en :root para que sean accesibles desde cualquier selector.
+   Permiten cambiar todo el tema visual modificando solo esta sección.
+   ═══════════════════════════════════════════════════════════════════════════ */
 :root {
     /* Paleta de Colores - Tema Oscuro Moderno (Glassmorphism) */
-    --bg-main: #0f172a;        /* Azul muy oscuro (Fondo principal) */
-    --bg-surface: #1e293b;     /* Azul oscuro (Tarjetas, modales) */
+    --bg-main: #0f172a;
+    /* Azul muy oscuro (Fondo principal) */
+    --bg-surface: #1e293b;
+    /* Azul oscuro (Tarjetas, modales) */
     --bg-surface-hover: #334155;
-    
-    --text-primary: #f8fafc;   /* Blanco roto */
-    --text-secondary: #94a3b8; /* Gris azulado (labels, subtitulos) */
-    
-    --accent-primary: #3b82f6; /* Azul brillante (Botones principales) */
+
+    --text-primary: #f8fafc;
+    /* Blanco roto */
+    --text-secondary: #94a3b8;
+    /* Gris azulado (labels, subtitulos) */
+
+    --accent-primary: #3b82f6;
+    /* Azul brillante (Botones principales) */
     --accent-hover: #2563eb;
-    
+
     /* Colores del editor de grilla */
     --seat-empty: #334155;
     --seat-general: #3b82f6;
-    --seat-vip: #f59e0b;       /* Dorado */
-    --seat-disabled: #10b981;  /* Verde esmeralda */
+    --seat-vip: #f59e0b;
+    /* Dorado */
+    --seat-disabled: #10b981;
+    /* Verde esmeralda */
     --seat-corridor: transparent;
 
     --border-color: #334155;
@@ -93,7 +123,8 @@ body {
     transition: color var(--transition-speed);
 }
 
-.nav-links a:hover, .nav-links a.active {
+.nav-links a:hover,
+.nav-links a.active {
     color: var(--text-primary);
 }
 
@@ -116,7 +147,9 @@ body {
 }
 
 /* Tipografía global */
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     color: var(--text-primary);
     margin-bottom: 1rem;
     font-weight: 600;
