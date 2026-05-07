@@ -83,3 +83,4 @@ El proyecto sigue una estructura personalizada y en español:
 
 Para más detalles sobre cómo crear nuevos módulos o vistas, consultar `GUIA_INICIO_RAPIDO.txt`.
 >>>>>>> Stashed changes
+            
