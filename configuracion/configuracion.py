@@ -166,6 +166,11 @@ USE_I18N = True
 # y las convierte automáticamente a TIME_ZONE al mostrarlas. Recomendado siempre en True.
 USE_TZ = True
 
+# AUTH_USER_MODEL: Indica a Django que el modelo de usuario personalizado
+# es 'Usuario' (definido en modelos/identidad/usuario.py), en lugar del
+# auth.User por defecto. Necesario para el sistema de login con email.
+AUTH_USER_MODEL = 'sistema_cine.Usuario'
+
 
 # ─── ARCHIVOS ESTÁTICOS (CSS, JS, IMÁGENES DE INTERFAZ) ──────────────────────
 
@@ -177,7 +182,7 @@ STATIC_URL = '/estaticos/'
 # durante el desarrollo (con collectstatic en producción). Apunta a /estaticos/ en la raíz.
 # Aquí se almacenan: hojas de estilo (CSS), scripts (JS) e íconos de la interfaz.
 # ⚠️  Desactivado temporalmente: se habilitará cuando se integren los estilos CSS.
-# STATICFILES_DIRS = [BASE_DIR / 'estaticos']
+STATICFILES_DIRS = [BASE_DIR / 'estaticos']
 
 
 # ─── ARCHIVOS MULTIMEDIA (SUBIDOS POR USUARIOS / ADMIN) ──────────────────────
