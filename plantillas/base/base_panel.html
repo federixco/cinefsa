@@ -1,0 +1,69 @@
+{% extends "base/base.html" %}
+{%--
+    base_panel.html — Template base para TODAS las páginas del panel admin.
+    Extiende base.html y agrega un sidebar de navegación lateral.
+    Las páginas del panel deben extender este template en lugar de base.html.
+--%}
+
+{% block content %}
+<div class="panel-layout">
+    <!-- Sidebar lateral -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-title">Panel Admin</span>
+            <button class="sidebar-toggle" id="btn-toggle-sidebar" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">
+                ✕
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">
+                <span class="sidebar-section-title">Infraestructura</span>
+                <a href="{% url 'panel:lista_salas' %}" class="sidebar-link {% block active_salas %}{% endblock %}">
+                    <span class="sidebar-icon">🎬</span>
+                    <span class="sidebar-text">Salas</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <span class="sidebar-section-title">Administración</span>
+                <a href="{% url 'panel:gestion_usuarios' %}" class="sidebar-link {% block active_usuarios %}{% endblock %}">
+                    <span class="sidebar-icon">👥</span>
+                    <span class="sidebar-text">Usuarios y Roles</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <span class="sidebar-section-title">Contenido</span>
+                <a href="#" class="sidebar-link disabled">
+                    <span class="sidebar-icon">🎞️</span>
+                    <span class="sidebar-text">Cartelera</span>
+                    <span class="sidebar-badge">Próx.</span>
+                </a>
+                <a href="#" class="sidebar-link disabled">
+                    <span class="sidebar-icon">🎟️</span>
+                    <span class="sidebar-text">Ventas</span>
+                    <span class="sidebar-badge">Próx.</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="/" class="sidebar-link">
+                <span class="sidebar-icon">🏠</span>
+                <span class="sidebar-text">Volver al sitio</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Botón para abrir sidebar en móvil -->
+    <button class="sidebar-open-btn" id="btn-open-sidebar" onclick="document.getElementById('sidebar').classList.remove('collapsed')">
+        ☰
+    </button>
+
+    <!-- Contenido de la página del panel -->
+    <section class="panel-content">
+        {% block panel_content %}{% endblock %}
+    </section>
+</div>
+{% endblock %}

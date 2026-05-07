@@ -1,4 +1,6 @@
-{% extends 'base/base.html' %}
+{% extends 'base/base_panel.html' %}
+
+{% block active_salas %}active{% endblock %}
 
 {% block title %}Gestión de Salas{% endblock %}
 
@@ -84,7 +86,7 @@
 </style>
 {% endblock %}
 
-{% block content %}
+{% block panel_content %}
 <div class="salas-header">
     <div>
         <h1>Gestión de Salas</h1>
@@ -129,4 +131,4 @@
     </div>
     {% endfor %}
 </div>
-{% endblock %}
+{% endblock panel_content %}

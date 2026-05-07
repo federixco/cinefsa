@@ -1,8 +1,10 @@
-{% extends "base/base.html" %}
+{% extends "base/base_panel.html" %}
+
+{% block active_usuarios %}active{% endblock %}
 
 {% block titulo %}{{ titulo_pagina }} — CineFSA{% endblock %}
 
-{% block contenido %}
+{% block panel_content %}
 <!--
     panel/gestion_usuarios.html — Plantilla del panel de gestión de usuarios (RF-A05).
 
@@ -233,4 +235,4 @@
     </p>
 {% endif %}
 
-{% endblock %}
+{% endblock panel_content %}

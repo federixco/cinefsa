@@ -1,4 +1,6 @@
-{% extends 'base/base.html' %}
+{% extends 'base/base_panel.html' %}
+
+{% block active_salas %}active{% endblock %}
 
 {% block title %}Editor de Sala: {{ sala.nombre_sala }}{% endblock %}
 
@@ -7,7 +9,7 @@
 <link rel="stylesheet" href="{% static 'css/editor.css' %}">
 {% endblock %}
 
-{% block content %}
+{% block panel_content %}
 <div class="editor-header">
     <div>
         <a href="{% url 'panel:lista_salas' %}" class="back-link">← Volver a Salas</a>
@@ -87,7 +89,7 @@
 
 <!-- CSRF Token para peticiones AJAX -->
 {% csrf_token %}
-{% endblock %}
+{% endblock panel_content %}
 
 {% block extra_js %}
 <script>
