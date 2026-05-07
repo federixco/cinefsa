@@ -1,9 +1,19 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-AR">
 <head>
+    <!--
+        base.html — Plantilla base del sistema CineFSA.
+
+        Todas las páginas del sistema extienden esta plantilla usando
+        la etiqueta 'extends base/base.html'. Define la estructura HTML común:
+        cabecera con navegación, área de mensajes flash, contenido principal
+        y pie de página.
+    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Panel de Control{% endblock %} | CineFSA</title>
+    <meta name="description" content="CineFSA — Sistema de gestión cinematográfica de Formosa. Comprá tus entradas online y evitá las filas.">
+
+    <title>{% block title %}{% block titulo %}Panel de Control{% endblock %}{% endblock %} | CineFSA</title>
     
     <!-- Google Fonts: Inter para un look limpio y moderno -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,17 +41,48 @@
                 <li><a href="#">Ventas</a></li>
             </ul>
             <div class="nav-user">
-                <span>Panel Admin</span>
+                {% if user.is_authenticated %}
+                    <!-- Menu para usuarios logueados -->
+                    <span id="info-usuario">
+                        {{ user.nombre_completo }} |
+                        <a href="{% url 'autenticacion:historial' %}" id="enlace-historial">Mi historial</a> |
+                        <form method="post" action="{% url 'autenticacion:logout' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" id="btn-cerrar-sesion">Cerrar sesión</button>
+                        </form>
+                    </span>
+                {% else %}
+                    <span>Panel Admin</span>
+                {% endif %}
             </div>
         </div>
     </nav>
 
+    <!-- Mensajes flash (notificaciones temporales) -->
+    {% if messages %}
+    <div id="contenedor-mensajes" class="main-content" style="padding-bottom: 0;">
+        {% for mensaje in messages %}
+        <p id="mensaje-{{ forloop.counter }}">
+            <strong>[{{ mensaje.tags }}]</strong> {{ mensaje }}
+        </p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- Contenido principal -->
     <main class="main-content">
         {% block content %}
+        {% block contenido %}
         <!-- Aqui se inyecta el contenido de cada pagina hija -->
         {% endblock %}
+        {% endblock %}
     </main>
+
+    <!-- Pie de página -->
+    <footer id="pie-pagina" style="text-align: center; padding: 2rem; color: var(--text-secondary); font-size: 0.85rem;">
+        <p>&copy; 2026 CineFSA — Sistema de Gestión Cinematográfica</p>
+        <p><small>Proyecto académico — Base de Datos — UFASTA Sede Formosa</small></p>
+    </footer>
 
     <!-- Bloque para cargar JS especifico de cada pagina -->
     {% block extra_js %}{% endblock %}

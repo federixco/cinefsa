@@ -1,27 +1,34 @@
-<<<<<<< Updated upstream
-# cinefsa
-=======
 # CineFSA
->>>>>>> Stashed changes
 
-## Dependencias
+Sistema de Gestión Cinematográfica. Proyecto desarrollado en Django para la administración y venta de tickets de un complejo de cines, incluyendo un editor dinámico de salas.
 
-Las dependencias principales utilizadas en el proyecto hasta ahora son:
+## 📋 Requisitos Previos
 
-- **Django** (Framework web)
-- **mysqlclient** (Conector para la base de datos MySQL)
-- **python-decouple** (Manejo de variables de entorno y configuración)
-- **Pillow** (Procesamiento y manejo de imágenes)
+- **Python 3.10+**: [Descargar Python](https://www.python.org/downloads/)
+- **XAMPP** (con MariaDB/MySQL 10.4+): [Descargar XAMPP](https://www.apachefriends.org/es/index.html)
+- **Git**
 
-### Instalación
+## ⚙️ Dependencias del Proyecto
 
-Para instalar todas las dependencias necesarias en un entorno virtual, ejecuta el siguiente comando:
+El proyecto utiliza **Django 4.2 LTS** (compatible con MariaDB 10.4 de XAMPP) y las siguientes librerías principales:
+
+- `django==4.2.30` (Framework web)
+- `mysqlclient` (Conector para la base de datos MySQL)
+- `python-decouple` (Manejo de variables de entorno y configuración)
+- `Pillow` (Procesamiento y manejo de imágenes)
+
+---
+
+## 🚀 Guía de Instalación y Configuración
+
+> **¡IMPORTANTE!**
+> Tenemos una guía detallada paso a paso para el equipo en el archivo [`GUIA_INICIO_RAPIDO.txt`](./GUIA_INICIO_RAPIDO.txt). Si eres parte del equipo de desarrollo, por favor lee ese archivo, ya que contiene explicaciones detalladas sobre el flujo de trabajo y la arquitectura de Django.
+
+A continuación se presenta un resumen rápido para poner el proyecto en marcha:
+
+### 1. Clonar el repositorio
 
 ```bash
-<<<<<<< Updated upstream
-pip install django mysqlclient python-decouple Pillow
-```
-=======
 git clone <URL_DEL_REPOSITORIO>
 cd cinefsa
 ```
@@ -82,5 +89,3 @@ El proyecto sigue una estructura personalizada y en español:
 - `multimedia/`: Archivos subidos por los usuarios (pósters, etc.).
 
 Para más detalles sobre cómo crear nuevos módulos o vistas, consultar `GUIA_INICIO_RAPIDO.txt`.
->>>>>>> Stashed changes
-            

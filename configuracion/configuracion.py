@@ -139,6 +139,7 @@ DATABASES = {
             # utf8mb4 es el conjunto completo de Unicode (incluye emojis y caracteres especiales),
             # necesario para almacenar correctamente nombres, sinopsis y títulos en español.
             'charset': 'utf8mb4',
+            'sql_mode': 'STRICT_TRANS_TABLES',
         },
     }
 }
@@ -175,7 +176,8 @@ STATIC_URL = '/estaticos/'
 # STATICFILES_DIRS: Directorios del filesystem donde Django buscará archivos estáticos
 # durante el desarrollo (con collectstatic en producción). Apunta a /estaticos/ en la raíz.
 # Aquí se almacenan: hojas de estilo (CSS), scripts (JS) e íconos de la interfaz.
-STATICFILES_DIRS = [BASE_DIR / 'estaticos']
+# ⚠️  Desactivado temporalmente: se habilitará cuando se integren los estilos CSS.
+# STATICFILES_DIRS = [BASE_DIR / 'estaticos']
 
 
 # ─── ARCHIVOS MULTIMEDIA (SUBIDOS POR USUARIOS / ADMIN) ──────────────────────
@@ -197,3 +199,24 @@ MEDIA_ROOT = BASE_DIR / 'multimedia'
 # BigAutoField = entero de 64 bits autoincremental (soporta hasta 9.2 × 10^18 registros),
 # suficiente para el volumen de ventas y tickets del sistema a largo plazo.
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ─── AUTENTICACIÓN ────────────────────────────────────────────────────────────
+
+# AUTH_USER_MODEL: Le indica a Django qué modelo usar como usuario del sistema.
+# Por defecto Django usa 'auth.User'. Al apuntar a nuestro modelo 'Usuario',
+# todo el sistema de autenticación (login, sesiones, permisos, panel admin)
+# trabaja automáticamente con nuestra tabla 'usuario' de la base de datos.
+# IMPORTANTE: Esta línea debe estar definida ANTES de correr la primera migración.
+# Cambiarla después de migrar requiere resetear la base de datos.
+AUTH_USER_MODEL = 'sistema_cine.Usuario'
+
+# LOGIN_URL: URL a la que Django redirige automáticamente cuando un usuario
+# intenta acceder a una vista protegida con @login_required sin estar logueado.
+LOGIN_URL = '/auth/login/'
+
+# LOGIN_REDIRECT_URL: URL a la que Django redirige después de un login exitoso
+# si no había una página de destino previa guardada en sesión.
+LOGIN_REDIRECT_URL = '/'
+
+# LOGOUT_REDIRECT_URL: URL a la que Django redirige después de cerrar sesión.
+LOGOUT_REDIRECT_URL = '/auth/login/'

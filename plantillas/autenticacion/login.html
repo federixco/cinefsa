@@ -1,0 +1,69 @@
+{% extends 'base/base.html' %}
+{# ──────────────────────────────────────────────────────────────────────────
+   login.html — Página de inicio de sesión (RF-C01).
+
+   Muestra el formulario de login con email y contraseña.
+   Si las credenciales son inválidas, muestra los errores del formulario.
+   Incluye un enlace al formulario de registro para nuevos usuarios.
+   ────────────────────────────────────────────────────────────────────────── #}
+
+{% block titulo %}{{ titulo_pagina }} — CineFSA{% endblock %}
+
+{% block contenido %}
+<div id="tarjeta-login">
+
+    <h1>Iniciar sesión</h1>
+    <p>Ingresá con tu correo electrónico y contraseña</p>
+
+    <!-- Errores generales del formulario (credenciales inválidas, etc.) -->
+    {% if formulario.non_field_errors %}
+    <ul id="errores-login">
+        {% for error in formulario.non_field_errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- Formulario -->
+    <form method="post" action="{% url 'autenticacion:login' %}" id="formulario-login" novalidate>
+        {% csrf_token %}
+
+        <!-- Campo: Correo electrónico -->
+        <div>
+            <label for="id_username">{{ formulario.username.label }}</label><br>
+            {{ formulario.username }}
+            {% if formulario.username.errors %}
+            <ul>
+                {% for error in formulario.username.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        <br>
+
+        <!-- Campo: Contraseña -->
+        <div>
+            <label for="id_password">{{ formulario.password.label }}</label><br>
+            {{ formulario.password }}
+            {% if formulario.password.errors %}
+            <ul>
+                {% for error in formulario.password.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        <br>
+
+        <!-- Botón de envío -->
+        <button type="submit" id="btn-iniciar-sesion">Iniciar sesión</button>
+    </form>
+
+    <p>
+        ¿No tenés cuenta?
+        <a href="{% url 'autenticacion:registro' %}" id="enlace-ir-registro">Crear cuenta</a>
+    </p>
+
+</div>
+{% endblock %}
