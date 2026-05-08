@@ -11,7 +11,7 @@ Aquí se registran las rutas del panel de gestión:
 """
 
 from django.urls import path
-from vistas.editor_sala import lista_salas, editor_sala, guardar_layout
+from vistas.editor_sala import lista_salas, editor_sala, guardar_layout, crear_sala, toggle_estado_sala
 from vistas.panel.gestion_usuarios import (
     panel_usuarios_view,
     asignar_empleado_view,
@@ -25,8 +25,10 @@ app_name = 'panel'
 urlpatterns = [
     # ── RF-A01: Editor Dinámico de Salas ──────────────────────────────────────
     path('salas/', lista_salas, name='lista_salas'),
+    path('salas/crear/', crear_sala, name='crear_sala'),
     path('salas/<int:sala_id>/editor/', editor_sala, name='editor_sala'),
     path('salas/<int:sala_id>/guardar-layout/', guardar_layout, name='guardar_layout'),
+    path('salas/<int:sala_id>/toggle-estado/', toggle_estado_sala, name='toggle_estado_sala'),
 
     # ── RF-A05: Gestión de Usuarios y Permisos ───────────────────────────────
     path('usuarios/', panel_usuarios_view, name='gestion_usuarios'),

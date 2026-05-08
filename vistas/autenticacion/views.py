@@ -112,7 +112,6 @@ def login_view(request):
             # Redirigir a la página solicitada originalmente (si existe)
             # o al portal de inicio por defecto.
             siguiente = request.GET.get('next', '/')
-            messages.success(request, f'¡Hola, {usuario.nombre_completo}!')
             return redirect(siguiente)
     else:
         formulario = FormularioLogin()

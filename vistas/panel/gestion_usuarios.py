@@ -89,61 +89,80 @@ def panel_usuarios_view(request):
     Vista principal del panel de gestión de usuarios (RF-A05).
 
     GET:
-        Muestra el panel con el formulario de búsqueda.
-        Si se envía un término de búsqueda, filtra los usuarios registrados
-        por nombre completo o email (búsqueda parcial, sin distinción de mayúsculas).
-        Para cada usuario encontrado, indica si ya tiene rol de Empleado o Administrador.
+        Carga TODOS los usuarios registrados al entrar a la página.
+        Soporta dos filtros combinables via parámetros GET:
+            - ?busqueda=texto  → filtra por nombre completo o email (parcial, case-insensitive).
+            - ?rol=cliente|empleado|admin  → filtra por rol actual del usuario.
+        Si no se envía ningún filtro, se muestran todos los usuarios.
 
     Contexto enviado a la plantilla:
-        - formulario_busqueda: instancia del FormularioBusquedaUsuario.
         - formulario_asignar: instancia del FormularioAsignarEmpleado (modal de asignación).
         - usuarios: lista de diccionarios con info del usuario + su rol actual.
         - termino_busqueda: el texto ingresado (para mantenerlo en el input).
+        - filtro_rol: el filtro de rol activo ('todos', 'cliente', 'empleado', 'admin').
+        - stats: diccionario con contadores por rol para las tarjetas de estadísticas.
     """
-    # Instanciar formulario de búsqueda con los datos GET (o vacío si no hay búsqueda)
-    formulario_busqueda = FormularioBusquedaUsuario(request.GET or None)
-
     # Instanciar formulario de asignación (para el modal de "Asignar como Empleado")
     formulario_asignar = FormularioAsignarEmpleado()
 
-    # Lista de usuarios a mostrar (vacía por defecto si no hay búsqueda)
-    usuarios_con_roles = []
-    termino_busqueda = ''
+    # ── Leer filtros GET ──
+    termino_busqueda = request.GET.get('busqueda', '').strip()
+    filtro_rol = request.GET.get('rol', 'todos')
 
-    if formulario_busqueda.is_valid():
-        # Extraer el término de búsqueda validado
-        termino_busqueda = formulario_busqueda.cleaned_data['busqueda']
+    # ── Estadísticas globales (siempre se calculan, independientes de los filtros) ──
+    ids_empleados = set(Empleado.objects.values_list('usuario_id_usuario_id', flat=True))
+    ids_admins = set(Administrador.objects.values_list('usuario_id_usuario_id', flat=True))
+    total_usuarios = Usuario.objects.count()
 
-        # Buscar usuarios cuyos nombre_completo o email contengan el término
-        # Q() permite combinar condiciones OR en una consulta Django ORM
-        usuarios_encontrados = Usuario.objects.filter(
+    stats = {
+        'total': total_usuarios,
+        'empleados': len(ids_empleados),
+        'admins': len(ids_admins),
+        'clientes': total_usuarios - len(ids_empleados) - len(ids_admins),
+    }
+
+    # ── Construir queryset base (todos los usuarios) ──
+    usuarios_queryset = Usuario.objects.all().order_by('nombre_completo')
+
+    # Filtro por búsqueda de texto (nombre o email)
+    if termino_busqueda:
+        usuarios_queryset = usuarios_queryset.filter(
             Q(nombre_completo__icontains=termino_busqueda) |
             Q(email__icontains=termino_busqueda)
-        ).order_by('nombre_completo')
+        )
 
-        # Para cada usuario encontrado, determinar su rol actual
-        for usuario in usuarios_encontrados:
-            es_empleado = Empleado.objects.filter(
+    # Filtro por rol
+    if filtro_rol == 'empleado':
+        usuarios_queryset = usuarios_queryset.filter(id__in=ids_empleados)
+    elif filtro_rol == 'admin':
+        usuarios_queryset = usuarios_queryset.filter(id__in=ids_admins)
+    elif filtro_rol == 'cliente':
+        usuarios_queryset = usuarios_queryset.exclude(
+            id__in=ids_empleados | ids_admins
+        )
+
+    # ── Enriquecer cada usuario con info de rol ──
+    usuarios_con_roles = []
+    for usuario in usuarios_queryset:
+        es_empleado_obj = None
+        if usuario.id in ids_empleados:
+            es_empleado_obj = Empleado.objects.filter(
                 usuario_id_usuario=usuario
-            ).first()  # Retorna el objeto Empleado o None
+            ).first()
 
-            es_administrador = Administrador.objects.filter(
-                usuario_id_usuario=usuario
-            ).exists()  # Solo necesitamos saber si existe, no el objeto completo
-
-            # Agregar a la lista con información de rol enriquecida
-            usuarios_con_roles.append({
-                'usuario': usuario,
-                'es_empleado': es_empleado,           # Objeto Empleado o None
-                'es_administrador': es_administrador,  # True o False
-            })
+        usuarios_con_roles.append({
+            'usuario': usuario,
+            'es_empleado': es_empleado_obj,
+            'es_administrador': usuario.id in ids_admins,
+        })
 
     return render(request, 'panel/gestion_usuarios.html', {
-        'formulario_busqueda': formulario_busqueda,
         'formulario_asignar': formulario_asignar,
         'usuarios': usuarios_con_roles,
         'termino_busqueda': termino_busqueda,
-        'titulo_pagina': 'Panel de gestión de usuarios',
+        'filtro_rol': filtro_rol,
+        'stats': stats,
+        'titulo_pagina': 'Gestión de Usuarios y Roles',
     })
 
 
@@ -151,30 +170,54 @@ def panel_usuarios_view(request):
 #  VISTA: ASIGNAR ROL DE EMPLEADO
 # ══════════════════════════════════════════════════════════════════════════════
 
+def _generar_id_validador():
+    """
+    Genera el próximo id_validador en formato EMP-XXXX (secuencial).
+
+    Busca el mayor número existente entre los id_validador con formato EMP-XXXX,
+    lo incrementa en 1 y devuelve el nuevo código formateado con zero-padding
+    a 4 dígitos. Si no hay empleados previos, empieza desde EMP-0001.
+
+    Retorna:
+        str: Código en formato 'EMP-0001', 'EMP-0002', etc.
+    """
+    ultimo_numero = 0
+    empleados = Empleado.objects.filter(
+        id_validador__startswith='EMP-'
+    ).values_list('id_validador', flat=True)
+
+    for codigo in empleados:
+        try:
+            numero = int(codigo.split('-')[1])
+            if numero > ultimo_numero:
+                ultimo_numero = numero
+        except (IndexError, ValueError):
+            continue
+
+    return f'EMP-{ultimo_numero + 1:04d}'
+
+
 @solo_administrador
 def asignar_empleado_view(request):
     """
     Vista para elevar el privilegio de un usuario al rol de Empleado (RF-A05).
 
-    Solo acepta método POST (enviado desde el formulario del panel).
+    Solo acepta método POST (enviado desde el modal del panel).
     No tiene GET propio; si se accede directamente, redirige al panel.
 
     Proceso:
         1. Obtiene el usuario objetivo por su ID (404 si no existe).
         2. Verifica que no sea un Administrador (no se puede degradar a un admin).
         3. Verifica que no tenga ya un registro de Empleado (evitar duplicados).
-        4. Valida el formulario con id_validador y terminal_venta.
-        5. Crea el registro en la tabla 'empleado'.
-        6. Redirige al panel con mensaje de éxito.
+        4. Auto-genera el id_validador en formato EMP-XXXX (secuencial).
+        5. Valida el formulario con terminal_venta.
+        6. Crea el registro en la tabla 'empleado'.
+        7. Redirige al panel con mensaje de éxito que incluye el código generado.
     """
     if request.method != 'POST':
-        # Si alguien intenta acceder por GET, redirigir al panel
         return redirect('panel:gestion_usuarios')
 
-    # Obtener el ID del usuario objetivo desde el formulario oculto
     usuario_id = request.POST.get('usuario_id')
-
-    # Buscar el usuario o devolver error 404 si no existe
     usuario_objetivo = get_object_or_404(Usuario, pk=usuario_id)
 
     # Verificación 1: No se puede asignar el rol de empleado a otro administrador
@@ -202,22 +245,24 @@ def asignar_empleado_view(request):
         )
         return redirect('panel:gestion_usuarios')
 
-    # Validar el formulario con los datos del POST (id_validador y terminal_venta)
+    # Validar el formulario (solo terminal_venta)
     formulario_asignar = FormularioAsignarEmpleado(request.POST)
 
     if formulario_asignar.is_valid():
-        # Crear el registro en la tabla 'empleado'
+        # Auto-generar el id_validador en formato EMP-XXXX
+        id_validador = _generar_id_validador()
+
         Empleado.objects.create(
             usuario_id_usuario=usuario_objetivo,
-            id_validador=formulario_asignar.cleaned_data['id_validador'],
+            id_validador=id_validador,
             terminal_venta=formulario_asignar.cleaned_data['terminal_venta'],
         )
         messages.success(
             request,
-            f'✅ Se asignó el rol de Empleado a {usuario_objetivo.nombre_completo} correctamente.'
+            f'Se asignó el rol de Empleado a {usuario_objetivo.nombre_completo}. '
+            f'ID de validador asignado: {id_validador}'
         )
     else:
-        # El formulario tiene errores: informar al administrador
         errores = '; '.join([
             f"{campo}: {', '.join(errs)}"
             for campo, errs in formulario_asignar.errors.items()
@@ -261,7 +306,7 @@ def revocar_empleado_view(request):
         empleado.delete()
         messages.success(
             request,
-            f'✅ Se revocó el rol de Empleado de {usuario_objetivo.nombre_completo} correctamente. '
+            f'Se revocó el rol de Empleado de {usuario_objetivo.nombre_completo} correctamente. '
             f'El usuario sigue siendo Cliente del sistema.'
         )
     except Empleado.DoesNotExist:

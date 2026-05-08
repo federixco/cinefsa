@@ -32,18 +32,15 @@
     <nav class="navbar">
         <div class="nav-container">
             <!-- Logo -->
-            <a href="/" class="nav-brand">
+            <a href="{% url 'inicio' %}" class="nav-brand">
                 <span class="brand-cine">Cine</span><span class="brand-fsa">FSA</span>
             </a>
 
-            <!-- Links centrales (solo si esta logueado) -->
-            {% if user.is_authenticated %}
+            <!-- Links centrales (visibles para todos) -->
             <ul class="nav-links">
-                <li><a href="{% url 'panel:lista_salas' %}">Salas</a></li>
-                <li><a href="#">Cartelera</a></li>
-                <li><a href="#">Ventas</a></li>
+                <li><a href="{% url 'inicio' %}">Cartelera</a></li>
+                <li><a href="{% url 'inicio' %}#proximamente">Próximamente</a></li>
             </ul>
-            {% endif %}
 
             <!-- Lado derecho del navbar -->
             <div class="nav-right">
@@ -62,14 +59,14 @@
                             <span class="dropdown-email">{{ user.email }}</span>
                         </div>
                         <div class="dropdown-divider"></div>
-                        <a href="{% url 'autenticacion:historial' %}" class="dropdown-item">📋 Mi historial</a>
+                        <a href="{% url 'autenticacion:historial' %}" class="dropdown-item">Mi historial</a>
                         {% if user.is_staff %}
-                        <a href="{% url 'panel:lista_salas' %}" class="dropdown-item">⚙️ Panel Admin</a>
+                        <a href="{% url 'panel:lista_salas' %}" class="dropdown-item">Panel Admin</a>
                         {% endif %}
                         <div class="dropdown-divider"></div>
                         <form method="post" action="{% url 'autenticacion:logout' %}">
                             {% csrf_token %}
-                            <button type="submit" class="dropdown-item dropdown-logout">🚪 Cerrar sesión</button>
+                            <button type="submit" class="dropdown-item dropdown-logout">Cerrar sesión</button>
                         </form>
                     </div>
                 {% else %}
@@ -80,17 +77,6 @@
             </div>
         </div>
     </nav>
-
-    <!-- Mensajes flash (notificaciones temporales) -->
-    {% if messages %}
-    <div id="contenedor-mensajes" class="main-content" style="padding-bottom: 0;">
-        {% for mensaje in messages %}
-        <p id="mensaje-{{ forloop.counter }}">
-            <strong>[{{ mensaje.tags }}]</strong> {{ mensaje }}
-        </p>
-        {% endfor %}
-    </div>
-    {% endif %}
 
     <!-- Contenido principal -->
     <main class="main-content">

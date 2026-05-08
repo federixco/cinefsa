@@ -1,10 +1,12 @@
 {% extends 'base/base_panel.html' %}
+{% load static %}
 
 {% block active_salas %}active{% endblock %}
 
 {% block title %}Gestión de Salas{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/panel_usuarios.css' %}">
 <style>
     /* Estilos especificos para la grilla de tarjetas de salas */
     .salas-header {
@@ -50,12 +52,12 @@
 
     .badge-activa {
         background-color: rgba(16, 185, 129, 0.2);
-        color: #10b981; /* Verde */
+        color: #10b981;
     }
 
     .badge-mantenimiento {
         background-color: rgba(245, 158, 11, 0.2);
-        color: #f59e0b; /* Naranja */
+        color: #f59e0b;
     }
 
     .sala-info {
@@ -92,8 +94,7 @@
         <h1>Gestión de Salas</h1>
         <p style="color: var(--text-secondary);">Administra la capacidad y el diseño de asientos del complejo.</p>
     </div>
-    <!-- Por ahora este boton no hace nada, despues podemos hacer un modal -->
-    <button class="btn btn-primary">+ Nueva Sala</button>
+    <button class="btn btn-primary" id="btn-nueva-sala" type="button">+ Nueva Sala</button>
 </div>
 
 <div class="salas-grid">
@@ -120,15 +121,111 @@
         </div>
 
         <div class="sala-actions">
-            <!-- Link apunta al editor interactivo de la sala -->
             <a href="{% url 'panel:editor_sala' sala.id %}" class="btn btn-primary" style="flex: 1;">Diseñar Layout</a>
+            <form method="post" action="{% url 'panel:toggle_estado_sala' sala.id %}" style="flex: 0;">
+                {% csrf_token %}
+                {% if sala.estado == 'activa' %}
+                <button type="submit" class="btn btn-secondary" onclick="return confirm('¿Poner la sala {{ sala.nombre_sala }} en mantenimiento?')" title="Poner en mantenimiento">Desactivar</button>
+                {% else %}
+                <button type="submit" class="btn btn-secondary" onclick="return confirm('¿Activar la sala {{ sala.nombre_sala }}?')" title="Activar sala">Activar</button>
+                {% endif %}
+            </form>
         </div>
     </div>
     {% empty %}
     <div class="empty-state">
         <h3>No hay salas creadas todavía</h3>
-        <p style="color: var(--text-secondary);">Para probar el editor, primero crea una sala desde el botón superior o desde el panel /admin/.</p>
+        <p style="color: var(--text-secondary);">Creá una sala desde el botón "+ Nueva Sala" para empezar a diseñar layouts.</p>
     </div>
     {% endfor %}
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODAL: CREAR NUEVA SALA
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-crear-sala">
+    <div class="modal-contenido">
+        <div class="modal-header">
+            <h3>Crear nueva sala</h3>
+            <button type="button" class="modal-close" id="btn-cerrar-modal-sala">✕</button>
+        </div>
+
+        <form method="post" action="{% url 'panel:crear_sala' %}" id="form-crear-sala">
+            {% csrf_token %}
+
+            <div class="modal-campo">
+                <label for="input-nombre-sala">Nombre de la sala</label>
+                <input
+                    type="text"
+                    name="nombre_sala"
+                    id="input-nombre-sala"
+                    maxlength="100"
+                    placeholder="Ej: Sala IMAX"
+                    required
+                >
+                <div class="help-text">Nombre único para identificar la sala.</div>
+            </div>
+
+
+
+            <div class="modal-campo">
+                <label for="input-estado">Estado inicial</label>
+                <select name="estado" id="input-estado" style="
+                    width: 100%;
+                    padding: 0.65rem 0.75rem;
+                    background-color: rgba(0, 0, 0, 0.2);
+                    border: 1px solid var(--border-color);
+                    border-radius: var(--border-radius);
+                    color: var(--text-primary);
+                    font-size: 0.9rem;
+                    font-family: inherit;
+                ">
+                    <option value="activa">Activa (operativa)</option>
+                    <option value="mantenimiento">En mantenimiento</option>
+                </select>
+            </div>
+
+            <div class="modal-acciones">
+                <button type="button" class="btn btn-secondary" id="btn-cancelar-sala">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Crear sala</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% endblock panel_content %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('modal-crear-sala');
+    const btnAbrir = document.getElementById('btn-nueva-sala');
+    const btnCerrar = document.getElementById('btn-cerrar-modal-sala');
+    const btnCancelar = document.getElementById('btn-cancelar-sala');
+    const inputNombre = document.getElementById('input-nombre-sala');
+
+    function abrirModal() {
+        modal.classList.add('visible');
+        setTimeout(() => inputNombre.focus(), 100);
+    }
+
+    function cerrarModal() {
+        modal.classList.remove('visible');
+    }
+
+    btnAbrir.addEventListener('click', abrirModal);
+    btnCerrar.addEventListener('click', cerrarModal);
+    btnCancelar.addEventListener('click', cerrarModal);
+
+    // Cerrar con Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('visible')) cerrarModal();
+    });
+
+    // Cerrar al hacer clic fuera del modal
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) cerrarModal();
+    });
+});
+</script>
+{% endblock %}

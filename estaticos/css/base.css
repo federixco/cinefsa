@@ -526,3 +526,47 @@ h1 {
     overflow-y: auto;
     max-width: 100%;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MENSAJES FLASH — Notificaciones estilizadas del framework messages de Django.
+   Se renderizan en base_panel.html dentro del panel-content.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.flash-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.flash-msg {
+    padding: 0.85rem 1.25rem;
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    animation: flashIn 0.3s ease-out;
+}
+
+@keyframes flashIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.flash-msg.success {
+    background-color: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: #34d399;
+}
+
+.flash-msg.error {
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #f87171;
+}
+
+.flash-msg.warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    color: #fbbf24;
+}

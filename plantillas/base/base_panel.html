@@ -63,6 +63,16 @@
 
     <!-- Contenido de la página del panel -->
     <section class="panel-content">
+        <!-- Mensajes flash estilizados para páginas del panel -->
+        {% if messages %}
+        <div class="flash-messages">
+            {% for message in messages %}
+            <div class="flash-msg {{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% block panel_content %}{% endblock %}
     </section>
 </div>
