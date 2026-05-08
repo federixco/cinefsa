@@ -51,30 +51,15 @@ class FormularioAsignarEmpleado(forms.Form):
     """
     Formulario para asignar el rol de Empleado a un usuario (RF-A05).
 
-    Se muestra como un modal o sección expandible dentro del panel cuando
-    el administrador hace clic en "Asignar como Empleado".
+    Se muestra como un modal dentro del panel cuando el administrador
+    hace clic en "Asignar como Empleado".
 
     Campos:
-        - id_validador:   Código único del empleado para el sistema de validación QR.
-                          Debe ser único en toda la tabla 'empleado' (validado en la BD).
         - terminal_venta: Número de la terminal/caja asignada al empleado (entero positivo).
 
-    Estos datos son obligatorios según el modelo Empleado definido en
-    modelos/identidad/usuario.py (ambos campos no tienen default).
+    Nota: El campo 'id_validador' se auto-genera en la vista con formato EMP-XXXX
+    (secuencial) al momento de crear el registro. No se solicita al administrador.
     """
-
-    id_validador = forms.CharField(
-        max_length=50,
-        label='ID de validador (QR)',
-        widget=forms.TextInput(attrs={
-            'placeholder': 'Ej: EMP-2026-001',
-            'id': 'campo-id-validador',
-        }),
-        help_text=(
-            'Código único que identifica al empleado en el sistema de '
-            'validación de entradas QR en la puerta de acceso.'
-        ),
-    )
 
     terminal_venta = forms.IntegerField(
         min_value=1,  # No se permite 0 ni números negativos
