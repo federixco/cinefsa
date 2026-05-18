@@ -1,0 +1,396 @@
+{% extends 'base/base_panel.html' %}
+{% load static %}
+
+{% block active_cartelera %}active{% endblock %}
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/panel_usuarios.css' %}">
+<link rel="stylesheet" href="{% static 'css/cartelera.css' %}">
+<style>
+    /* ── Tabs de filtro por estado ──────────────────────────── */
+    .filtro-tabs {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.25rem;
+    }
+
+    .tab-filtro {
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-decoration: none;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        background: transparent;
+        transition: all var(--transition-speed);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .tab-filtro:hover {
+        background: rgba(255,255,255,0.05);
+        color: var(--text-primary);
+    }
+
+    .tab-filtro.activo {
+        background: rgba(147, 51, 234, 0.15);
+        border-color: var(--accent-primary);
+        color: var(--accent-primary);
+        font-weight: 600;
+    }
+
+    .tab-badge {
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 0.05rem 0.4rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .tab-filtro.activo .tab-badge {
+        background: rgba(147, 51, 234, 0.3);
+    }
+
+    /* Badges de estado de la película en la tabla */
+    .badge-estado-cartelera    { background: rgba(16,185,129,0.15); color: #34d399; }
+    .badge-estado-proximamente { background: rgba(245,158,11,0.15); color: #fbbf24; }
+    .badge-estado-retirada     { background: rgba(156,163,175,0.12); color: #9ca3af; }
+
+    /* ── Fila de detalle expandible ─────────────────────────── */
+    .fila-detalle {
+        background: rgba(0,0,0,0.12);
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .fila-detalle td {
+        padding: 0 !important;
+    }
+
+    .detalle-contenido {
+        display: none;
+        padding: 1rem 1.5rem;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        animation: fadeIn 0.2s ease;
+    }
+
+    .fila-pelicula.abierto + .fila-detalle .detalle-contenido {
+        display: flex;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .detalle-poster {
+        flex-shrink: 0;
+    }
+
+    .detalle-poster img {
+        width: 70px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+    }
+
+    .detalle-info {
+        flex: 1;
+        min-width: 260px;
+    }
+
+    .detalle-sinopsis {
+        font-size: 0.88rem;
+        color: var(--text-secondary);
+        line-height: 1.55;
+        margin-bottom: 0.6rem;
+        white-space: pre-wrap;
+    }
+
+    .detalle-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        align-items: center;
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+    }
+
+    .btn-ver-detalle {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-size: 0.8rem;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        transition: color var(--transition-speed);
+        font-family: inherit;
+    }
+
+    .btn-ver-detalle:hover {
+        color: var(--text-primary);
+    }
+</style>
+{% endblock %}
+
+{% block panel_content %}
+<!--
+    panel/gestion_peliculas.html — Lista de películas (RF-A02).
+    Mejoras:
+        - Tabs de filtro por estado (todos / en cartelera / próximamente / retiradas).
+        - Filas expandibles con sinopsis, géneros, duración y póster.
+        - Badge de estado por fila.
+-->
+<div class="cartelera-header">
+    <div>
+        <h1>🎬 Gestión de Películas</h1>
+        <p class="subtitulo">Administrá el catálogo, el estado en cartelera y los detalles de cada película.</p>
+    </div>
+    <div class="header-acciones">
+        <a href="{% url 'panel:listar_generos' %}" class="btn btn-secondary" id="btn-ir-generos">
+            🎭 Géneros
+        </a>
+        <a href="{% url 'panel:listar_funciones' %}" class="btn btn-secondary" id="btn-ir-funciones">
+            📅 Funciones
+        </a>
+        <a href="{% url 'panel:crear_pelicula' %}" class="btn btn-primary" id="btn-nueva-pelicula">
+            + Nueva Película
+        </a>
+    </div>
+</div>
+
+<!-- ══════ TABS DE FILTRO POR ESTADO ════════════════════════════════════════ -->
+<nav class="filtro-tabs" id="filtro-peliculas-tabs" aria-label="Filtrar por estado">
+    <a href="?filtro=todos"
+       class="tab-filtro {% if filtro_activo == 'todos' %}activo{% endif %}"
+       id="tab-todos">
+        Todas <span class="tab-badge">{{ conteo_total }}</span>
+    </a>
+    <a href="?filtro=cartelera"
+       class="tab-filtro {% if filtro_activo == 'cartelera' %}activo{% endif %}"
+       id="tab-cartelera">
+        🎞️ En cartelera <span class="tab-badge">{{ conteo_cartelera }}</span>
+    </a>
+    <a href="?filtro=proximamente"
+       class="tab-filtro {% if filtro_activo == 'proximamente' %}activo{% endif %}"
+       id="tab-proximamente">
+        🔜 Próximamente <span class="tab-badge">{{ conteo_proximamente }}</span>
+    </a>
+    <a href="?filtro=retirada"
+       class="tab-filtro {% if filtro_activo == 'retirada' %}activo{% endif %}"
+       id="tab-retirada">
+        📦 Retiradas <span class="tab-badge">{{ conteo_retirada }}</span>
+    </a>
+</nav>
+
+<!-- ══════ TABLA DE PELÍCULAS ═══════════════════════════════════════════════ -->
+<div class="tabla-container">
+    <div class="tabla-info">
+        <span class="resultado-count">
+            <strong>{{ peliculas|length }}</strong> película{{ peliculas|length|pluralize }} en esta vista
+        </span>
+    </div>
+
+    {% if peliculas %}
+    <table class="tabla-cartelera" id="tabla-peliculas">
+        <thead>
+            <tr>
+                <th style="width:30px;"></th><!-- Expandir -->
+                <th>Póster</th>
+                <th>Título</th>
+                <th>Estado</th>
+                <th>Clasif.</th>
+                <th>Duración</th>
+                <th>Funciones</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pelicula in peliculas %}
+            <!-- Fila principal -->
+            <tr class="fila-pelicula" id="fila-pelicula-{{ pelicula.pk }}"
+                data-id="{{ pelicula.pk }}" style="cursor:pointer;">
+
+                <!-- Botón expandir -->
+                <td style="text-align:center; width:30px;">
+                    <button class="btn-ver-detalle" id="btn-detalle-{{ pelicula.pk }}"
+                            title="Ver detalles" data-id="{{ pelicula.pk }}">▶</button>
+                </td>
+
+                <!-- Póster en miniatura -->
+                <td style="text-align:center; width:52px;">
+                    {% if pelicula.imagen_poster %}
+                        <img src="{{ pelicula.imagen_poster.url }}"
+                             alt="Póster de {{ pelicula.titulo }}"
+                             class="poster-mini"
+                             id="poster-{{ pelicula.pk }}">
+                    {% else %}
+                        <div class="sin-poster" id="sin-poster-{{ pelicula.pk }}" title="Sin póster">🎞️</div>
+                    {% endif %}
+                </td>
+
+                <!-- Título -->
+                <td class="col-titulo">{{ pelicula.titulo }}</td>
+
+                <!-- Estado con badge de color -->
+                <td id="estado-{{ pelicula.pk }}">
+                    {% if pelicula.estado == 'cartelera' %}
+                        <span class="badge badge-estado-cartelera">🎞️ En cartelera</span>
+                    {% elif pelicula.estado == 'proximamente' %}
+                        <span class="badge badge-estado-proximamente">🔜 Próximamente</span>
+                    {% else %}
+                        <span class="badge badge-estado-retirada">📦 Retirada</span>
+                    {% endif %}
+                </td>
+
+                <!-- Clasificación con badge de color -->
+                <td>
+                    <span class="badge badge-{{ pelicula.clasificacion }}">
+                        {{ pelicula.get_clasificacion_display }}
+                    </span>
+                </td>
+
+                <!-- Duración -->
+                <td>{{ pelicula.duracion_minutos }} min</td>
+
+                <!-- Cantidad de funciones programadas -->
+                <td style="text-align:center;" id="funciones-count-{{ pelicula.pk }}">
+                    <span class="badge badge-funciones">{{ pelicula.funciones.count }}</span>
+                </td>
+
+                <!-- Acciones -->
+                <td>
+                    <div class="acciones-cell">
+                        <a href="{% url 'panel:editar_pelicula' pelicula.pk %}"
+                           class="btn-editar-row"
+                           id="btn-editar-pelicula-{{ pelicula.pk }}">
+                            ✏️ Editar
+                        </a>
+                        <form method="post"
+                              action="{% url 'panel:eliminar_pelicula' pelicula.pk %}"
+                              id="form-eliminar-pelicula-{{ pelicula.pk }}"
+                              style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="btn-eliminar-row btn-confirmar-eliminar-pelicula"
+                                    id="btn-eliminar-pelicula-{{ pelicula.pk }}"
+                                    data-titulo="{{ pelicula.titulo }}"
+                                    data-funciones="{{ pelicula.funciones.count }}">
+                                🗑️
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Fila de detalle expandible (inicialmente oculta) -->
+            <tr class="fila-detalle" id="detalle-pelicula-{{ pelicula.pk }}">
+                <td colspan="8">
+                    <div class="detalle-contenido" id="contenido-detalle-{{ pelicula.pk }}">
+
+                        <!-- Póster grande -->
+                        {% if pelicula.imagen_poster %}
+                        <div class="detalle-poster">
+                            <img src="{{ pelicula.imagen_poster.url }}" alt="Póster de {{ pelicula.titulo }}">
+                        </div>
+                        {% endif %}
+
+                        <!-- Información detallada -->
+                        <div class="detalle-info">
+                            <p class="detalle-sinopsis">{{ pelicula.sinopsis }}</p>
+                            <div class="detalle-meta">
+                                <!-- Géneros -->
+                                {% for genero in pelicula.generos.all %}
+                                    <span class="badge-genero">{{ genero.descripcion }}</span>
+                                {% empty %}
+                                    <span style="opacity:0.4; font-size:0.8rem;">Sin géneros</span>
+                                {% endfor %}
+
+                                <!-- Separador -->
+                                <span style="margin: 0 0.25rem; opacity:0.3;">|</span>
+
+                                <!-- Duración -->
+                                <span>🕐 {{ pelicula.duracion_minutos }} min</span>
+
+                                <!-- Clasificación -->
+                                <span class="badge badge-{{ pelicula.clasificacion }}" style="font-size:0.72rem;">
+                                    {{ pelicula.get_clasificacion_display }}
+                                </span>
+
+                                <!-- Clásica -->
+                                {% if pelicula.es_clasica %}
+                                    <span class="badge badge-clasica" style="font-size:0.72rem;">⭐ Clásica</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state" id="estado-vacio-peliculas">
+        <div class="empty-icon">🎬</div>
+        <p>No hay películas en este estado. Podés <a href="?filtro=todos" style="color:var(--accent-primary);">ver todas</a> o crear una nueva.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock panel_content %}
+
+{% block extra_js %}
+<script>
+/**
+ * gestion_peliculas.js — Interactividad del listado de películas.
+ *
+ * 1. Filas expandibles: al hacer clic en el botón ▶ o en la fila,
+ *    muestra/oculta la fila de detalle con sinopsis, géneros, etc.
+ *    El botón rota 90° para indicar el estado.
+ *
+ * 2. Confirmación de eliminación: usa data-titulo y data-funciones
+ *    para armar un mensaje informativo sin conflictos de comillas.
+ */
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ── 1. Filas expandibles ──────────────────────────────────────────────────
+    document.querySelectorAll('.fila-pelicula').forEach(function (fila) {
+        fila.addEventListener('click', function (e) {
+            // Ignorar el clic si fue en un link o botón de acción (editar/eliminar)
+            if (e.target.closest('a, form, .btn-eliminar-row')) return;
+
+            const id     = fila.getAttribute('data-id');
+            const btn    = document.getElementById('btn-detalle-' + id);
+            const abierto = fila.classList.toggle('abierto');
+
+            // Rotar el ícono ▶
+            if (btn) {
+                btn.textContent   = abierto ? '▼' : '▶';
+                btn.style.color   = abierto ? 'var(--accent-primary)' : '';
+            }
+        });
+    });
+
+    // ── 2. Confirmación de eliminación de película ────────────────────────────
+    document.querySelectorAll('.btn-confirmar-eliminar-pelicula').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            const titulo    = btn.getAttribute('data-titulo') || 'esta película';
+            const funciones = parseInt(btn.getAttribute('data-funciones') || '0');
+            let mensaje = '¿Eliminar «' + titulo + '»?';
+            if (funciones > 0) {
+                mensaje += ' También se eliminarán ' + funciones + ' función(es) programada(s).';
+            }
+            if (!confirm(mensaje)) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

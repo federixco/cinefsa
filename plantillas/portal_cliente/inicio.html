@@ -1,0 +1,188 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block titulo %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/inicio.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         HERO SECTION — Película destacada
+         ═══════════════════════════════════════════════════════════════════════ -->
+    {% if pelicula_destacada %}
+    <section class="hero" id="hero-section">
+        <span class="hero-badge">En cartelera ahora</span>
+        <h1>{{ pelicula_destacada.titulo }}</h1>
+
+        <div class="hero-meta">
+            {% for genero in pelicula_destacada.generos.all %}
+                <span class="hero-meta-item">{{ genero.descripcion }}</span>
+                {% if not forloop.last %}<span class="hero-meta-separator">·</span>{% endif %}
+            {% endfor %}
+            <span class="hero-meta-separator">|</span>
+            <span class="hero-meta-item">{{ pelicula_destacada.duracion_minutos }} min</span>
+            <span class="hero-meta-separator">|</span>
+            <span class="hero-clasificacion clasificacion-{% if pelicula_destacada.clasificacion == 'ATP' %}atp{% elif pelicula_destacada.clasificacion == '+13' %}13{% elif pelicula_destacada.clasificacion == '+16' %}16{% else %}18{% endif %}">
+                {{ pelicula_destacada.clasificacion }}
+            </span>
+        </div>
+
+        <p class="hero-sinopsis">{{ pelicula_destacada.sinopsis|truncatewords:40 }}</p>
+
+        {% if user.is_authenticated %}
+            <a href="#cartelera" class="btn btn-primary">Ver funciones disponibles</a>
+        {% else %}
+            <a href="{% url 'autenticacion:login' %}" class="btn btn-primary">Iniciar sesión para comprar</a>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         CARTELERA — Películas en exhibición
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <section class="seccion-cartelera" id="cartelera">
+        <div class="seccion-header">
+            <h2>Cartelera</h2>
+            <div class="genero-filtros">
+                <a href="{% url 'inicio' %}"
+                   class="genero-pill {% if not filtro_genero %}active{% endif %}">Todas</a>
+                {% for genero in generos %}
+                <a href="{% url 'inicio' %}?genero={{ genero.id }}"
+                   class="genero-pill {% if filtro_genero == genero.id|stringformat:'d' %}active{% endif %}"
+                >{{ genero.descripcion }}</a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="peliculas-grid">
+            {% for pelicula in peliculas_cartelera %}
+            <div class="pelicula-card" id="pelicula-{{ pelicula.id }}">
+                <div class="pelicula-poster">
+                    {% if pelicula.imagen_poster %}
+                        <img src="{{ pelicula.imagen_poster.url }}" alt="Póster de {{ pelicula.titulo }}">
+                    {% else %}
+                        <div class="poster-fallback fb-{% cycle '1' '2' '3' '4' '5' '6' %}">
+                            {{ pelicula.titulo|first }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="pelicula-info">
+                    <h3 class="pelicula-titulo">{{ pelicula.titulo }}</h3>
+                    <div class="pelicula-meta">
+                        <span class="pelicula-duracion">{{ pelicula.duracion_minutos }} min</span>
+                        <span class="hero-clasificacion clasificacion-{% if pelicula.clasificacion == 'ATP' %}atp{% elif pelicula.clasificacion == '+13' %}13{% elif pelicula.clasificacion == '+16' %}16{% else %}18{% endif %}">
+                            {{ pelicula.clasificacion }}
+                        </span>
+                    </div>
+                    <div class="pelicula-generos">
+                        {% for genero in pelicula.generos.all %}
+                        <span class="pelicula-genero-tag">{{ genero.descripcion }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Detalle extra (se muestra al expandir) -->
+                    <div class="pelicula-detalle-extra">
+                        <p class="pelicula-sinopsis-texto">{{ pelicula.sinopsis }}</p>
+                    </div>
+
+                    <span class="icono-expandir">▼ Ver sinopsis</span>
+                </div>
+            </div>
+            {% empty %}
+            <div class="cartelera-vacia">
+                <h3>No hay películas en cartelera</h3>
+                <p>Pronto se publicarán las funciones disponibles.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         PRÓXIMAMENTE — Películas sin funciones programadas
+         ═══════════════════════════════════════════════════════════════════════ -->
+    {% if peliculas_proximamente %}
+    <section class="seccion-cartelera" id="proximamente">
+        <div class="seccion-header">
+            <h2>Próximamente</h2>
+        </div>
+
+        <div class="peliculas-grid">
+            {% for pelicula in peliculas_proximamente %}
+            <div class="pelicula-card" id="prox-{{ pelicula.id }}" style="opacity: 0.7;">
+                <div class="pelicula-poster">
+                    {% if pelicula.imagen_poster %}
+                        <img src="{{ pelicula.imagen_poster.url }}" alt="Póster de {{ pelicula.titulo }}">
+                    {% else %}
+                        <div class="poster-fallback fb-{{ forloop.counter }}">
+                            {{ pelicula.titulo|first }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="pelicula-info">
+                    <h3 class="pelicula-titulo">{{ pelicula.titulo }}</h3>
+                    <div class="pelicula-meta">
+                        <span class="pelicula-duracion">{{ pelicula.duracion_minutos }} min</span>
+                        <span class="hero-clasificacion clasificacion-{% if pelicula.clasificacion == 'ATP' %}atp{% elif pelicula.clasificacion == '+13' %}13{% elif pelicula.clasificacion == '+16' %}16{% else %}18{% endif %}">
+                            {{ pelicula.clasificacion }}
+                        </span>
+                    </div>
+                    <div class="pelicula-generos">
+                        {% for genero in pelicula.generos.all %}
+                        <span class="pelicula-genero-tag">{{ genero.descripcion }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Detalle extra (se muestra al expandir) -->
+                    <div class="pelicula-detalle-extra">
+                        <p class="pelicula-sinopsis-texto">{{ pelicula.sinopsis }}</p>
+                    </div>
+
+                    <span class="icono-expandir">▼ Ver sinopsis</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         FOOTER
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <footer class="site-footer">
+        <p><span class="footer-brand">CineFSA</span> &copy; 2026</p>
+        <p>Universidad de la Cuenca del Plata &middot; Lic. en Sistemas de Información</p>
+        <p>Proyecto académico &middot; Todos los derechos reservados</p>
+    </footer>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Permite hacer clic en la tarjeta de película para expandir la sinopsis
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.pelicula-card');
+
+        cards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Alternar la clase expandido
+                this.classList.toggle('expandido');
+
+                // Actualizar el texto del botón según el estado
+                const iconoTexto = this.querySelector('.icono-expandir');
+                if (iconoTexto) {
+                    if (this.classList.contains('expandido')) {
+                        iconoTexto.innerHTML = '▲ Ocultar sinopsis';
+                    } else {
+                        iconoTexto.innerHTML = '▼ Ver sinopsis';
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

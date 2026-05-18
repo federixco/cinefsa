@@ -1,0 +1,157 @@
+{% extends 'base/base_panel.html' %}
+{% load static %}
+
+{% block active_cartelera %}active{% endblock %}
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cartelera.css' %}">
+{% endblock %}
+
+{% block panel_content %}
+<!--
+    panel/formulario_pelicula.html — Crear / editar película (RF-A02).
+    La variable 'modo' puede ser 'crear' o 'editar'.
+    La plantilla DEBE enviarse con enctype="multipart/form-data" para el póster.
+-->
+<div class="cartelera-header">
+    <div>
+        <h1>{% if modo == 'crear' %}➕ Nueva Película{% else %}✏️ Editar Película{% endif %}</h1>
+        <p class="subtitulo">
+            {% if modo == 'crear' %}
+                Completá los datos para agregar una nueva película a la cartelera.
+            {% else %}
+                Editando: <strong>{{ pelicula.titulo }}</strong>
+            {% endif %}
+        </p>
+    </div>
+    <div class="header-acciones">
+        <a href="{% url 'panel:listar_peliculas' %}" class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+
+<div class="form-cartelera">
+    <form method="post"
+          enctype="multipart/form-data"
+          action="{% if modo == 'crear' %}{% url 'panel:crear_pelicula' %}{% else %}{% url 'panel:editar_pelicula' pelicula.pk %}{% endif %}"
+          id="form-pelicula">
+        {% csrf_token %}
+
+        <!-- ── Título ──────────────────────────────────────────────── -->
+        <div class="form-campo">
+            <label for="{{ formulario_pelicula.titulo.id_for_label }}">
+                {{ formulario_pelicula.titulo.label }}
+            </label>
+            {{ formulario_pelicula.titulo }}
+            {% if formulario_pelicula.titulo.errors %}
+                <ul class="errores-campo">{% for e in formulario_pelicula.titulo.errors %}<li>⚠️ {{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+        </div>
+
+        <!-- ── Sinopsis ────────────────────────────────────────────── -->
+        <div class="form-campo">
+            <label for="{{ formulario_pelicula.sinopsis.id_for_label }}">
+                {{ formulario_pelicula.sinopsis.label }}
+            </label>
+            {{ formulario_pelicula.sinopsis }}
+            {% if formulario_pelicula.sinopsis.errors %}
+                <ul class="errores-campo">{% for e in formulario_pelicula.sinopsis.errors %}<li>⚠️ {{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+        </div>
+
+        <!-- ── Duración + Clasificación en fila ───────────────────── -->
+        <div class="form-fila-dos">
+            <div class="form-campo">
+                <label for="{{ formulario_pelicula.duracion_minutos.id_for_label }}">
+                    {{ formulario_pelicula.duracion_minutos.label }}
+                </label>
+                {{ formulario_pelicula.duracion_minutos }}
+                {% if formulario_pelicula.duracion_minutos.errors %}
+                    <ul class="errores-campo">{% for e in formulario_pelicula.duracion_minutos.errors %}<li>⚠️ {{ e }}</li>{% endfor %}</ul>
+                {% endif %}
+            </div>
+            <div class="form-campo">
+                <label for="{{ formulario_pelicula.clasificacion.id_for_label }}">
+                    {{ formulario_pelicula.clasificacion.label }}
+                </label>
+                {{ formulario_pelicula.clasificacion }}
+                {% if formulario_pelicula.clasificacion.errors %}
+                    <ul class="errores-campo">{% for e in formulario_pelicula.clasificacion.errors %}<li>⚠️ {{ e }}</li>{% endfor %}</ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ── Estado en cartelera ────────────────────────────────── -->
+        <div class="form-campo">
+            <label for="{{ formulario_pelicula.estado.id_for_label }}">
+                {{ formulario_pelicula.estado.label }}
+            </label>
+            {{ formulario_pelicula.estado }}
+            <p class="help-text">
+                <strong>Próximamente:</strong> anunciada pero no aparece en la cartelera activa. &nbsp;|&nbsp;
+                <strong>En cartelera:</strong> visible con sus funciones en el portal. &nbsp;|&nbsp;
+                <strong>Retirada:</strong> ya no se proyecta (oculta del portal).
+            </p>
+            {% if formulario_pelicula.estado.errors %}
+                <ul class="errores-campo">{% for e in formulario_pelicula.estado.errors %}<li>⚠️ {{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+        </div>
+
+        <!-- ── Géneros (checkboxes M2M en grilla) ─────────────────── -->
+        <div class="form-campo">
+            <label>{{ formulario_pelicula.generos.label }}</label>
+            <div class="generos-grid" id="contenedor-generos-pelicula">
+                {% for choice in formulario_pelicula.generos %}
+                    <label>
+                        {{ choice.tag }}
+                        {{ choice.choice_label }}
+                    </label>
+                {% empty %}
+                    <p style="color:var(--text-secondary); font-size:0.85rem;">
+                        No hay géneros disponibles. <a href="{% url 'panel:listar_generos' %}" style="color:var(--accent-primary);">Crear géneros →</a>
+                    </p>
+                {% endfor %}
+            </div>
+            {% if formulario_pelicula.generos.errors %}
+                <ul class="errores-campo">{% for e in formulario_pelicula.generos.errors %}<li>⚠️ {{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+        </div>
+
+        <!-- ── ¿Es clásica? (checkbox) ────────────────────────────── -->
+        <div class="form-campo-checkbox">
+            {{ formulario_pelicula.es_clasica }}
+            <label for="{{ formulario_pelicula.es_clasica.id_for_label }}">
+                {{ formulario_pelicula.es_clasica.label }}
+            </label>
+        </div>
+        <p class="help-text" style="margin-top:-0.8rem; margin-bottom:1.25rem;">
+            Las películas clásicas pueden aparecer en el módulo de votación Cine Club.
+        </p>
+
+        <!-- ── Póster (ImageField) ────────────────────────────────── -->
+        <div class="form-campo">
+            <label for="{{ formulario_pelicula.imagen_poster.id_for_label }}">
+                {{ formulario_pelicula.imagen_poster.label }}
+                <span style="color:var(--text-secondary); font-weight:400;"> (opcional)</span>
+            </label>
+            {% if modo == 'editar' and pelicula.imagen_poster %}
+                <div class="poster-preview" id="poster-actual-{{ pelicula.pk }}">
+                    <img src="{{ pelicula.imagen_poster.url }}" alt="Póster actual de {{ pelicula.titulo }}">
+                    <p>Póster actual. Subí una nueva imagen para reemplazarlo.</p>
+                </div>
+            {% endif %}
+            {{ formulario_pelicula.imagen_poster }}
+        </div>
+
+        <!-- ── Botones ─────────────────────────────────────────────── -->
+        <div class="form-acciones">
+            <button type="submit" class="btn btn-primary" id="btn-guardar-pelicula">
+                {% if modo == 'crear' %}+ Crear película{% else %}💾 Guardar cambios{% endif %}
+            </button>
+            <a href="{% url 'panel:listar_peliculas' %}" class="btn-cancelar">Cancelar</a>
+        </div>
+
+    </form>
+</div>
+
+{% endblock panel_content %}
