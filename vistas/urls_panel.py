@@ -65,9 +65,14 @@ from vistas.panel.gestion_usuarios import (
 )
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 # app_name: Namespace para las URLs del panel.
 # Permite referenciar las URLs con {% url 'panel:nombre_url' %} en las plantillas.
+=======
+# app_name: Namespace para las URLs del panel
+# Permite referenciar las URLs con {% url 'panel:nombre_url' %} en las plantillas
+>>>>>>> Stashed changes
 app_name = 'panel'
 
 urlpatterns = [
