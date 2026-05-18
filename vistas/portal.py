@@ -25,9 +25,16 @@ def inicio_view(request):
         - filtro_genero: ID del género seleccionado (si se filtró).
         - peliculas_proximamente: Películas sin funciones programadas (próximos estrenos).
     """
-    # Películas en cartelera (estado='cartelera')
+    hoy = timezone.now().date()
+
+    # IDs de películas que tienen funciones programadas hoy o en el futuro
+    ids_peliculas_con_funcion = Funcion.objects.filter(
+        fecha__gte=hoy
+    ).values_list('pelicula_id', flat=True).distinct()
+
+    # Películas en cartelera (con funciones activas)
     peliculas_cartelera = Pelicula.objects.filter(
-        estado='cartelera'
+        id__in=ids_peliculas_con_funcion
     ).prefetch_related('generos')
 
     # Filtro por género (opcional, via GET)
@@ -43,9 +50,9 @@ def inicio_view(request):
     # Película destacada para el hero (la primera de la cartelera)
     pelicula_destacada = peliculas_cartelera.first()
 
-    # Películas próximamente (estado='proximamente')
-    peliculas_proximamente = Pelicula.objects.filter(
-        estado='proximamente'
+    # Películas sin funciones (próximamente)
+    peliculas_proximamente = Pelicula.objects.exclude(
+        id__in=ids_peliculas_con_funcion
     ).prefetch_related('generos')
 
     # Todos los géneros (para los filtros)

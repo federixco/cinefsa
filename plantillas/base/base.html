@@ -8,88 +8,97 @@
         la etiqueta 'extends base/base.html'. Define la estructura HTML común:
         cabecera con navegación, área de mensajes flash, contenido principal
         y pie de página.
-
-        NOTA: Los estilos CSS se integrarán en un paso posterior del proyecto.
-        Por ahora se utiliza HTML puro sin estilización.
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="CineFSA — Sistema de gestión cinematográfica de Formosa. Comprá tus entradas online y evitá las filas.">
+    <meta name="description" content="CineFSA — Sistema de gestión cinematográfica. Comprá tus entradas online y evitá las filas.">
 
-    <title>{% block titulo %}CineFSA{% endblock %}</title>
+    <title>{% block title %}{% block titulo %}Panel de Control{% endblock %}{% endblock %} | CineFSA</title>
+    
+    <!-- Google Fonts: Inter para un look limpio y moderno -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    {% load static %}
+    <!-- Estilos base globales -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    
+    <!-- Bloque para cargar CSS especifico de cada pagina -->
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Navbar / Menu superior -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <!-- Logo -->
+            <a href="{% url 'inicio' %}" class="nav-brand">
+                <span class="brand-cine">Cine</span><span class="brand-fsa">FSA</span>
+            </a>
 
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         BARRA DE NAVEGACIÓN SUPERIOR
-         ═══════════════════════════════════════════════════════════════════════ -->
-    <nav id="barra-navegacion">
-        <a href="{% url 'inicio' %}" id="logo-cinefsa">🎬 Cine<strong>FSA</strong></a>
+            <!-- Links centrales (visibles para todos) -->
+            <ul class="nav-links">
+                <li><a href="{% url 'inicio' %}">Cartelera</a></li>
+                <li><a href="{% url 'inicio' %}#proximamente">Próximamente</a></li>
+            </ul>
 
-        {% if user.is_authenticated %}
-            <!-- Menú para usuarios logueados -->
-            <span id="info-usuario">
-                {{ user.nombre_completo }} |
-                <a href="{% url 'autenticacion:historial' %}" id="enlace-historial">Mi historial</a> |
+            <!-- Lado derecho del navbar -->
+            <div class="nav-right">
+                {% if user.is_authenticated %}
+                    <!-- Boton hamburguesa para el menu de usuario -->
+                    <button class="hamburger-btn" id="btn-menu" onclick="document.getElementById('menu-desplegable').classList.toggle('show')">
+                        <span class="hamburger-line"></span>
+                        <span class="hamburger-line"></span>
+                        <span class="hamburger-line"></span>
+                    </button>
 
-                <!--
-                    Enlace al panel de administración (RF-A05).
-                    Se muestra solo si el usuario logueado tiene registro en la tabla 'administrador'.
-                    Se verifica con la relación inversa definida en el modelo Administrador
-                    (related_name='administrador' → accesible como user.administrador.exists()).
-                -->
-                {% if user.administrador.exists %}
-                    <a href="{% url 'panel:gestion_usuarios' %}" id="enlace-panel-admin">
-                        ⚙️ Panel de Administración
-                    </a> |
+                    <!-- Menu desplegable -->
+                    <div class="dropdown-menu" id="menu-desplegable">
+                        <div class="dropdown-header">
+                            <span class="dropdown-name">{{ user.nombre_completo }}</span>
+                            <span class="dropdown-email">{{ user.email }}</span>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="{% url 'autenticacion:historial' %}" class="dropdown-item">Mi historial</a>
+                        {% if user.is_staff %}
+                        <a href="{% url 'panel:lista_salas' %}" class="dropdown-item">Panel Admin</a>
+                        {% endif %}
+                        <div class="dropdown-divider"></div>
+                        <form method="post" action="{% url 'autenticacion:logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item dropdown-logout">Cerrar sesión</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <!-- Botones para visitantes -->
+                    <a href="{% url 'autenticacion:login' %}" class="btn-nav-login">Iniciar sesión</a>
+                    <a href="{% url 'autenticacion:registro' %}" class="btn-nav-register">Registrarse</a>
                 {% endif %}
-
-                <form method="post" action="{% url 'autenticacion:logout' %}" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" id="btn-cerrar-sesion">Cerrar sesión</button>
-                </form>
-            </span>
-        {% else %}
-            <!-- Menú para visitantes -->
-            <span>
-                <a href="{% url 'autenticacion:login' %}" id="enlace-login">Iniciar sesión</a> |
-                <a href="{% url 'autenticacion:registro' %}" id="enlace-registro">Crear cuenta</a>
-            </span>
-        {% endif %}
+            </div>
+        </div>
     </nav>
 
-    <hr>
-
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         MENSAJES FLASH (notificaciones temporales)
-         ═══════════════════════════════════════════════════════════════════════ -->
-    {% if messages %}
-    <div id="contenedor-mensajes">
-        {% for mensaje in messages %}
-        <p id="mensaje-{{ forloop.counter }}">
-            <strong>[{{ mensaje.tags }}]</strong> {{ mensaje }}
-        </p>
-        {% endfor %}
-    </div>
-    <hr>
-    {% endif %}
-
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         CONTENIDO PRINCIPAL
-         Cada página define su contenido dentro de este bloque.
-         ═══════════════════════════════════════════════════════════════════════ -->
-    <main id="contenido-principal">
-        {% block contenido %}{% endblock %}
+    <!-- Contenido principal -->
+    <main class="main-content">
+        {% block content %}
+        {% block contenido %}
+        <!-- Aqui se inyecta el contenido de cada pagina hija -->
+        {% endblock %}
+        {% endblock %}
     </main>
 
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         PIE DE PÁGINA
-         ═══════════════════════════════════════════════════════════════════════ -->
-    <hr>
-    <footer id="pie-pagina">
-        <p>&copy; 2026 CineFSA — Sistema de Gestión Cinematográfica</p>
-        <p><small>Proyecto académico — Base de Datos — UFASTA Sede Formosa</small></p>
-    </footer>
+    <!-- Cerrar dropdown al hacer clic fuera -->
+    <script>
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('menu-desplegable');
+            const btn = document.getElementById('btn-menu');
+            if (menu && btn && !btn.contains(e.target) && !menu.contains(e.target)) {
+                menu.classList.remove('show');
+            }
+        });
+    </script>
 
+    <!-- Bloque para cargar JS especifico de cada pagina -->
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

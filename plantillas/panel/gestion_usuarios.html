@@ -1,236 +1,244 @@
-{% extends "base/base.html" %}
+{% extends "base/base_panel.html" %}
+{% load static %}
+
+{% block active_usuarios %}active{% endblock %}
 
 {% block titulo %}{{ titulo_pagina }} — CineFSA{% endblock %}
 
-{% block contenido %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/panel_usuarios.css' %}">
+{% endblock %}
+
+{% block panel_content %}
 <!--
-    panel/gestion_usuarios.html — Plantilla del panel de gestión de usuarios (RF-A05).
-
-    Esta plantilla extiende base/base.html y construye la interfaz del panel
-    de administración exclusivo para el Administrador.
-
-    Secciones:
-        1. Encabezado del panel con título e info del administrador logueado.
-        2. Formulario de búsqueda (GET).
-        3. Tabla de resultados con info de cada usuario y su rol actual.
-        4. Formulario de asignación (POST inline por usuario).
-        5. Formulario de revocación (POST por usuario).
-
-    Seguridad:
-        - Todos los POST incluyen {% csrf_token %} para protección CSRF.
-        - El decorador @solo_administrador en la vista ya impide el acceso
-          a usuarios no autorizados antes de que se renderice esta plantilla.
+    panel/gestion_usuarios.html — Panel de gestión de usuarios y roles (RF-A05).
+    Rediseñado con: tarjetas de estadísticas, barra de búsqueda con filtros por rol,
+    tabla estilizada con badges, modal de asignación con glassmorphism, y mensajes flash.
 -->
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     ENCABEZADO DEL PANEL
+     HEADER DEL PANEL
      ═══════════════════════════════════════════════════════════════════════ -->
-<section id="encabezado-panel">
-    <h1>⚙️ Panel de Gestión de Usuarios</h1>
-    <p>
-        Bienvenido, <strong>{{ user.nombre_completo }}</strong>.
-        Desde aquí podés buscar usuarios registrados y administrar sus roles.
+<div class="usuarios-header">
+    <h1>Gestión de Usuarios y Roles</h1>
+    <p class="subtitulo">
+        Administrá los roles de los usuarios registrados en el sistema.
+        Sesión: <strong>{{ user.nombre_completo }}</strong>
     </p>
-</section>
-
-<hr>
+</div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     FORMULARIO DE BÚSQUEDA
-     Se envía por GET para que el resultado quede reflejado en la URL.
+     TARJETAS DE ESTADÍSTICAS
      ═══════════════════════════════════════════════════════════════════════ -->
-<section id="seccion-busqueda">
-    <h2>🔍 Buscar usuario</h2>
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon total">U</div>
+        <div class="stat-info">
+            <span class="stat-numero">{{ stats.total }}</span>
+            <span class="stat-label">Total usuarios</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon clientes">C</div>
+        <div class="stat-info">
+            <span class="stat-numero">{{ stats.clientes }}</span>
+            <span class="stat-label">Clientes</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon empleados">E</div>
+        <div class="stat-info">
+            <span class="stat-numero">{{ stats.empleados }}</span>
+            <span class="stat-label">Empleados</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon admins">A</div>
+        <div class="stat-info">
+            <span class="stat-numero">{{ stats.admins }}</span>
+            <span class="stat-label">Administradores</span>
+        </div>
+    </div>
+</div>
 
-    <form method="get" action="" id="formulario-busqueda-usuario">
-        <div>
-            {{ formulario_busqueda.busqueda }}
-            <button type="submit" id="btn-buscar-usuario">Buscar</button>
+<!-- ═══════════════════════════════════════════════════════════════════════
+     BARRA DE BÚSQUEDA + FILTROS POR ROL
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="filtros-container">
+    <form method="get" action="" id="formulario-filtros">
+        <div class="busqueda-row">
+            <div class="busqueda-input-wrapper">
+                <span class="search-icon">⌕</span>
+                <input
+                    type="text"
+                    name="busqueda"
+                    class="busqueda-input"
+                    placeholder="Buscar por nombre completo o email..."
+                    value="{{ termino_busqueda }}"
+                    autocomplete="off"
+                    id="campo-busqueda-usuario"
+                >
+            </div>
+            <!-- Mantener el filtro de rol activo al buscar -->
+            <input type="hidden" name="rol" value="{{ filtro_rol }}" id="hidden-filtro-rol">
+            <button type="submit" class="btn btn-primary" id="btn-buscar-usuario">Buscar</button>
+        </div>
+    </form>
+
+    <div class="filtros-row">
+        <span class="filtro-label">Filtrar por rol:</span>
+        <a href="?rol=todos{% if termino_busqueda %}&busqueda={{ termino_busqueda }}{% endif %}"
+           class="filtro-pill {% if filtro_rol == 'todos' %}active{% endif %}"
+           id="filtro-todos">Todos</a>
+        <a href="?rol=cliente{% if termino_busqueda %}&busqueda={{ termino_busqueda }}{% endif %}"
+           class="filtro-pill {% if filtro_rol == 'cliente' %}active{% endif %}"
+           id="filtro-clientes">Clientes</a>
+        <a href="?rol=empleado{% if termino_busqueda %}&busqueda={{ termino_busqueda }}{% endif %}"
+           class="filtro-pill {% if filtro_rol == 'empleado' %}active{% endif %}"
+           id="filtro-empleados">Empleados</a>
+        <a href="?rol=admin{% if termino_busqueda %}&busqueda={{ termino_busqueda }}{% endif %}"
+           class="filtro-pill {% if filtro_rol == 'admin' %}active{% endif %}"
+           id="filtro-admins">Admins</a>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     TABLA DE USUARIOS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="tabla-container">
+    <div class="tabla-info">
+        <span class="resultado-count">
+            Mostrando <strong>{{ usuarios|length }}</strong> usuario{{ usuarios|length|pluralize:"s" }}
+            {% if termino_busqueda %} para "<em>{{ termino_busqueda }}</em>"{% endif %}
+            {% if filtro_rol != 'todos' %} · Filtro: <strong>{{ filtro_rol|title }}</strong>{% endif %}
+        </span>
+    </div>
+
+    {% if usuarios %}
+    <table class="tabla-usuarios" id="tabla-usuarios-panel">
+        <thead>
+            <tr>
+                <th>Nombre completo</th>
+                <th>Email</th>
+                <th>Fecha de registro</th>
+                <th>Rol</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entrada in usuarios %}
+            <tr id="fila-usuario-{{ entrada.usuario.pk }}">
+
+                <td class="col-nombre">{{ entrada.usuario.nombre_completo }}</td>
+
+                <td>{{ entrada.usuario.email }}</td>
+
+                <td class="col-fecha">{{ entrada.usuario.fecha_registro|date:"d/m/Y H:i" }}</td>
+
+                <td id="rol-usuario-{{ entrada.usuario.pk }}">
+                    {% if entrada.es_administrador %}
+                        <span class="badge-rol badge-admin">Admin</span>
+                    {% elif entrada.es_empleado %}
+                        <span class="badge-rol badge-empleado">Empleado</span>
+                        <div class="detalle-empleado">
+                            ID: {{ entrada.es_empleado.id_validador }} · Terminal {{ entrada.es_empleado.terminal_venta }}
+                        </div>
+                    {% else %}
+                        <span class="badge-rol badge-cliente">Cliente</span>
+                    {% endif %}
+                </td>
+
+                <td id="acciones-usuario-{{ entrada.usuario.pk }}">
+                    {% if entrada.es_administrador %}
+                        <span class="sin-acciones">Sin acciones</span>
+
+                    {% elif entrada.es_empleado %}
+                        <form method="post" action="{% url 'panel:revocar_empleado' %}" id="form-revocar-{{ entrada.usuario.pk }}">
+                            {% csrf_token %}
+                            <input type="hidden" name="usuario_id" value="{{ entrada.usuario.pk }}">
+                            <button
+                                type="submit"
+                                class="btn-accion btn-revocar"
+                                id="btn-revocar-{{ entrada.usuario.pk }}"
+                                onclick="return confirm('¿Revocar el rol de Empleado de {{ entrada.usuario.nombre_completo }}?')"
+                            >Revocar</button>
+                        </form>
+
+                    {% else %}
+                        <button
+                            type="button"
+                            class="btn-accion btn-asignar btn-abrir-modal"
+                            id="btn-asignar-{{ entrada.usuario.pk }}"
+                            data-user-id="{{ entrada.usuario.pk }}"
+                            data-nombre="{{ entrada.usuario.nombre_completo }}"
+                            data-email="{{ entrada.usuario.email }}"
+                        >Asignar Empleado</button>
+                    {% endif %}
+                </td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">—</div>
+        <p>No se encontraron usuarios con los filtros aplicados.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODAL: ASIGNAR ROL DE EMPLEADO (overlay con glassmorphism)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-asignar">
+    <div class="modal-contenido">
+        <div class="modal-header">
+            <h3>Asignar rol de Empleado</h3>
+            <button type="button" class="modal-close" id="btn-cerrar-modal">✕</button>
         </div>
 
-        <!-- Mostrar errores de validación del formulario de búsqueda (campo vacío, etc.) -->
-        {% if formulario_busqueda.errors %}
-            <ul id="errores-busqueda">
-                {% for campo, errores in formulario_busqueda.errors.items %}
-                    {% for error in errores %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                {% endfor %}
-            </ul>
-        {% endif %}
-    </form>
-</section>
+        <div class="modal-usuario-info">
+            Asignando rol a: <strong id="modal-nombre-usuario">—</strong>
+            <br>
+            <small id="modal-email-usuario">—</small>
+        </div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     RESULTADOS DE LA BÚSQUEDA
-     ═══════════════════════════════════════════════════════════════════════ -->
-{% if termino_busqueda %}
-    <section id="seccion-resultados">
-        <h2>
-            Resultados para: <em>"{{ termino_busqueda }}"</em>
-            ({{ usuarios|length }} usuario{{ usuarios|length|pluralize:"s" }} encontrado{{ usuarios|length|pluralize:"s" }})
-        </h2>
+        <form method="post" action="{% url 'panel:asignar_empleado' %}" id="form-modal-asignar">
+            {% csrf_token %}
+            <input type="hidden" name="usuario_id" id="modal-usuario-id" value="">
 
-        {% if usuarios %}
-            <!-- Tabla de resultados: un fila por usuario encontrado -->
-            <table id="tabla-usuarios-panel">
-                <thead>
-                    <tr>
-                        <th>Nombre completo</th>
-                        <th>Email</th>
-                        <th>Fecha de registro</th>
-                        <th>Rol actual</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for entrada in usuarios %}
-                    <tr id="fila-usuario-{{ entrada.usuario.pk }}">
+            <div class="modal-campo">
+                <label>ID de validador (QR)</label>
+                <div class="help-text" style="margin-top: 0; font-size: 0.85rem;">
+                    Se genera automáticamente con formato <strong>EMP-XXXX</strong> al confirmar.
+                </div>
+            </div>
 
-                        <!-- Nombre completo del usuario -->
-                        <td>{{ entrada.usuario.nombre_completo }}</td>
+            <div class="modal-campo">
+                <label for="modal-terminal-venta">Número de terminal de venta</label>
+                <input
+                    type="number"
+                    name="terminal_venta"
+                    id="modal-terminal-venta"
+                    min="1"
+                    placeholder="Ej: 3"
+                    required
+                >
+                <div class="help-text">Número de caja asignada para emisión de boletos.</div>
+            </div>
 
-                        <!-- Dirección de email del usuario -->
-                        <td>{{ entrada.usuario.email }}</td>
+            <div class="modal-acciones">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-asignar').classList.remove('visible')">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="btn-confirmar-asignar">Confirmar asignación</button>
+            </div>
+        </form>
+    </div>
+</div>
 
-                        <!-- Fecha de registro formateada en español -->
-                        <td>{{ entrada.usuario.fecha_registro|date:"d/m/Y H:i" }}</td>
+{% endblock panel_content %}
 
-                        <!-- Rol actual del usuario -->
-                        <td id="rol-usuario-{{ entrada.usuario.pk }}">
-                            {% if entrada.es_administrador %}
-                                <!-- El usuario es Administrador: no se puede modificar su rol -->
-                                🔴 Administrador
-                            {% elif entrada.es_empleado %}
-                                <!-- El usuario tiene rol de Empleado activo -->
-                                🟡 Empleado
-                                <br>
-                                <small>
-                                    Validador: {{ entrada.es_empleado.id_validador }} |
-                                    Terminal: {{ entrada.es_empleado.terminal_venta }}
-                                </small>
-                            {% else %}
-                                <!-- El usuario solo es Cliente (rol base) -->
-                                🟢 Cliente
-                            {% endif %}
-                        </td>
-
-                        <!-- Columna de acciones disponibles según el rol -->
-                        <td id="acciones-usuario-{{ entrada.usuario.pk }}">
-
-                            {% if entrada.es_administrador %}
-                                <!-- Los Administradores no pueden ser modificados desde este panel -->
-                                <em>Sin acciones disponibles</em>
-
-                            {% elif entrada.es_empleado %}
-                                <!-- El usuario ya es Empleado: mostrar opción de revocar -->
-                                <form
-                                    method="post"
-                                    action="{% url 'panel:revocar_empleado' %}"
-                                    id="form-revocar-{{ entrada.usuario.pk }}"
-                                >
-                                    {% csrf_token %}
-                                    <!-- Campo oculto con el ID del usuario a revocar -->
-                                    <input type="hidden" name="usuario_id" value="{{ entrada.usuario.pk }}">
-                                    <button
-                                        type="submit"
-                                        id="btn-revocar-{{ entrada.usuario.pk }}"
-                                        onclick="return confirm('¿Estás seguro de que querés revocar el rol de Empleado de {{ entrada.usuario.nombre_completo }}?')"
-                                    >
-                                        🚫 Revocar rol de Empleado
-                                    </button>
-                                </form>
-
-                            {% else %}
-                                <!-- El usuario es solo Cliente: mostrar formulario de asignación -->
-                                <!--
-                                    El formulario de asignación se muestra directamente en la tabla.
-                                    Cada fila tiene su propio formulario independiente con los campos
-                                    id_validador y terminal_venta, más el campo oculto usuario_id.
-                                -->
-                                <details id="detalle-asignar-{{ entrada.usuario.pk }}">
-                                    <summary id="btn-abrir-asignar-{{ entrada.usuario.pk }}">
-                                        ⬆️ Asignar como Empleado
-                                    </summary>
-
-                                    <form
-                                        method="post"
-                                        action="{% url 'panel:asignar_empleado' %}"
-                                        id="form-asignar-{{ entrada.usuario.pk }}"
-                                    >
-                                        {% csrf_token %}
-                                        <!-- Campo oculto con el ID del usuario a ascender -->
-                                        <input type="hidden" name="usuario_id" value="{{ entrada.usuario.pk }}">
-
-                                        <!-- Campo: ID de validador QR -->
-                                        <div>
-                                            <label for="id-validador-{{ entrada.usuario.pk }}">
-                                                {{ formulario_asignar.id_validador.label }}
-                                            </label>
-                                            <!--
-                                                Se reconstruye el widget con un ID único por fila
-                                                para evitar IDs duplicados en el HTML.
-                                                El name debe ser igual al del formulario Django ('id_validador').
-                                            -->
-                                            <input
-                                                type="text"
-                                                name="id_validador"
-                                                id="id-validador-{{ entrada.usuario.pk }}"
-                                                maxlength="50"
-                                                placeholder="Ej: EMP-2026-001"
-                                                required
-                                            >
-                                            <small>{{ formulario_asignar.id_validador.help_text }}</small>
-                                        </div>
-
-                                        <!-- Campo: Número de terminal de venta -->
-                                        <div>
-                                            <label for="terminal-venta-{{ entrada.usuario.pk }}">
-                                                {{ formulario_asignar.terminal_venta.label }}
-                                            </label>
-                                            <input
-                                                type="number"
-                                                name="terminal_venta"
-                                                id="terminal-venta-{{ entrada.usuario.pk }}"
-                                                min="1"
-                                                placeholder="Ej: 3"
-                                                required
-                                            >
-                                            <small>{{ formulario_asignar.terminal_venta.help_text }}</small>
-                                        </div>
-
-                                        <button type="submit" id="btn-confirmar-asignar-{{ entrada.usuario.pk }}">
-                                            ✅ Confirmar asignación
-                                        </button>
-                                    </form>
-                                </details>
-                            {% endif %}
-
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
-        {% else %}
-            <!-- No se encontraron usuarios con ese término -->
-            <p id="mensaje-sin-resultados">
-                No se encontraron usuarios que coincidan con "<strong>{{ termino_busqueda }}</strong>".
-                Intentá con otro nombre o email.
-            </p>
-        {% endif %}
-    </section>
-
-{% elif termino_busqueda == '' and formulario_busqueda.is_bound %}
-    <!-- El formulario fue enviado pero el campo estaba vacío -->
-    <p id="mensaje-busqueda-vacia">
-        Ingresá un nombre o email para buscar usuarios.
-    </p>
-{% else %}
-    <!-- Estado inicial: panel recién cargado, sin búsqueda todavía -->
-    <p id="mensaje-inicio-panel">
-        Usá el buscador de arriba para encontrar un usuario y gestionar sus permisos.
-    </p>
-{% endif %}
-
+{% block extra_js %}
+<script src="{% static 'js/panel_usuarios.js' %}"></script>
 {% endblock %}

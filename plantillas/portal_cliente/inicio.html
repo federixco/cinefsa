@@ -83,13 +83,6 @@
                         <span class="pelicula-genero-tag">{{ genero.descripcion }}</span>
                         {% endfor %}
                     </div>
-
-                    <!-- Detalle extra (se muestra al expandir) -->
-                    <div class="pelicula-detalle-extra">
-                        <p class="pelicula-sinopsis-texto">{{ pelicula.sinopsis }}</p>
-                    </div>
-
-                    <span class="icono-expandir">▼ Ver sinopsis</span>
                 </div>
             </div>
             {% empty %}
@@ -135,13 +128,6 @@
                         <span class="pelicula-genero-tag">{{ genero.descripcion }}</span>
                         {% endfor %}
                     </div>
-
-                    <!-- Detalle extra (se muestra al expandir) -->
-                    <div class="pelicula-detalle-extra">
-                        <p class="pelicula-sinopsis-texto">{{ pelicula.sinopsis }}</p>
-                    </div>
-
-                    <span class="icono-expandir">▼ Ver sinopsis</span>
                 </div>
             </div>
             {% endfor %}
@@ -159,30 +145,4 @@
     </footer>
 
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // Permite hacer clic en la tarjeta de película para expandir la sinopsis
-    document.addEventListener('DOMContentLoaded', function() {
-        const cards = document.querySelectorAll('.pelicula-card');
-
-        cards.forEach(card => {
-            card.addEventListener('click', function(e) {
-                // Alternar la clase expandido
-                this.classList.toggle('expandido');
-
-                // Actualizar el texto del botón según el estado
-                const iconoTexto = this.querySelector('.icono-expandir');
-                if (iconoTexto) {
-                    if (this.classList.contains('expandido')) {
-                        iconoTexto.innerHTML = '▲ Ocultar sinopsis';
-                    } else {
-                        iconoTexto.innerHTML = '▼ Ver sinopsis';
-                    }
-                }
-            });
-        });
-    });
-</script>
 {% endblock %}

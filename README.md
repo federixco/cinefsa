@@ -1,9 +1,6 @@
-<<<<<<< Updated upstream
-# cinefsa
-=======
 # CineFSA
 
-Sistema de Gestión Cinematográfica (CineFSA). Proyecto desarrollado en Django para la administración y venta de tickets de un complejo de cines, incluyendo un editor dinámico de salas.
+Sistema de Gestión Cinematográfica. Proyecto desarrollado en Django para la administración y venta de tickets de un complejo de cines, incluyendo un editor dinámico de salas.
 
 ## 📋 Requisitos Previos
 
@@ -92,4 +89,3 @@ El proyecto sigue una estructura personalizada y en español:
 - `multimedia/`: Archivos subidos por los usuarios (pósters, etc.).
 
 Para más detalles sobre cómo crear nuevos módulos o vistas, consultar `GUIA_INICIO_RAPIDO.txt`.
->>>>>>> Stashed changes
