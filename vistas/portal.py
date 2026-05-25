@@ -25,10 +25,30 @@ def inicio_view(request):
         - filtro_genero: ID del género seleccionado (si se filtró).
         - peliculas_proximamente: Películas sin funciones programadas (próximos estrenos).
     """
-    # Películas en cartelera (estado='cartelera')
+    # Lógica de fechas (Hoy + 6 días)
+    from django.db.models import Prefetch
+    import datetime
+    
+    hoy = timezone.now().date()
+    fecha_limite = hoy + datetime.timedelta(days=6) # 7 días en total
+    
+    # Generar la lista de fechas para el frontend
+    dias_slider = [hoy + datetime.timedelta(days=i) for i in range(7)]
+
+    # Filtramos funciones que ocurren en los próximos 7 días
+    funciones_activas = Funcion.objects.filter(
+        fecha__gte=hoy,
+        fecha__lte=fecha_limite
+    ).order_by('fecha', 'hora_inicio')
+    
+    ids_peliculas_con_funcion = Funcion.objects.filter(
+        fecha__gte=hoy,
+        fecha__lte=fecha_limite
+    ).values_list('pelicula_id', flat=True).distinct()
+    
     peliculas_cartelera = Pelicula.objects.filter(
-        estado='cartelera'
-    ).prefetch_related('generos')
+        id__in=ids_peliculas_con_funcion
+    ).prefetch_related('generos', Prefetch('funciones', queryset=funciones_activas))
 
     # Filtro por género (opcional, via GET)
     filtro_genero = request.GET.get('genero', '')
@@ -40,8 +60,8 @@ def inicio_view(request):
         except (ValueError, TypeError):
             filtro_genero = ''
 
-    # Película destacada para el hero (la primera de la cartelera)
-    pelicula_destacada = peliculas_cartelera.first()
+    # Películas destacadas para el Hero Carousel (máximo 4)
+    peliculas_destacadas = peliculas_cartelera[:4]
 
     # Películas próximamente (estado='proximamente')
     peliculas_proximamente = Pelicula.objects.filter(
@@ -53,9 +73,10 @@ def inicio_view(request):
 
     return render(request, 'portal_cliente/inicio.html', {
         'peliculas_cartelera': peliculas_cartelera,
-        'pelicula_destacada': pelicula_destacada,
+        'peliculas_destacadas': peliculas_destacadas,
         'peliculas_proximamente': peliculas_proximamente,
         'generos': generos,
         'filtro_genero': filtro_genero,
+        'dias_slider': dias_slider,
         'titulo_pagina': 'Cartelera',
     })
