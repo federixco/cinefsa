@@ -1,67 +1,383 @@
 {% extends 'base/base.html' %}
-{# ──────────────────────────────────────────────────────────────────────────
-   historial.html — Página de historial de transacciones (RF-C01).
-
-   Muestra las compras realizadas por el usuario logueado.
-   Cuando los modelos Venta y Ticket se implementen, esta plantilla
-   mostrará una tabla con los detalles de cada transacción.
-   Mientras tanto, muestra un estado vacío informativo.
-   ────────────────────────────────────────────────────────────────────────── #}
+{% load static %}
 
 {% block titulo %}{{ titulo_pagina }} — CineFSA{% endblock %}
 
-{% block contenido %}
-<div>
+{% block extra_css %}
+<style>
+    .historial-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
 
-    <h1>Mi historial de compras</h1>
-    <p>Revisá todas tus entradas y transacciones anteriores</p>
+    .historial-header {
+        margin-bottom: 2rem;
+    }
+
+    .historial-header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .historial-header p {
+        color: var(--text-secondary);
+    }
+
+    /* Card de Venta */
+    .venta-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        margin-bottom: 1.25rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .venta-card:hover {
+        border-color: rgba(147, 51, 234, 0.3);
+    }
+
+    .venta-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        cursor: pointer;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .venta-header:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .venta-id {
+        font-weight: 700;
+        color: var(--accent-primary);
+        font-size: 1rem;
+    }
+
+    .venta-fecha {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+
+    .venta-monto {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #10b981;
+    }
+
+    .venta-estado {
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .estado-aprobado {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .estado-pendiente-pago {
+        background: rgba(251, 191, 36, 0.15);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .estado-rechazado {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .venta-toggle {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        transition: transform 0.3s;
+    }
+
+    .venta-card.abierto .venta-toggle {
+        transform: rotate(180deg);
+    }
+
+    /* Tickets dentro de la venta */
+    .venta-tickets {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease;
+        border-top: 1px solid transparent;
+    }
+
+    .venta-card.abierto .venta-tickets {
+        max-height: 2000px;
+        border-top-color: var(--border-color);
+    }
+
+    .ticket-row {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        gap: 1rem;
+    }
+
+    .ticket-row:last-child {
+        border-bottom: none;
+    }
+
+    .ticket-row-info {
+        flex: 1;
+    }
+
+    .ticket-row-pelicula {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .ticket-row-meta {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .ticket-row-meta i {
+        color: var(--accent-primary);
+        margin-right: 0.2rem;
+    }
+
+    .ticket-row-asiento {
+        background: rgba(147, 51, 234, 0.15);
+        border: 1px solid var(--accent-primary);
+        color: #fff;
+        padding: 0.25rem 0.6rem;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+
+    .ticket-row-qr {
+        width: 60px;
+        height: 60px;
+        background: #fff;
+        border-radius: 6px;
+        overflow: hidden;
+        flex-shrink: 0;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .ticket-row-qr:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+    }
+
+    .ticket-row-qr img {
+        width: 100%;
+        height: 100%;
+        image-rendering: pixelated;
+    }
+
+    .ticket-estado-badge {
+        padding: 0.15rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .badge-pendiente {
+        background: rgba(251, 191, 36, 0.15);
+        color: #fbbf24;
+    }
+
+    .badge-validado {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+    }
+
+    /* Botones de descarga */
+    .btn-descargar-qr {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        background: rgba(147, 51, 234, 0.15);
+        color: var(--accent-primary);
+        text-decoration: none;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+
+    .btn-descargar-qr:hover {
+        background: rgba(147, 51, 234, 0.3);
+        color: #fff;
+        transform: scale(1.1);
+    }
+
+    .btn-descargar-todos {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.4rem 1rem;
+        border-radius: 6px;
+        background: rgba(147, 51, 234, 0.12);
+        color: var(--accent-primary);
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn-descargar-todos:hover {
+        background: rgba(147, 51, 234, 0.25);
+        color: #fff;
+    }
+
+    /* Estado vacío */
+    .historial-vacio {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-secondary);
+    }
+
+    .historial-vacio .icono {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .historial-vacio h2 {
+        margin-bottom: 0.5rem;
+        font-size: 1.3rem;
+    }
+
+    @media (max-width: 600px) {
+        .ticket-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .ticket-row-qr {
+            align-self: center;
+            width: 80px;
+            height: 80px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="historial-container">
+
+    <div class="historial-header">
+        <h1><i class="fas fa-history"></i> Mi historial de compras</h1>
+        <p>Revisá todas tus entradas y transacciones anteriores</p>
+    </div>
 
     {% if ventas %}
-    <!-- ═══════════════════════════════════════════════════════════════════
-         TABLA DE TRANSACCIONES
-         Se mostrará cuando existan los modelos Venta y Ticket.
-         ═══════════════════════════════════════════════════════════════════ -->
-    <table border="1" id="tabla-historial">
-        <thead>
-            <tr>
-                <th>Nº Venta</th>
-                <th>Fecha</th>
-                <th>Película</th>
-                <th>Sala</th>
-                <th>Asiento</th>
-                <th>Monto</th>
-                <th>Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for venta in ventas %}
-            <tr>
-                <td>#{{ venta.id_venta }}</td>
-                <td>{{ venta.fecha_hora_transaccion|date:"d/m/Y H:i" }}</td>
-                <td>—</td>
-                <td>—</td>
-                <td>—</td>
-                <td>${{ venta.monto_total }}</td>
-                <td>{{ venta.estado_pago }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        {% for venta in ventas %}
+        <div class="venta-card" id="venta-{{ venta.id_venta }}">
+            <div class="venta-header" onclick="toggleVenta('venta-{{ venta.id_venta }}')">
+                <div>
+                    <span class="venta-id">Venta #{{ venta.id_venta }}</span>
+                    <span class="venta-fecha">· {{ venta.fecha_hora_transaccion|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span class="venta-estado estado-{{ venta.estado_pago }}">{{ venta.get_estado_pago_display }}</span>
+                    <span class="venta-monto">${{ venta.monto_total }}</span>
+                    <span class="venta-toggle">▼</span>
+                </div>
+            </div>
+            <div class="venta-tickets">
+                {% for ticket in venta.tickets.all %}
+                <div class="ticket-row">
+                    <div class="ticket-row-qr">
+                        {% if ticket.imagen_qr %}
+                            <img src="{{ ticket.imagen_qr.url }}" alt="QR" onclick="ampliarQR('{{ ticket.imagen_qr.url }}', '{{ ticket.funcion.pelicula.titulo }}', '{{ ticket.asiento.fila }}{{ ticket.asiento.numero }}')">
+                        {% else %}
+                            <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#eee;color:#999;font-size:1.5rem;">
+                                <i class="fas fa-qrcode"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="ticket-row-info">
+                        <div class="ticket-row-pelicula">{{ ticket.funcion.pelicula.titulo }}</div>
+                        <div class="ticket-row-meta">
+                            <span><i class="fas fa-calendar-alt"></i>{{ ticket.funcion.fecha|date:"d/m/Y" }}</span>
+                            <span><i class="fas fa-clock"></i>{{ ticket.funcion.hora_inicio|time:"H:i" }}</span>
+                            <span><i class="fas fa-door-open"></i>{{ ticket.funcion.sala.nombre_sala }}</span>
+                        </div>
+                    </div>
+                    <span class="ticket-row-asiento">{{ ticket.asiento.fila }}{{ ticket.asiento.numero }}</span>
+                    <span class="ticket-estado-badge badge-{{ ticket.estado_uso }}">{{ ticket.get_estado_uso_display }}</span>
+                    {% if ticket.imagen_qr %}
+                    <a href="{% url 'compras:descargar_qr_ticket' ticket.id_ticket %}" class="btn-descargar-qr" title="Descargar QR">
+                        <i class="fas fa-download"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
 
     {% else %}
-    <!-- ═══════════════════════════════════════════════════════════════════
-         ESTADO VACÍO
-         Se muestra cuando el usuario no tiene transacciones.
-         ═══════════════════════════════════════════════════════════════════ -->
-    <div id="historial-vacio">
-        <p>🎟️</p>
-        <h2>Aún no tenés compras</h2>
-        <p>
-            Cuando compres tus entradas, van a aparecer acá con todos
-            los detalles: película, sala, asiento y código QR.
-        </p>
-    </div>
+        <div class="historial-vacio">
+            <div class="icono">🎟️</div>
+            <h2>Aún no tenés compras</h2>
+            <p>Cuando compres tus entradas, van a aparecer acá con todos los detalles y códigos QR.</p>
+            <a href="{% url 'inicio' %}" class="btn btn-primary mt-3 px-4 py-2">
+                <i class="fas fa-film me-2"></i>Ir a la Cartelera
+            </a>
+        </div>
     {% endif %}
 
 </div>
+
+<!-- Modal para ampliar QR -->
+<div class="modal fade" id="modalQR" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
+        <div class="modal-content" style="background: #1a1025; border: 1px solid rgba(147,51,234,0.3); border-radius: 16px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title text-white" id="modalQRTitulo">Código QR</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div style="background: #fff; border-radius: 12px; padding: 1.5rem; display: inline-block;">
+                    <img id="modalQRImagen" src="" alt="QR" style="width: 250px; height: 250px; image-rendering: pixelated;">
+                </div>
+                <p class="text-muted small mt-3" id="modalQRDetalle"></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleVenta(id) {
+        const card = document.getElementById(id);
+        card.classList.toggle('abierto');
+    }
+
+    function ampliarQR(urlImagen, pelicula, asiento) {
+        if (!urlImagen) return;
+        document.getElementById('modalQRImagen').src = urlImagen;
+        document.getElementById('modalQRTitulo').innerText = pelicula;
+        document.getElementById('modalQRDetalle').innerText = 'Butaca ' + asiento;
+        const modal = new bootstrap.Modal(document.getElementById('modalQR'));
+        modal.show();
+    }
+</script>
 {% endblock %}
