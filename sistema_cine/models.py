@@ -21,3 +21,7 @@ from modelos.sala.asiento import Asiento
 # ─── Modelos de Programación (Funciones) ─────────────────────────────────────
 from modelos.funcion.funcion import Funcion
 
+# ─── Modelos de Ventas (Transacciones y Tickets) ─────────────────────────────
+from modelos.ventas.venta import Venta
+from modelos.ventas.ticket import Ticket
+

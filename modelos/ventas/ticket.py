@@ -37,6 +37,7 @@ class Ticket(models.Model):
     )
     
     estado_uso = models.CharField(max_length=20, choices=ESTADOS_USO, default='pendiente')
+    imagen_qr = models.ImageField(upload_to='tickets_qr/', blank=True, null=True)
 
     class Meta:
         app_label = 'sistema_cine'
