@@ -1,0 +1,311 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block titulo %}Comprar Entradas - CineFSA{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sala-container {
+        background-color: var(--color-background-soft);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        margin-top: 2rem;
+    }
+    .pantalla {
+        background: linear-gradient(to bottom, #4CAF50, transparent);
+        height: 30px;
+        border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+        margin-bottom: 3rem;
+        text-align: center;
+        color: #fff;
+        font-weight: bold;
+        box-shadow: 0 10px 20px rgba(76, 175, 80, 0.2);
+    }
+    
+    .grilla-asientos {
+        display: grid;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    .asiento {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px 8px 4px 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+        color: white;
+    }
+
+    /* Estados de Asiento */
+    .asiento.disponible {
+        background-color: #3b82f6; /* Azul */
+    }
+    .asiento.disponible:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+    .asiento.seleccionado {
+        background-color: #f59e0b; /* Naranja/Amarillo */
+        border-color: #fff;
+        transform: scale(1.1);
+    }
+    .asiento.ocupado {
+        background-color: #ef4444; /* Rojo */
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    .info-compra {
+        background-color: var(--color-surface);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-top: 2rem;
+    }
+
+    .resumen-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Izquierda: Mapa de Asientos -->
+        <div class="col-lg-8">
+            <h2 class="mb-1">{{ funcion.pelicula.titulo }}</h2>
+            <p class="text-muted mb-4">
+                <i class="fas fa-calendar-alt"></i> {{ funcion.fecha|date:"d/m/Y" }} | 
+                <i class="fas fa-clock"></i> {{ funcion.hora_inicio|time:"H:i" }} |
+                <i class="fas fa-door-open"></i> {{ sala.nombre_sala }}
+            </p>
+
+            <div class="sala-container">
+                <div class="pantalla">PANTALLA</div>
+                <div id="contenedor-grilla" class="grilla-asientos">
+                    <!-- Javascript generará la grilla acá -->
+                </div>
+                
+                <div class="d-flex justify-content-center gap-4 mt-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="asiento disponible" style="width:20px;height:20px;"></div> Libre
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="asiento seleccionado" style="width:20px;height:20px;"></div> Tu Selección
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="asiento ocupado" style="width:20px;height:20px;"></div> Ocupado
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Derecha: Resumen y Pago -->
+        <div class="col-lg-4">
+            <div class="info-compra sticky-top" style="top: 100px;">
+                <h4 class="mb-4">Resumen de Compra</h4>
+                
+                <div class="resumen-item">
+                    <span class="text-muted">Asientos seleccionados:</span>
+                    <span id="contador-asientos" class="fw-bold">0</span>
+                </div>
+                
+                <div class="resumen-item">
+                    <span class="text-muted">Precio por entrada:</span>
+                    <span>${{ funcion.precio_entrada }}</span>
+                </div>
+                
+                <div class="resumen-item mt-3">
+                    <span class="fs-5">Total a Pagar:</span>
+                    <span class="fs-4 fw-bold text-success">$<span id="monto-total">0.00</span></span>
+                </div>
+
+                <div class="mt-4">
+                    <label class="form-label text-muted">Método de Pago</label>
+                    <select id="metodo-pago" class="form-select bg-dark text-white border-secondary mb-4">
+                        <option value="mercado_pago">Mercado Pago</option>
+                        <option value="tarjeta">Tarjeta de Crédito / Débito</option>
+                    </select>
+                </div>
+
+                <button id="btn-pagar" class="btn btn-primary w-100 py-3 fw-bold disabled" onclick="procesarPago()">
+                    <i class="fas fa-shopping-cart me-2"></i> Confirmar y Pagar
+                </button>
+                
+                <div id="alerta-error" class="alert alert-danger mt-3 d-none"></div>
+                <div id="alerta-exito" class="alert alert-success mt-3 d-none"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ layout|safe|json_script:"layout-data" }}
+{{ asientos_ocupados|safe|json_script:"ocupados-data" }}
+<script>
+    const layout = JSON.parse(document.getElementById('layout-data').textContent);
+    const asientosOcupadosIds = JSON.parse(document.getElementById('ocupados-data').textContent);
+    const precioEntrada = parseFloat("{{ funcion.precio_entrada }}".replace(',', '.'));
+    
+    // Todos los asientos físicos disponibles en BD para mapearlos visualmente
+    // Generamos un diccionario rápido desde el HTML para atar grilla con BD
+    const bdAsientos = {
+        {% for asiento in asientos_totales %}
+        "{{ asiento.posicion_y }}_{{ asiento.posicion_x }}": {
+            id: {{ asiento.id_asiento }},
+            nombre: "{{ asiento.fila }}{{ asiento.numero }}"
+        },
+        {% endblock %}
+    };
+
+    let seleccionados = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        dibujarGrilla();
+    });
+
+    function dibujarGrilla() {
+        const contenedor = document.getElementById('contenedor-grilla');
+        if (!layout.filas || !layout.columnas) {
+            contenedor.innerHTML = "<p class='text-center w-100'>Layout no configurado.</p>";
+            return;
+        }
+
+        contenedor.style.gridTemplateColumns = `repeat(${layout.columnas}, 40px)`;
+        contenedor.style.gridTemplateRows = `repeat(${layout.filas}, 40px)`;
+
+        // Matriz vacía
+        for (let f = 1; f <= layout.filas; f++) {
+            for (let c = 1; c <= layout.columnas; c++) {
+                const div = document.createElement('div');
+                div.dataset.fila = f;
+                div.dataset.columna = c;
+                contenedor.appendChild(div);
+            }
+        }
+
+        // Llenar con asientos
+        if(layout.asientos) {
+            layout.asientos.forEach(a => {
+                const index = (parseInt(a.fila) - 1) * layout.columnas + (parseInt(a.columna) - 1);
+                const celda = contenedor.children[index];
+                if (celda) {
+                    const claveBD = `${a.fila}_${a.columna}`;
+                    const infoBD = bdAsientos[claveBD];
+                    
+                    if (infoBD) {
+                        celda.className = 'asiento';
+                        celda.innerText = infoBD.nombre;
+                        celda.dataset.id_asiento = infoBD.id;
+                        
+                        // Validar si ya está vendido
+                        if (asientosOcupadosIds.includes(infoBD.id)) {
+                            celda.classList.add('ocupado');
+                            celda.title = "Asiento ocupado";
+                        } else {
+                            celda.classList.add('disponible');
+                            celda.onclick = () => toggleAsiento(celda, infoBD.id);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function toggleAsiento(elemento, id_asiento) {
+        if (elemento.classList.contains('ocupado')) return;
+
+        if (elemento.classList.contains('seleccionado')) {
+            elemento.classList.remove('seleccionado');
+            seleccionados = seleccionados.filter(id => id !== id_asiento);
+        } else {
+            elemento.classList.add('seleccionado');
+            seleccionados.push(id_asiento);
+        }
+        
+        actualizarResumen();
+    }
+
+    function actualizarResumen() {
+        const cantidad = seleccionados.length;
+        const total = (cantidad * precioEntrada).toFixed(2);
+        
+        document.getElementById('contador-asientos').innerText = cantidad;
+        document.getElementById('monto-total').innerText = total;
+        
+        const btnPagar = document.getElementById('btn-pagar');
+        if (cantidad > 0) {
+            btnPagar.classList.remove('disabled');
+        } else {
+            btnPagar.classList.add('disabled');
+        }
+    }
+
+    async function procesarPago() {
+        if (seleccionados.length === 0) return;
+
+        const btnPagar = document.getElementById('btn-pagar');
+        btnPagar.classList.add('disabled');
+        btnPagar.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Procesando...';
+        
+        const metodo = document.getElementById('metodo-pago').value;
+        const csrfToken = '{{ csrf_token }}';
+
+        try {
+            const response = await fetch("{% url 'compras:procesar_pago' funcion.id_funcion %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    asientos_ids: seleccionados,
+                    metodo_pago: metodo
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                document.getElementById('alerta-error').classList.add('d-none');
+                const alertaExito = document.getElementById('alerta-exito');
+                alertaExito.innerText = data.mensaje;
+                alertaExito.classList.remove('d-none');
+                
+                // Redirigir a ver el ticket (lo implementaremos luego)
+                setTimeout(() => {
+                    window.location.href = "/"; // Ir al inicio por ahora
+                }, 2000);
+            } else {
+                throw new Error(data.error || 'Error desconocido al procesar el pago.');
+            }
+        } catch (error) {
+            const alertaError = document.getElementById('alerta-error');
+            alertaError.innerText = error.message;
+            alertaError.classList.remove('d-none');
+            
+            btnPagar.classList.remove('disabled');
+            btnPagar.innerHTML = '<i class="fas fa-shopping-cart me-2"></i> Confirmar y Pagar';
+            
+            // Si hubo overbooking (condición de carrera), recargamos los asientos en 3 segundos
+            if(error.message.includes("ocupados por otra persona")) {
+                setTimeout(() => window.location.reload(), 3000);
+            }
+        }
+    }
+</script>
+{% endblock %}

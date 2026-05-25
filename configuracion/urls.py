@@ -34,6 +34,9 @@ urlpatterns = [
     # URLs del panel interno del complejo cinematográfico.
     # Incluye: editor de salas, gestión de cartelera, validador QR, etc.
     path('panel/', include('vistas.urls_panel')),
+
+    # URLs de compras y tickets
+    path('compras/', include('vistas.urls_compras')),
 ]
 
 # ─── SERVIR ARCHIVOS MULTIMEDIA EN DESARROLLO ─────────────────────────────────

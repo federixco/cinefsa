@@ -24,9 +24,13 @@ Historial:
     se implementen los modelos Venta y Ticket en pasos posteriores).
 """
 
+# pyrefly: ignore [missing-import]
 from django.shortcuts import render, redirect
+# pyrefly: ignore [missing-import]
 from django.contrib.auth import login, logout
+# pyrefly: ignore [missing-import]
 from django.contrib.auth.decorators import login_required
+# pyrefly: ignore [missing-import]
 from django.contrib import messages
 
 from formularios.autenticacion import FormularioRegistro, FormularioLogin
