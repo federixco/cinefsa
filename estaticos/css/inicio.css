@@ -158,7 +158,9 @@
     border-radius: var(--border-radius);
     overflow: hidden;
     transition: all 0.3s ease;
-    cursor: default;
+    cursor: pointer; /* Change to pointer for expandability */
+    display: flex;
+    flex-direction: column;
 }
 
 .pelicula-card:hover {
@@ -237,6 +239,52 @@
     border-radius: 10px;
     background-color: rgba(255, 255, 255, 0.06);
     color: var(--text-secondary);
+}
+
+/* Detalle extra expandible (sinopsis) */
+.pelicula-detalle-extra {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 1px solid transparent;
+}
+
+.pelicula-card.expandido .pelicula-detalle-extra {
+    max-height: 500px;
+    opacity: 1;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top-color: var(--border-color);
+}
+
+.pelicula-sinopsis-texto {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.icono-expandir {
+    display: block;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-top: 0.8rem;
+    transition: transform 0.3s ease, color 0.3s ease;
+    opacity: 0.7;
+}
+
+.pelicula-card:hover .icono-expandir {
+    opacity: 1;
+    color: var(--text-primary);
+}
+
+.pelicula-card.expandido .icono-expandir {
+    transform: rotate(180deg);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

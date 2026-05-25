@@ -30,6 +30,16 @@ class Pelicula(models.Model):
         ('+18', 'Mayores de 18 años'),
     ]
 
+    # ESTADO_CHOICES: Posición de la película en la cartelera del complejo.
+    # 'cartelera':   Está siendo proyectada actualmente.
+    # 'proximamente': Anunciada pero aún sin funciones activas.
+    # 'retirada':    Ya no se proyecta, queda en el historial.
+    ESTADO_CHOICES = [
+        ('cartelera',    'En cartelera'),
+        ('proximamente', 'Próximamente'),
+        ('retirada',     'Retirada'),
+    ]
+
     # ─── CAMPOS ───────────────────────────────────────────────────────────────
 
     # titulo: Nombre comercial de la película.
@@ -89,6 +99,17 @@ class Pelicula(models.Model):
         blank=True,
         null=True,
         verbose_name='Póster'
+    )
+
+    # estado: Indica si la película está en cartelera activa, próximamente o retirada.
+    # Permite al administrador gestionar qué se muestra en el portal del cliente.
+    # default='proximamente': cuando se carga una película nueva, se anuncia como
+    # próximamente hasta que el admin la promueva a 'cartelera'.
+    estado = models.CharField(
+        max_length=15,
+        choices=ESTADO_CHOICES,
+        default='proximamente',
+        verbose_name='Estado en cartelera'
     )
 
     # ─── CONFIGURACIÓN DEL MODELO ─────────────────────────────────────────────

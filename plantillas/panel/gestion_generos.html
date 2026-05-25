@@ -1,0 +1,121 @@
+{% extends 'base/base_panel.html' %}
+{% load static %}
+
+{% block active_cartelera %}active{% endblock %}
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/panel_usuarios.css' %}">
+<link rel="stylesheet" href="{% static 'css/cartelera.css' %}">
+{% endblock %}
+
+{% block panel_content %}
+<!--
+    panel/gestion_generos.html — Gestión de géneros cinematográficos (RF-A02).
+    Secciones:
+        1. Encabezado con botón para ir a Películas.
+        2. Formulario de creación rápida inline.
+        3. Tabla de géneros con editar / eliminar.
+-->
+
+<!-- Encabezado de sección -->
+<div class="cartelera-header">
+    <div>
+        <h1>🎭 Géneros Cinematográficos</h1>
+        <p class="subtitulo">Administrá los géneros disponibles para clasificar las películas.</p>
+    </div>
+    <div class="header-acciones">
+        <a href="{% url 'panel:listar_peliculas' %}" class="btn btn-secondary" id="btn-ir-peliculas">
+            🎬 Ver Películas
+        </a>
+    </div>
+</div>
+
+<!-- ══════ CREACIÓN RÁPIDA ══════════════════════════════════════════════════ -->
+<div class="crear-rapido-container">
+    <h2>Agregar nuevo género</h2>
+    <form method="post" action="{% url 'panel:crear_genero' %}" id="form-crear-genero">
+        {% csrf_token %}
+        <div class="crear-rapido-row">
+            {{ formulario_genero.descripcion }}
+            <button type="submit" class="btn btn-primary" id="btn-crear-genero">
+                + Agregar género
+            </button>
+        </div>
+        <!-- Errores de validación del formulario de creación -->
+        {% if formulario_genero.errors %}
+            <ul class="errores-campo" id="errores-crear-genero" style="margin-top:0.6rem;">
+                {% for campo, errores in formulario_genero.errors.items %}
+                    {% for error in errores %}
+                        <li>⚠️ {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </form>
+</div>
+
+<!-- ══════ TABLA DE GÉNEROS ═════════════════════════════════════════════════ -->
+<div class="tabla-container">
+    <div class="tabla-info">
+        <span class="resultado-count">
+            <strong>{{ generos|length }}</strong> género{{ generos|length|pluralize }} registrado{{ generos|length|pluralize }}
+        </span>
+    </div>
+
+    {% if generos %}
+    <table class="tabla-cartelera" id="tabla-generos">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nombre del género</th>
+                <th>Películas asociadas</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for genero in generos %}
+            <tr id="fila-genero-{{ genero.pk }}">
+                <td>{{ genero.pk }}</td>
+                <td class="col-titulo">{{ genero.descripcion }}</td>
+                <td>
+                    <span class="badge badge-funciones">
+                        {{ genero.peliculas.count }} película{{ genero.peliculas.count|pluralize }}
+                    </span>
+                </td>
+                <td>
+                    <div class="acciones-cell">
+                        <!-- Editar -->
+                        <a href="{% url 'panel:editar_genero' genero.pk %}"
+                           class="btn-editar-row"
+                           id="btn-editar-genero-{{ genero.pk }}">
+                            ✏️ Editar
+                        </a>
+                        <!-- Eliminar (POST con confirmación) -->
+                        <form method="post"
+                              action="{% url 'panel:eliminar_genero' genero.pk %}"
+                              id="form-eliminar-genero-{{ genero.pk }}"
+                              style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="btn-eliminar-row"
+                                    id="btn-eliminar-genero-{{ genero.pk }}"
+                                    onclick="return confirm('¿Eliminar el género «{{ genero.descripcion }}»? Las películas que lo usaban seguirán existiendo.')">
+                                🗑️ Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state" id="estado-vacio-generos">
+        <div class="empty-icon">🎭</div>
+        <p>No hay géneros registrados. Usá el formulario de arriba para agregar el primero.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock panel_content %}
