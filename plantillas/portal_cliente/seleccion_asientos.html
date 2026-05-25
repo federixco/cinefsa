@@ -154,11 +154,9 @@
 {% endblock %}
 
 {% block extra_js %}
-{{ layout|safe|json_script:"layout-data" }}
-{{ asientos_ocupados|safe|json_script:"ocupados-data" }}
 <script>
-    const layout = JSON.parse(document.getElementById('layout-data').textContent);
-    const asientosOcupadosIds = JSON.parse(document.getElementById('ocupados-data').textContent);
+    const layout = {{ layout|safe }};
+    const asientosOcupadosIds = {{ asientos_ocupados|safe }};
     const precioEntrada = parseFloat("{{ funcion.precio_entrada }}".replace(',', '.'));
     
     // Todos los asientos físicos disponibles en BD para mapearlos visualmente
@@ -166,10 +164,10 @@
     const bdAsientos = {
         {% for asiento in asientos_totales %}
         "{{ asiento.posicion_y }}_{{ asiento.posicion_x }}": {
-            id: {{ asiento.id_asiento }},
+            id: {{ asiento.id }},
             nombre: "{{ asiento.fila }}{{ asiento.numero }}"
         },
-        {% endblock %}
+        {% endfor %}
     };
 
     let seleccionados = [];
@@ -266,7 +264,7 @@
         const csrfToken = '{{ csrf_token }}';
 
         try {
-            const response = await fetch("{% url 'compras:procesar_pago' funcion.id_funcion %}", {
+            const response = await fetch("{% url 'compras:procesar_pago' funcion.id %}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -283,13 +281,13 @@
             if (response.ok) {
                 document.getElementById('alerta-error').classList.add('d-none');
                 const alertaExito = document.getElementById('alerta-exito');
-                alertaExito.innerText = data.mensaje;
+                alertaExito.innerText = data.mensaje + ' Redirigiendo a tus tickets...';
                 alertaExito.classList.remove('d-none');
                 
-                // Redirigir a ver el ticket (lo implementaremos luego)
+                // Redirigir a la página de tickets con QR
                 setTimeout(() => {
-                    window.location.href = "/"; // Ir al inicio por ahora
-                }, 2000);
+                    window.location.href = data.redirect_url || "/";
+                }, 1500);
             } else {
                 throw new Error(data.error || 'Error desconocido al procesar el pago.');
             }
