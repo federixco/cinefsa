@@ -545,17 +545,31 @@ class FormularioEncuesta(forms.ModelForm):
         """
         Validación de fechas:
         - fecha_fin debe ser posterior a fecha_inicio.
-        - fecha_evento no puede ser anterior a fecha_fin.
+        - fecha_inicio no puede ser posterior a fecha_evento.
+        - fecha_fin no puede ser posterior a fecha_evento.
         """
         datos = super().clean()
         fecha_inicio = datos.get('fecha_inicio')
         fecha_fin    = datos.get('fecha_fin')
+        fecha_evento = datos.get('fecha_evento')
 
         if fecha_inicio and fecha_fin:
             if fecha_fin <= fecha_inicio:
                 self.add_error(
                     'fecha_fin',
                     'La fecha de cierre debe ser posterior a la fecha de inicio.'
+                )
+
+        if fecha_evento:
+            if fecha_inicio and fecha_inicio.date() > fecha_evento:
+                self.add_error(
+                    'fecha_inicio',
+                    'La votación no puede iniciar después del día del evento.'
+                )
+            if fecha_fin and fecha_fin.date() > fecha_evento:
+                self.add_error(
+                    'fecha_fin',
+                    'La votación no puede finalizar después del día del evento.'
                 )
 
         return datos
