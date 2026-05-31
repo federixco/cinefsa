@@ -2,7 +2,7 @@
    GUIA DE INICIO RAPIDO — CINEFSA
    Para: Agustin, Ulises y cualquier colaborador del proyecto
 ================================================================================
-
+hola
 REQUISITOS PREVIOS
 ------------------
 - Tener instalado Python 3.10+ (https://www.python.org/downloads/)
