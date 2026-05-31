@@ -21,7 +21,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from datetime import datetime, timedelta
 
-from sistema_cine.models import Genero, Pelicula, Funcion, Sala
+from sistema_cine.models import Genero, Pelicula, Funcion, Sala, Encuesta
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -451,3 +451,111 @@ class FormularioFuncion(forms.ModelForm):
         return datos
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+#  FORMULARIO DE ENCUESTA DE VOTACIÓN (RF-A04)
+# ══════════════════════════════════════════════════════════════════════════════
+
+class FormularioEncuesta(forms.ModelForm):
+    """
+    ModelForm para crear y editar encuestas de votación del Cine Club (RF-A04).
+
+    Campos:
+        - titulo:        Nombre de la encuesta (se muestra en el portal del cliente).
+        - descripcion:   Texto explicativo del evento (opcional).
+        - fecha_evento:  La fecha del evento especial en el cine (DATE).
+        - fecha_inicio:  Desde cuándo los clientes pueden votar (DATETIME).
+        - fecha_fin:     Hasta cuándo los clientes pueden votar (DATETIME).
+        - peliculas:     Películas clásicas candidatas (solo las con es_clasica=True).
+        - esta_activa:   Control manual del administrador.
+
+    El campo 'peliculas' filtra el queryset para mostrar únicamente
+    aquellas películas marcadas como clásicas en la gestión de cartelera.
+    """
+
+    class Meta:
+        model = Encuesta
+        fields = [
+            'titulo',
+            'descripcion',
+            'fecha_evento',
+            'fecha_inicio',
+            'fecha_fin',
+            'peliculas',
+            'esta_activa',
+        ]
+        labels = {
+            'titulo':       'Título de la encuesta',
+            'descripcion':  'Descripción del evento (opcional)',
+            'fecha_evento': 'Fecha del evento especial',
+            'fecha_inicio': 'Inicio de la votación',
+            'fecha_fin':    'Cierre de la votación',
+            'peliculas':    'Películas candidatas (solo clásicas)',
+            'esta_activa':  '¿Activar encuesta al guardar?',
+        }
+        widgets = {
+            'titulo': forms.TextInput(attrs={
+                'id':          'campo-encuesta-titulo',
+                'placeholder': 'Ej: Cine Club — Noche de Clásicos Julio 2026',
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'id':          'campo-encuesta-descripcion',
+                'rows':        3,
+                'placeholder': 'Describí el evento especial para los clientes...',
+            }),
+            # Selectores de fecha y datetime nativos del navegador
+            'fecha_evento': forms.DateInput(
+                attrs={'id': 'campo-encuesta-fecha-evento', 'type': 'date'},
+                format='%Y-%m-%d',
+            ),
+            'fecha_inicio': forms.DateTimeLocalInput(
+                attrs={'id': 'campo-encuesta-fecha-inicio'},
+                format='%Y-%m-%dT%H:%M',
+            ),
+            'fecha_fin': forms.DateTimeLocalInput(
+                attrs={'id': 'campo-encuesta-fecha-fin'},
+                format='%Y-%m-%dT%H:%M',
+            ),
+            # CheckboxSelectMultiple: más intuitivo para selección múltiple
+            'peliculas': forms.CheckboxSelectMultiple(attrs={
+                'id': 'campo-encuesta-peliculas',
+            }),
+            'esta_activa': forms.CheckboxInput(attrs={
+                'id': 'campo-encuesta-activa',
+            }),
+        }
+        error_messages = {
+            'titulo':       {'required': 'El título de la encuesta es obligatorio.'},
+            'fecha_evento': {'required': 'Ingresá la fecha del evento especial.'},
+            'fecha_inicio': {'required': 'Ingresá la fecha y hora de inicio de la votación.'},
+            'fecha_fin':    {'required': 'Ingresá la fecha y hora de cierre de la votación.'},
+        }
+
+    def __init__(self, *args, **kwargs):
+        """
+        Filtra el queryset de películas para mostrar solo las clásicas.
+        Una película solo puede ser candidata en una encuesta si tiene
+        el flag es_clasica=True marcado en la gestión de cartelera.
+        """
+        super().__init__(*args, **kwargs)
+        self.fields['peliculas'].queryset = Pelicula.objects.filter(
+            es_clasica=True
+        ).order_by('titulo')
+
+    def clean(self):
+        """
+        Validación de fechas:
+        - fecha_fin debe ser posterior a fecha_inicio.
+        - fecha_evento no puede ser anterior a fecha_fin.
+        """
+        datos = super().clean()
+        fecha_inicio = datos.get('fecha_inicio')
+        fecha_fin    = datos.get('fecha_fin')
+
+        if fecha_inicio and fecha_fin:
+            if fecha_fin <= fecha_inicio:
+                self.add_error(
+                    'fecha_fin',
+                    'La fecha de cierre debe ser posterior a la fecha de inicio.'
+                )
+
+        return datos

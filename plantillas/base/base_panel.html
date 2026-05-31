@@ -46,6 +46,15 @@
                     <span class="sidebar-badge">Próx.</span>
                 </a>
             </div>
+
+            <div class="sidebar-section">
+                <span class="sidebar-section-title">Cine Club</span>
+                <!-- RF-A04: Monitor de Votaciones -->
+                <a href="{% url 'panel:monitor_votaciones' %}" class="sidebar-link {% block active_votaciones %}{% endblock %}">
+                    <span class="sidebar-icon">🗳️</span>
+                    <span class="sidebar-text">Votaciones</span>
+                </a>
+            </div>
         </nav>
 
         <div class="sidebar-footer">

@@ -38,6 +38,15 @@ from vistas.panel.gestion_cartelera import (
     eliminar_funcion_view,
 )
 
+# ── RF-A04: Monitor de Votaciones ─────────────────────────────────────────────
+from vistas.panel.gestion_votaciones import (
+    monitor_votaciones_view,
+    detalle_encuesta_view,
+    crear_encuesta_view,
+    toggle_encuesta_view,
+    eliminar_encuesta_view,
+)
+
 # app_name: Namespace para las URLs del panel.
 app_name = 'panel'
 
@@ -70,4 +79,11 @@ urlpatterns = [
     path('cartelera/funciones/crear/', crear_funcion_view, name='crear_funcion'),
     path('cartelera/funciones/<int:funcion_id>/editar/', editar_funcion_view, name='editar_funcion'),
     path('cartelera/funciones/<int:funcion_id>/eliminar/', eliminar_funcion_view, name='eliminar_funcion'),
+
+    # ── RF-A04: Monitor de Votaciones — ENCUESTAS ─────────────────────────────
+    path('votaciones/', monitor_votaciones_view, name='monitor_votaciones'),
+    path('votaciones/crear/', crear_encuesta_view, name='crear_encuesta'),
+    path('votaciones/<int:encuesta_id>/detalle/', detalle_encuesta_view, name='detalle_votacion'),
+    path('votaciones/<int:encuesta_id>/toggle/', toggle_encuesta_view, name='toggle_encuesta'),
+    path('votaciones/<int:encuesta_id>/eliminar/', eliminar_encuesta_view, name='eliminar_encuesta'),
 ]

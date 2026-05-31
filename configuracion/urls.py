@@ -18,6 +18,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import redirect
 from vistas.portal import inicio_view
+# ── RF-C04: Módulo de votación Cine Club ─────────────────────────────────────
+from vistas.votacion import votacion_view, emitir_voto_view
 
 
 urlpatterns = [
@@ -34,6 +36,10 @@ urlpatterns = [
     # URLs del panel interno del complejo cinematográfico.
     # Incluye: editor de salas, gestión de cartelera, validador QR, etc.
     path('panel/', include('vistas.urls_panel')),
+
+    # ── RF-C04: Portal de votación Cine Club ─────────────────────────────────
+    path('cine-club/', votacion_view, name='cine_club'),
+    path('cine-club/<int:encuesta_id>/votar/', emitir_voto_view, name='emitir_voto'),
 ]
 
 # ─── SERVIR ARCHIVOS MULTIMEDIA EN DESARROLLO ─────────────────────────────────

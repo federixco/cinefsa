@@ -21,3 +21,5 @@ from modelos.sala.asiento import Asiento
 # ─── Modelos de Programación (Funciones) ─────────────────────────────────────
 from modelos.funcion.funcion import Funcion
 
+# ─── Modelos de Votación / Cine Club (RF-C04 y RF-A04) ───────────────────────
+from modelos.votacion.votacion import Encuesta, Voto
