@@ -1,4 +1,4 @@
-"""launcher.py — Mini launcher para CineFSA. Doble clic para abrir."""
+"""launcher.py — Mini launcher para CineFSA."""
 
 import tkinter as tk, subprocess, threading, webbrowser, socket, os, time
 
@@ -122,9 +122,16 @@ class App:
             self._msg('Django detenido.')
 
     def _close(self):
-        if self.django_proc: self.django_proc.terminate()
+        try:
+            if self.django_proc: self.django_proc.terminate()
+        except:
+            pass
         self.r.destroy()
+        import sys; sys.exit(0)
 
 
 if __name__ == '__main__':
-    App().r.mainloop()
+    try:
+        App().r.mainloop()
+    except KeyboardInterrupt:
+        pass
