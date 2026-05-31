@@ -141,6 +141,13 @@
                                             onclick="confirmarCompra('{{ pelicula.titulo|escapejs }}', '{{ funcion.hora_inicio|time:'H:i' }}', '{% url 'compras:seleccion_asientos' funcion.id %}')">
                                         <i class="fas fa-clock"></i>
                                         <strong>{{ funcion.hora_inicio|time:"H:i" }}</strong>
+                                        {% with disp=disponibilidad|default_if_none:"" %}
+                                            {% for key, val in disponibilidad.items %}
+                                                {% if key == funcion.id %}
+                                                    <small style="font-size: 0.65rem; opacity: 0.8;">{{ val }} lugares</small>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
                                     </button>
                                 {% empty %}
                                     <p class="text-muted small msj-vacio">No hay horarios publicados.</p>

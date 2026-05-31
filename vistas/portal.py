@@ -10,6 +10,7 @@ El login solo se exige para acciones transaccionales (compra de tickets).
 
 from django.shortcuts import render
 from django.utils import timezone
+from django.db import connection
 from sistema_cine.models import Pelicula, Genero, Funcion
 
 
@@ -71,6 +72,19 @@ def inicio_view(request):
     # Todos los géneros (para los filtros)
     generos = Genero.objects.all()
 
+    # ─── Disponibilidad de asientos (usa fn_asientos_disponibles de MySQL) ─────
+    # Genera un diccionario {funcion_id: asientos_disponibles} para cada función activa.
+    disponibilidad = {}
+    try:
+        with connection.cursor() as cursor:
+            for funcion in funciones_activas:
+                cursor.execute("SELECT fn_asientos_disponibles(%s)", [funcion.id])
+                resultado = cursor.fetchone()
+                disponibilidad[funcion.id] = resultado[0] if resultado else 0
+    except Exception:
+        # Si la función SQL aún no existe (no se corrió migrate), no romper la página
+        pass
+
     return render(request, 'portal_cliente/inicio.html', {
         'peliculas_cartelera': peliculas_cartelera,
         'peliculas_destacadas': peliculas_destacadas,
@@ -78,5 +92,6 @@ def inicio_view(request):
         'generos': generos,
         'filtro_genero': filtro_genero,
         'dias_slider': dias_slider,
+        'disponibilidad': disponibilidad,
         'titulo_pagina': 'Cartelera',
     })

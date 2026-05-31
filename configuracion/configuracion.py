@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',     # Sistema de mensajes flash (notificaciones temporales al usuario).
     'django.contrib.staticfiles',  # Gestión y servicio de archivos estáticos (CSS, JS, imágenes de UI).
     'sistema_cine',                # Aplicación principal del proyecto: modelos, vistas y lógica de negocio.
+    'debug_toolbar',               # Django Debug Toolbar: panel lateral con SQL, templates, cache, etc.
 ]
 
 
@@ -56,6 +57,7 @@ INSTALLED_APPS = [
 # Actúan como "filtros" que interceptan las peticiones antes de llegar a las vistas
 # y las respuestas antes de enviarse al cliente.
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',            # Django Debug Toolbar (debe ir lo más arriba posible).
     'django.middleware.security.SecurityMiddleware',              # Aplica cabeceras HTTP de seguridad (HSTS, etc.).
     'django.contrib.sessions.middleware.SessionMiddleware',       # Habilita el uso de sesiones en las vistas.
     'django.middleware.common.CommonMiddleware',                  # Normaliza URLs (agrega trailing slash, etc.).
@@ -64,6 +66,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',       # Habilita el sistema de mensajes flash entre vistas.
     'django.middleware.clickjacking.XFrameOptionsMiddleware',     # Previene que el sitio sea embebido en iframes externos (clickjacking).
 ]
+
+# INTERNAL_IPS: IPs desde las que se muestra el Debug Toolbar.
+INTERNAL_IPS = ['127.0.0.1']
 
 # ROOT_URLCONF: Módulo Python que contiene la tabla de enrutamiento principal (urls.py).
 # Cada petición HTTP llega aquí primero para ser derivada a la vista correcta.
