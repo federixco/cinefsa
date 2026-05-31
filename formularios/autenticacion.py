@@ -14,6 +14,7 @@ Formularios:
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from sistema_cine.models import Usuario
+from datetime import date
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -58,6 +59,7 @@ class FormularioRegistro(UserCreationForm):
         label='Fecha de nacimiento',
         widget=forms.DateInput(attrs={
             'type': 'date',
+            'max': date.today().isoformat()
         }),
         help_text='Necesaria para verificar acceso a películas con restricción de edad.',
     )
