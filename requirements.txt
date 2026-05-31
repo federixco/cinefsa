@@ -1,7 +1,8 @@
-﻿asgiref==3.11.1
+asgiref==3.11.1
 Django==4.2.30
 mysqlclient==2.2.8
 pillow==12.2.0
 python-decouple==3.8
 sqlparse==0.5.5
 tzdata==2026.1
+mercadopago>=3.1

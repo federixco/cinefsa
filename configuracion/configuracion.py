@@ -224,4 +224,15 @@ LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/'
 
 # LOGOUT_REDIRECT_URL: URL a la que Django redirige después de cerrar sesión.
+# LOGOUT_REDIRECT_URL: URL a la que Django redirige después de cerrar sesión.
 LOGOUT_REDIRECT_URL = '/auth/login/'
+
+
+# ─── MERCADO PAGO ─────────────────────────────────────────────────────────────
+# Credenciales de SANDBOX (pruebas).
+# El Access Token se lee desde el archivo .env en la raíz del proyecto.
+# Esto evita que quede expuesto al subir el código a GitHub.
+# Formato del .env: MERCADOPAGO_ACCESS_TOKEN=APP_USR-XXXXXXXX
+from decouple import config
+MERCADOPAGO_ACCESS_TOKEN = config('MERCADOPAGO_ACCESS_TOKEN')
+
