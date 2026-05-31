@@ -24,9 +24,13 @@ Historial:
     se implementen los modelos Venta y Ticket en pasos posteriores).
 """
 
+# pyrefly: ignore [missing-import]
 from django.shortcuts import render, redirect
+# pyrefly: ignore [missing-import]
 from django.contrib.auth import login, logout
+# pyrefly: ignore [missing-import]
 from django.contrib.auth.decorators import login_required
+# pyrefly: ignore [missing-import]
 from django.contrib import messages
 
 from formularios.autenticacion import FormularioRegistro, FormularioLogin
@@ -148,21 +152,18 @@ def logout_view(request):
 def historial_view(request):
     """
     Vista del historial de transacciones del usuario (RF-C01).
-
-    Muestra todas las compras realizadas por el usuario logueado.
-    Requiere autenticación (@login_required redirige a LOGIN_URL si
-    el usuario no está logueado).
-
-    Nota: Los modelos Venta y Ticket aún no están implementados.
-    La vista está preparada para incorporarlos cuando se desarrollen
-    los módulos RF-C02 (Compra Online) y RF-C03 (Ticket Digital).
+    Muestra todas las compras realizadas por el usuario logueado,
+    con sus tickets y códigos QR.
     """
-    # TODO: Cuando se implementen los modelos Venta y Ticket,
-    # reemplazar la lista vacía por:
-    # ventas = Venta.objects.filter(
-    #     usuario_id_usuario=request.user
-    # ).order_by('-fecha_hora_transaccion')
-    ventas = []
+    from sistema_cine.models import Venta
+    
+    ventas = Venta.objects.filter(
+        usuario=request.user
+    ).prefetch_related(
+        'tickets__funcion__pelicula',
+        'tickets__funcion__sala',
+        'tickets__asiento'
+    ).order_by('-fecha_hora_transaccion')
 
     return render(request, 'autenticacion/historial.html', {
         'ventas': ventas,

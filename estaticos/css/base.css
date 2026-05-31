@@ -75,19 +75,22 @@ body {
 }
 
 /* â”€â”€â”€ NAVBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.navbar {
+.cinefsa-navbar {
     background: linear-gradient(180deg, #1e1530 0%, var(--bg-surface) 100%);
     border-bottom: 1px solid rgba(147, 51, 234, 0.25);
     padding: 0 2rem;
     height: 64px;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 1030;
     backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
 }
 
 .nav-container {
     max-width: 1200px;
+    width: 100%;
     margin: 0 auto;
     height: 100%;
     display: flex;
@@ -201,7 +204,7 @@ body {
 }
 
 /* â”€â”€â”€ MENÃš DESPLEGABLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.dropdown-menu {
+.cinefsa-dropdown {
     display: none;
     position: absolute;
     top: calc(100% + 12px);
@@ -211,12 +214,12 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 12px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-    z-index: 200;
+    z-index: 1050;
     overflow: hidden;
     animation: slideDown 0.2s ease;
 }
 
-.dropdown-menu.show {
+.cinefsa-dropdown.show {
     display: block;
 }
 

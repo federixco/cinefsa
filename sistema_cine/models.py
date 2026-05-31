@@ -23,3 +23,8 @@ from modelos.funcion.funcion import Funcion
 
 # ─── Modelos de Votación / Cine Club (RF-C04 y RF-A04) ───────────────────────
 from modelos.votacion.votacion import Encuesta, Voto
+
+# ─── Modelos de Ventas (Transacciones y Tickets) ─────────────────────────────
+from modelos.ventas.venta import Venta
+from modelos.ventas.ticket import Ticket
+

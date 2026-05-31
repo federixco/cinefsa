@@ -1,0 +1,201 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block titulo %}Resultado del Pago — CineFSA{% endblock %}
+
+{% block extra_css %}
+<style>
+    .resultado-container {
+        max-width: 550px;
+        margin: 0 auto;
+        padding: 3rem 2rem;
+        text-align: center;
+    }
+
+    .resultado-icono {
+        font-size: 4.5rem;
+        margin-bottom: 1.5rem;
+        animation: fadeInUp 0.6s ease;
+    }
+
+    .resultado-titulo {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+    }
+
+    .resultado-mensaje {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+
+    .resultado-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 2.5rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .resultado-acciones {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .btn-mp {
+        background: linear-gradient(135deg, #009EE3, #00B1EA);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-mp:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 158, 227, 0.4);
+        color: white;
+    }
+
+    .btn-volver {
+        background: transparent;
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-volver:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-primary);
+        border-color: var(--accent-primary);
+    }
+
+    /* Colores por estado */
+    .icono-rejected { color: #ef4444; }
+    .icono-pending { color: #f59e0b; }
+    .icono-seats-taken { color: #f97316; }
+    .icono-cancelled { color: #6b7280; }
+
+    .detalle-tecnico {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-top: 1rem;
+        font-family: monospace;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="resultado-container">
+    <div class="resultado-card">
+
+        {% if resultado == 'rejected' %}
+            <!-- ────────── PAGO RECHAZADO ────────── -->
+            <div class="resultado-icono icono-rejected">❌</div>
+            <h1 class="resultado-titulo">Pago Rechazado</h1>
+            <p class="resultado-mensaje">
+                Tu pago no pudo ser procesado por Mercado Pago.
+                Esto puede ocurrir por fondos insuficientes, datos incorrectos de la tarjeta u otra razón del emisor.
+            </p>
+            {% if detalle %}
+            <div class="detalle-tecnico">
+                <i class="fas fa-info-circle me-1"></i> Detalle: {{ detalle }}
+            </div>
+            {% endif %}
+            <div class="resultado-acciones">
+                <a href="{% url 'inicio' %}" class="btn-mp">
+                    <i class="fas fa-film me-2"></i>Volver a la Cartelera
+                </a>
+            </div>
+
+        {% elif resultado == 'pending' %}
+            <!-- ────────── PAGO PENDIENTE ────────── -->
+            <div class="resultado-icono icono-pending">⏳</div>
+            <h1 class="resultado-titulo">Pago en Proceso</h1>
+            <p class="resultado-mensaje">
+                Tu pago está siendo procesado por Mercado Pago.
+                Esto puede tardar unos minutos. Una vez acreditado, tus tickets estarán disponibles en tu historial.
+            </p>
+            <div class="resultado-acciones">
+                <a href="{% url 'inicio' %}" class="btn-volver">
+                    <i class="fas fa-home me-2"></i>Ir al Inicio
+                </a>
+            </div>
+
+        {% elif resultado == 'seats_taken' %}
+            <!-- ────────── ASIENTOS YA COMPRADOS ────────── -->
+            <div class="resultado-icono icono-seats-taken">🪑</div>
+            <h1 class="resultado-titulo">Asientos No Disponibles</h1>
+            <p class="resultado-mensaje">
+                Mientras realizabas el pago, los asientos que seleccionaste fueron comprados por otro usuario.
+                Esto es muy poco frecuente y lamentamos el inconveniente.
+            </p>
+            <div class="detalle-tecnico">
+                <i class="fas fa-info-circle me-1"></i>
+                En producción, el monto se reembolsa automáticamente vía API de Mercado Pago.
+            </div>
+            <div class="resultado-acciones">
+                <a href="{% url 'inicio' %}" class="btn-mp">
+                    <i class="fas fa-film me-2"></i>Elegir Otros Asientos
+                </a>
+            </div>
+
+        {% elif resultado == 'cancelled' %}
+            <!-- ────────── PAGO CANCELADO ────────── -->
+            <div class="resultado-icono icono-cancelled">↩️</div>
+            <h1 class="resultado-titulo">Pago Cancelado</h1>
+            <p class="resultado-mensaje">
+                Cancelaste el proceso de pago en Mercado Pago.
+                No se realizó ningún cargo. Tus asientos fueron liberados y podés intentar nuevamente.
+            </p>
+            <div class="resultado-acciones">
+                <a href="{% url 'inicio' %}" class="btn-mp">
+                    <i class="fas fa-film me-2"></i>Volver a la Cartelera
+                </a>
+            </div>
+
+        {% else %}
+            <!-- ────────── ESTADO DESCONOCIDO ────────── -->
+            <div class="resultado-icono icono-cancelled">⚠️</div>
+            <h1 class="resultado-titulo">Estado Desconocido</h1>
+            <p class="resultado-mensaje">
+                No pudimos determinar el estado de tu pago.
+                Por favor, revisá tu historial de compras o contactá con soporte.
+            </p>
+            <div class="resultado-acciones">
+                <a href="{% url 'inicio' %}" class="btn-volver">
+                    <i class="fas fa-home me-2"></i>Ir al Inicio
+                </a>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

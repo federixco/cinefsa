@@ -40,10 +40,15 @@ urlpatterns = [
     # ── RF-C04: Portal de votación Cine Club ─────────────────────────────────
     path('cine-club/', votacion_view, name='cine_club'),
     path('cine-club/<int:encuesta_id>/votar/', emitir_voto_view, name='emitir_voto'),
+
+    # URLs de compras y tickets
+    path('compras/', include('vistas.urls_compras')),
 ]
 
 # ─── SERVIR ARCHIVOS MULTIMEDIA EN DESARROLLO ─────────────────────────────────
 # En producción, el servidor web (Apache/Nginx) se encarga de servir estos archivos.
 # En desarrollo (DEBUG=True), Django los sirve directamente para facilitar las pruebas.
 if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns += [path('__debug__/', include(debug_toolbar.urls))]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
