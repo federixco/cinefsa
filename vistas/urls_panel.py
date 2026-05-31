@@ -26,7 +26,6 @@ from vistas.panel.gestion_usuarios import (
 # ── RF-A02: Gestión de Cartelera ──────────────────────────────────────────────
 from vistas.panel.gestion_cartelera import (
     listar_generos_view,
-    crear_genero_view,
     editar_genero_view,
     eliminar_genero_view,
     listar_peliculas_view,
@@ -55,9 +54,8 @@ urlpatterns = [
     path('usuarios/asignar/', asignar_empleado_view, name='asignar_empleado'),
     path('usuarios/revocar/', revocar_empleado_view, name='revocar_empleado'),
 
-    # ── RF-A02: Gestión de Cartelera — GÉNEROS ───────────────────────────────
+    # ── RF-A02: Gestión de Cartelera — GÉNEROS (solo listar/editar/eliminar) ───────────
     path('cartelera/generos/', listar_generos_view, name='listar_generos'),
-    path('cartelera/generos/crear/', crear_genero_view, name='crear_genero'),
     path('cartelera/generos/<int:genero_id>/editar/', editar_genero_view, name='editar_genero'),
     path('cartelera/generos/<int:genero_id>/eliminar/', eliminar_genero_view, name='eliminar_genero'),
 

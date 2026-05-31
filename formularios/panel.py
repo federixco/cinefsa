@@ -451,17 +451,3 @@ class FormularioFuncion(forms.ModelForm):
         return datos
 
 
-
-# =========================
-#  FORMULARIO DE BÚSQUEDA DE USUARIOS
-# =========================
-
-class FormularioBusquedaUsuario(forms.Form):
-    busqueda = forms.CharField(required=False, label='Buscar usuario', widget=forms.TextInput(attrs={'placeholder': 'Nombre completo o email del usuario...', 'id': 'campo-busqueda-usuario', 'autocomplete': 'off'}))
-
-# =========================
-#  FORMULARIO DE ASIGNACIÓN DE ROL EMPLEADO
-# =========================
-
-class FormularioAsignarEmpleado(forms.Form):
-    terminal_venta = forms.IntegerField(min_value=1, label='Número de terminal de venta', widget=forms.NumberInput(attrs={'placeholder': 'Ej: 3', 'id': 'campo-terminal-venta', 'min': '1'}), help_text='Número de caja o terminal asignada para emisión de boletos. Debe ser un número entero mayor a 0.')

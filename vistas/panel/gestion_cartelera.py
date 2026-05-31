@@ -17,30 +17,13 @@ from vistas.panel.gestion_usuarios import solo_administrador
 
 @solo_administrador
 def listar_generos_view(request):
-    """Lista todos los géneros + formulario de creación rápida inline."""
+    """Lista todos los géneros existentes en la base de datos."""
     generos = Genero.objects.all()
-    formulario_genero = FormularioGenero()
     return render(request, 'panel/gestion_generos.html', {
-        'generos':           generos,
-        'formulario_genero': formulario_genero,
-        'titulo_pagina':     'Gestión de Géneros',
+        'generos':       generos,
+        'titulo_pagina': 'Gestión de Géneros',
     })
 
-
-@solo_administrador
-def crear_genero_view(request):
-    """Crea un nuevo género (solo POST). Redirige al listado."""
-    if request.method != 'POST':
-        return redirect('panel:listar_generos')
-
-    formulario_genero = FormularioGenero(request.POST)
-    if formulario_genero.is_valid():
-        nuevo = formulario_genero.save()
-        messages.success(request, f'El género "{nuevo.descripcion}" fue creado correctamente.')
-    else:
-        errores = '; '.join([', '.join(errs) for errs in formulario_genero.errors.values()])
-        messages.error(request, f'Error al crear el género: {errores}')
-    return redirect('panel:listar_generos')
 
 
 @solo_administrador

@@ -14,8 +14,7 @@
     panel/gestion_generos.html — Gestión de géneros cinematográficos (RF-A02).
     Secciones:
         1. Encabezado con botón para ir a Películas.
-        2. Formulario de creación rápida inline.
-        3. Tabla de géneros con editar / eliminar.
+        2. Tabla de géneros con editar / eliminar.
 -->
 
 <!-- Encabezado de sección -->
@@ -31,29 +30,6 @@
     </div>
 </div>
 
-<!-- ══════ CREACIÓN RÁPIDA ══════════════════════════════════════════════════ -->
-<div class="crear-rapido-container">
-    <h2>Agregar nuevo género</h2>
-    <form method="post" action="{% url 'panel:crear_genero' %}" id="form-crear-genero">
-        {% csrf_token %}
-        <div class="crear-rapido-row">
-            {{ formulario_genero.descripcion }}
-            <button type="submit" class="btn btn-primary" id="btn-crear-genero">
-                + Agregar género
-            </button>
-        </div>
-        <!-- Errores de validación del formulario de creación -->
-        {% if formulario_genero.errors %}
-            <ul class="errores-campo" id="errores-crear-genero" style="margin-top:0.6rem;">
-                {% for campo, errores in formulario_genero.errors.items %}
-                    {% for error in errores %}
-                        <li>⚠️ {{ error }}</li>
-                    {% endfor %}
-                {% endfor %}
-            </ul>
-        {% endif %}
-    </form>
-</div>
 
 <!-- ══════ TABLA DE GÉNEROS ═════════════════════════════════════════════════ -->
 <div class="tabla-container">
@@ -113,7 +89,7 @@
     {% else %}
     <div class="empty-state" id="estado-vacio-generos">
         <div class="empty-icon">🎭</div>
-        <p>No hay géneros registrados. Usá el formulario de arriba para agregar el primero.</p>
+        <p>No hay géneros cargados en la base de datos.</p>
     </div>
     {% endif %}
 </div>
