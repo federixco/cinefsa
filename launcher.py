@@ -1,9 +1,9 @@
 """launcher.py — Mini launcher para CineFSA."""
 
-import tkinter as tk, subprocess, threading, webbrowser, socket, os, time
+import tkinter as tk, subprocess, threading, webbrowser, socket, os, time, sys
 
 DIR = os.path.dirname(os.path.abspath(__file__))
-PY  = os.path.join(DIR, 'venv', 'Scripts', 'python.exe')
+PY  = sys.executable
 MYSQLD = r'c:\xampp\mysql\bin\mysqld.exe'
 MYSQLADMIN = r'c:\xampp\mysql\bin\mysqladmin.exe'
 MYSQL_INI = r'c:\xampp\mysql\bin\my.ini'
