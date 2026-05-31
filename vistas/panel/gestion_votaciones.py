@@ -130,7 +130,49 @@ def crear_encuesta_view(request):
         'titulo_pagina': 'Nueva Encuesta de Votación',
         'formulario': formulario,
         'modo': 'crear',
+        'encuesta': None,
     })
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  EDITAR ENCUESTA
+# ══════════════════════════════════════════════════════════════════════════════
+
+@solo_administrador
+def editar_encuesta_view(request, encuesta_id):
+    """
+    Vista para editar una encuesta existente (RF-A04).
+
+    GET: Muestra el formulario pre-cargado con los datos actuales.
+    POST: Valida y actualiza la encuesta. No elimina los votos ya emitidos.
+
+    Nota: Se pueden cambiar las películas candidatas, pero si se elimina una
+    película que ya recibió votos, esos votos seguirán en la base de datos
+    aunque no aparezcan en los resultados.
+    """
+    encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
+
+    if request.method == 'POST':
+        formulario = FormularioEncuesta(request.POST, instance=encuesta)
+        if formulario.is_valid():
+            encuesta_actualizada = formulario.save()
+            messages.success(
+                request,
+                f'La encuesta "{encuesta_actualizada.titulo}" fue actualizada correctamente.'
+            )
+            return redirect('panel:detalle_votacion', encuesta_id=encuesta_actualizada.pk)
+        else:
+            messages.error(request, 'Corregí los errores del formulario antes de guardar.')
+    else:
+        formulario = FormularioEncuesta(instance=encuesta)
+
+    return render(request, 'panel/formulario_encuesta.html', {
+        'titulo_pagina': f'Editar: {encuesta.titulo}',
+        'formulario': formulario,
+        'modo': 'editar',
+        'encuesta': encuesta,
+    })
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════

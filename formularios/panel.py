@@ -507,12 +507,12 @@ class FormularioEncuesta(forms.ModelForm):
                 attrs={'id': 'campo-encuesta-fecha-evento', 'type': 'date'},
                 format='%Y-%m-%d',
             ),
-            'fecha_inicio': forms.DateTimeLocalInput(
-                attrs={'id': 'campo-encuesta-fecha-inicio'},
+            'fecha_inicio': forms.DateTimeInput(
+                attrs={'id': 'campo-encuesta-fecha-inicio', 'type': 'datetime-local'},
                 format='%Y-%m-%dT%H:%M',
             ),
-            'fecha_fin': forms.DateTimeLocalInput(
-                attrs={'id': 'campo-encuesta-fecha-fin'},
+            'fecha_fin': forms.DateTimeInput(
+                attrs={'id': 'campo-encuesta-fecha-fin', 'type': 'datetime-local'},
                 format='%Y-%m-%dT%H:%M',
             ),
             # CheckboxSelectMultiple: más intuitivo para selección múltiple

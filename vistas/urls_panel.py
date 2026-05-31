@@ -43,6 +43,7 @@ from vistas.panel.gestion_votaciones import (
     monitor_votaciones_view,
     detalle_encuesta_view,
     crear_encuesta_view,
+    editar_encuesta_view,
     toggle_encuesta_view,
     eliminar_encuesta_view,
 )
@@ -84,6 +85,7 @@ urlpatterns = [
     path('votaciones/', monitor_votaciones_view, name='monitor_votaciones'),
     path('votaciones/crear/', crear_encuesta_view, name='crear_encuesta'),
     path('votaciones/<int:encuesta_id>/detalle/', detalle_encuesta_view, name='detalle_votacion'),
+    path('votaciones/<int:encuesta_id>/editar/', editar_encuesta_view, name='editar_encuesta'),
     path('votaciones/<int:encuesta_id>/toggle/', toggle_encuesta_view, name='toggle_encuesta'),
     path('votaciones/<int:encuesta_id>/eliminar/', eliminar_encuesta_view, name='eliminar_encuesta'),
 ]
