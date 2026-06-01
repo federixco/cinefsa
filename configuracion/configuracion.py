@@ -239,5 +239,5 @@ LOGOUT_REDIRECT_URL = '/auth/login/'
 # Esto evita que quede expuesto al subir el código a GitHub.
 # Formato del .env: MERCADOPAGO_ACCESS_TOKEN=APP_USR-XXXXXXXX
 from decouple import config
-MERCADOPAGO_ACCESS_TOKEN = config('MERCADOPAGO_ACCESS_TOKEN')
+MERCADOPAGO_ACCESS_TOKEN = config('MERCADOPAGO_ACCESS_TOKEN', default='')
 
