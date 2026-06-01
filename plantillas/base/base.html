@@ -69,6 +69,11 @@
                         {% if user.is_staff %}
                         <a href="{% url 'panel:lista_salas' %}" class="dropdown-item">Panel Admin</a>
                         {% endif %}
+                        {% if user.empleado.exists %}
+                        <a href="{% url 'panel:scanner_qr' %}" class="dropdown-item" style="color: var(--accent-primary);">
+                            <i class="fas fa-qrcode" style="margin-right: 0.3rem;"></i>Validar Tickets
+                        </a>
+                        {% endif %}
                         <div class="dropdown-divider"></div>
                         <form method="post" action="{% url 'autenticacion:logout' %}">
                             {% csrf_token %}

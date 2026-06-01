@@ -1,0 +1,464 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block titulo %}{{ titulo_pagina }} — CineFSA{% endblock %}
+
+{% block extra_css %}
+<style>
+    .scanner-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 1.5rem;
+        min-height: calc(100vh - 80px);
+    }
+
+    .scanner-header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .scanner-header h1 {
+        font-size: 1.6rem;
+        margin-bottom: 0.3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .scanner-header h1 i {
+        color: var(--accent-primary);
+    }
+
+    .scanner-header p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    /* Visor de cámara */
+    .camera-wrapper {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 2px solid rgba(147, 51, 234, 0.3);
+        background: #000;
+        margin-bottom: 1.5rem;
+    }
+
+    .camera-wrapper #qr-reader {
+        width: 100% !important;
+        border: none !important;
+    }
+
+    .camera-wrapper #qr-reader video {
+        border-radius: 14px;
+    }
+
+    /* Ocultar UI fea del plugin */
+    #qr-reader__dashboard_section_csr button {
+        background: var(--accent-primary) !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 0.5rem 1.2rem !important;
+        color: #fff !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        margin: 0.5rem !important;
+    }
+
+    #qr-reader__dashboard_section_csr select {
+        background: var(--bg-surface) !important;
+        color: #fff !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 6px !important;
+        padding: 0.4rem !important;
+    }
+
+    #qr-reader__dashboard_section_csr span,
+    #qr-reader__dashboard_section_csr a {
+        color: var(--text-secondary) !important;
+    }
+
+    #qr-reader__header_message,
+    #qr-reader__status_span {
+        color: var(--text-secondary) !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* Resultado de validación */
+    .resultado-panel {
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.4s ease;
+        display: none;
+        animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .resultado-panel.visible {
+        display: block;
+    }
+
+    .resultado-panel.success {
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .resultado-panel.warning {
+        background: rgba(251, 191, 36, 0.12);
+        border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .resultado-panel.error {
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .resultado-icono {
+        font-size: 3rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .success .resultado-icono { color: #10b981; }
+    .warning .resultado-icono { color: #fbbf24; }
+    .error .resultado-icono { color: #ef4444; }
+
+    .resultado-mensaje {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .success .resultado-mensaje { color: #10b981; }
+    .warning .resultado-mensaje { color: #fbbf24; }
+    .error .resultado-mensaje { color: #ef4444; }
+
+    /* Info del ticket dentro del resultado */
+    .ticket-info-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: left;
+        margin-top: 1rem;
+    }
+
+    .ticket-info-card .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.4rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        font-size: 0.9rem;
+    }
+
+    .ticket-info-card .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .ticket-info-card .info-label {
+        color: var(--text-secondary);
+    }
+
+    .ticket-info-card .info-value {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    /* Historial de escaneos */
+    .historial-escaneos {
+        margin-top: 1.5rem;
+    }
+
+    .historial-escaneos h3 {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+        color: var(--text-secondary);
+    }
+
+    .escaneo-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.6rem 0.8rem;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        animation: slideUp 0.2s ease;
+    }
+
+    .escaneo-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .escaneo-dot.success { background: #10b981; }
+    .escaneo-dot.warning { background: #fbbf24; }
+    .escaneo-dot.error { background: #ef4444; }
+
+    .escaneo-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .escaneo-info .titulo {
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .escaneo-info .detalle {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+    }
+
+    .escaneo-hora {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        flex-shrink: 0;
+    }
+
+    /* Input manual (fallback) */
+    .manual-input {
+        margin-top: 1rem;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .manual-input input {
+        flex: 1;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 0.6rem 1rem;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+    }
+
+    .manual-input input::placeholder {
+        color: var(--text-secondary);
+    }
+
+    .manual-input button {
+        background: var(--accent-primary);
+        border: none;
+        border-radius: 8px;
+        padding: 0.6rem 1.2rem;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .manual-input button:hover {
+        background: var(--accent-hover);
+        transform: scale(1.02);
+    }
+
+    @media (max-width: 480px) {
+        .scanner-container {
+            padding: 1rem;
+        }
+        .scanner-header h1 {
+            font-size: 1.3rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<div class="scanner-container">
+
+    <div class="scanner-header">
+        <h1><i class="fas fa-qrcode"></i> Validador de Tickets</h1>
+        <p>Escaneá el código QR del ticket del cliente</p>
+    </div>
+
+    <!-- Visor de cámara -->
+    <div class="camera-wrapper">
+        <div id="qr-reader"></div>
+    </div>
+
+    <!-- Input manual (fallback si no hay cámara) -->
+    <div class="manual-input">
+        <input type="text" id="codigoManual" placeholder="Código QR manual (UUID)...">
+        <button onclick="validarManual()"><i class="fas fa-search"></i> Validar</button>
+    </div>
+
+    <!-- Panel de resultado -->
+    <div id="resultadoPanel" class="resultado-panel">
+        <div class="resultado-icono"><i id="resultadoIcono" class="fas fa-check-circle"></i></div>
+        <div class="resultado-mensaje" id="resultadoMensaje"></div>
+        <div class="ticket-info-card" id="ticketInfoCard" style="display:none;">
+            <div class="info-row">
+                <span class="info-label">Película</span>
+                <span class="info-value" id="infoPelicula"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Sala</span>
+                <span class="info-value" id="infoSala"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Butaca</span>
+                <span class="info-value" id="infoAsiento"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Función</span>
+                <span class="info-value" id="infoHora"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial de la sesión -->
+    <div class="historial-escaneos">
+        <h3><i class="fas fa-history"></i> Últimos escaneos</h3>
+        <div id="historialLista">
+            <p style="color: var(--text-secondary); font-size: 0.85rem; text-align: center;">
+                Aún no se escaneó ningún ticket
+            </p>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+    const API_URL = "{% url 'panel:validar_ticket_api' %}";
+    const CSRF_TOKEN = "{{ csrf_token }}";
+    let historial = [];
+    let procesando = false;
+
+    // ─── INICIAR ESCÁNER ─────────────────────────────────────────────────
+    const html5QrCode = new Html5Qrcode("qr-reader");
+
+    Html5Qrcode.getCameras().then(cameras => {
+        if (cameras && cameras.length) {
+            // Preferir cámara trasera
+            let cameraId = cameras[0].id;
+            for (const cam of cameras) {
+                if (cam.label.toLowerCase().includes('back') || cam.label.toLowerCase().includes('trasera') || cam.label.toLowerCase().includes('rear')) {
+                    cameraId = cam.id;
+                    break;
+                }
+            }
+            html5QrCode.start(
+                cameraId,
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                onQrScanned,
+                () => {} // Ignorar errores de no-detección
+            );
+        }
+    }).catch(err => {
+        console.warn("No se pudo acceder a la cámara:", err);
+    });
+
+    // ─── CALLBACK AL ESCANEAR ────────────────────────────────────────────
+    function onQrScanned(decodedText) {
+        if (procesando) return;
+        procesando = true;
+
+        // Vibrar si está disponible
+        if (navigator.vibrate) navigator.vibrate(200);
+
+        validarTicket(decodedText);
+    }
+
+    // ─── VALIDACIÓN MANUAL ───────────────────────────────────────────────
+    function validarManual() {
+        const codigo = document.getElementById('codigoManual').value.trim();
+        if (!codigo) return;
+        validarTicket(codigo);
+        document.getElementById('codigoManual').value = '';
+    }
+
+    // Permitir Enter en el input manual
+    document.getElementById('codigoManual').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') validarManual();
+    });
+
+    // ─── ENVIAR VALIDACIÓN AL BACKEND ────────────────────────────────────
+    function validarTicket(codigoQr) {
+        fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': CSRF_TOKEN,
+            },
+            body: JSON.stringify({ codigo_qr: codigoQr }),
+        })
+        .then(r => r.json())
+        .then(data => {
+            mostrarResultado(data);
+            agregarHistorial(data);
+            // Cooldown de 2 segundos antes de permitir otro escaneo
+            setTimeout(() => { procesando = false; }, 2000);
+        })
+        .catch(err => {
+            mostrarResultado({
+                status: 'error',
+                mensaje: 'Error de conexión con el servidor.',
+                icono: 'fa-wifi',
+            });
+            setTimeout(() => { procesando = false; }, 2000);
+        });
+    }
+
+    // ─── MOSTRAR RESULTADO ───────────────────────────────────────────────
+    function mostrarResultado(data) {
+        const panel = document.getElementById('resultadoPanel');
+        const icono = document.getElementById('resultadoIcono');
+        const mensaje = document.getElementById('resultadoMensaje');
+        const infoCard = document.getElementById('ticketInfoCard');
+
+        panel.className = 'resultado-panel visible ' + data.status;
+        icono.className = 'fas ' + (data.icono || 'fa-info-circle');
+        mensaje.textContent = data.mensaje;
+
+        if (data.ticket) {
+            document.getElementById('infoPelicula').textContent = data.ticket.pelicula;
+            document.getElementById('infoSala').textContent = data.ticket.sala;
+            document.getElementById('infoAsiento').textContent = data.ticket.asiento;
+            document.getElementById('infoHora').textContent = data.ticket.fecha_funcion + ' — ' + data.ticket.hora_funcion + 'hs';
+            infoCard.style.display = 'block';
+        } else {
+            infoCard.style.display = 'none';
+        }
+
+        // Auto-ocultar después de 5 seg
+        setTimeout(() => {
+            panel.classList.remove('visible');
+        }, 5000);
+    }
+
+    // ─── HISTORIAL DE SESIÓN ─────────────────────────────────────────────
+    function agregarHistorial(data) {
+        const ahora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+        const titulo = data.ticket ? data.ticket.pelicula : 'Ticket desconocido';
+        const detalle = data.ticket ? `${data.ticket.asiento} · ${data.ticket.sala}` : data.mensaje;
+
+        historial.unshift({ status: data.status, titulo, detalle, hora: ahora });
+        if (historial.length > 10) historial.pop();
+
+        const lista = document.getElementById('historialLista');
+        lista.innerHTML = historial.map(item => `
+            <div class="escaneo-item">
+                <div class="escaneo-dot ${item.status}"></div>
+                <div class="escaneo-info">
+                    <div class="titulo">${item.titulo}</div>
+                    <div class="detalle">${item.detalle}</div>
+                </div>
+                <span class="escaneo-hora">${item.hora}</span>
+            </div>
+        `).join('');
+    }
+</script>
+{% endblock %}
