@@ -37,6 +37,10 @@ class Ticket(models.Model):
     )
     
     estado_uso = models.CharField(max_length=20, choices=ESTADOS_USO, default='pendiente')
+    fecha_validacion = models.DateTimeField(
+        null=True, blank=True,
+        verbose_name='Fecha y hora de validación'
+    )
     imagen_qr = models.ImageField(upload_to='tickets_qr/', blank=True, null=True)
 
     class Meta:
