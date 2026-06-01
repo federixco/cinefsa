@@ -48,6 +48,9 @@ from vistas.panel.gestion_votaciones import (
     eliminar_encuesta_view,
 )
 
+# ── Validador QR de Tickets ───────────────────────────────────────────────
+from vistas.validador_qr import scanner_view, validar_ticket_api
+
 # app_name: Namespace para las URLs del panel.
 app_name = 'panel'
 
@@ -88,4 +91,8 @@ urlpatterns = [
     path('votaciones/<int:encuesta_id>/editar/', editar_encuesta_view, name='editar_encuesta'),
     path('votaciones/<int:encuesta_id>/toggle/', toggle_encuesta_view, name='toggle_encuesta'),
     path('votaciones/<int:encuesta_id>/eliminar/', eliminar_encuesta_view, name='eliminar_encuesta'),
+
+    # ── Validador QR de Tickets ──────────────────────────────────────────────
+    path('validar/', scanner_view, name='scanner_qr'),
+    path('validar/api/', validar_ticket_api, name='validar_ticket_api'),
 ]
