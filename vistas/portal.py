@@ -30,7 +30,7 @@ def inicio_view(request):
     from django.db.models import Prefetch
     import datetime
     
-    hoy = timezone.now().date()
+    hoy = timezone.localdate()
     fecha_limite = hoy + datetime.timedelta(days=6) # 7 días en total
     
     # Generar la lista de fechas para el frontend

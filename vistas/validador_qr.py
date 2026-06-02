@@ -104,7 +104,7 @@ def validar_ticket_api(request):
     
     # ─── VERIFICAR SI YA FUE VALIDADO ─────────────────────────────────────
     if ticket.estado_uso == 'validado':
-        hora_val = ticket.fecha_validacion.strftime('%H:%M') if ticket.fecha_validacion else '—'
+        hora_val = timezone.localtime(ticket.fecha_validacion).strftime('%H:%M') if ticket.fecha_validacion else '—'
         return JsonResponse({
             'status': 'warning',
             'mensaje': f'Este ticket ya fue validado a las {hora_val}hs.',
@@ -114,7 +114,7 @@ def validar_ticket_api(request):
     
     # ─── VERIFICAR FECHA (debe ser hoy) ───────────────────────────────────
     ahora = timezone.now()
-    hoy = ahora.date()
+    hoy = timezone.localdate()
     
     if ticket.funcion.fecha != hoy:
         if ticket.funcion.fecha < hoy:

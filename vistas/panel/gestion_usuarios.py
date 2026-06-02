@@ -172,29 +172,18 @@ def panel_usuarios_view(request):
 
 def _generar_id_validador():
     """
-    Genera el próximo id_validador en formato EMP-XXXX (secuencial).
-
-    Busca el mayor número existente entre los id_validador con formato EMP-XXXX,
-    lo incrementa en 1 y devuelve el nuevo código formateado con zero-padding
-    a 4 dígitos. Si no hay empleados previos, empieza desde EMP-0001.
+    Genera el próximo id_validador en formato emp-XXX llamando
+    al procedimiento almacenado de la base de datos (sp_generar_id_validador).
 
     Retorna:
-        str: Código en formato 'EMP-0001', 'EMP-0002', etc.
+        str: Código generado por MySQL, por ejemplo 'emp-001'.
     """
-    ultimo_numero = 0
-    empleados = Empleado.objects.filter(
-        id_validador__startswith='EMP-'
-    ).values_list('id_validador', flat=True)
-
-    for codigo in empleados:
-        try:
-            numero = int(codigo.split('-')[1])
-            if numero > ultimo_numero:
-                ultimo_numero = numero
-        except (IndexError, ValueError):
-            continue
-
-    return f'EMP-{ultimo_numero + 1:04d}'
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute("CALL sp_generar_id_validador(@nuevo_id)")
+        cursor.execute("SELECT @nuevo_id")
+        resultado = cursor.fetchone()
+        return resultado[0] if resultado and resultado[0] else 'emp-001'
 
 
 @solo_administrador

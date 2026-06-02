@@ -74,11 +74,13 @@ class FormularioAsignarEmpleado(forms.Form):
     """
 
     id_validador = forms.CharField(
+        required=False,
         max_length=50,
         label='ID de validador (QR)',
         widget=forms.TextInput(attrs={
-            'placeholder': 'Ej: EMP-2026-001',
+            'placeholder': 'Se auto-generará (ej. EMP-0001)',
             'id': 'campo-id-validador',
+            'readonly': 'readonly',
         }),
         help_text=(
             'Código único que identifica al empleado en el sistema de '
