@@ -8,6 +8,7 @@ Rutas:
     /compras/retorno/                   → Backup: retorno desde MP (producción).
     /compras/venta/<id>/tickets/        → Ver tickets generados con QR.
     /compras/ticket/<id>/descargar-qr/  → Descargar QR individual.
+    /compras/ticket/<id>/descargar/     → Descargar ticket completo (Word .docx).
 """
 
 from django.urls import path
@@ -18,6 +19,7 @@ from .portal_compras import (
     retorno_mercadopago_view,
     ver_tickets_view,
     descargar_qr_ticket,
+    descargar_ticket_word,
 )
 
 app_name = 'compras'
@@ -29,4 +31,5 @@ urlpatterns = [
     path('retorno/', retorno_mercadopago_view, name='retorno_mp'),
     path('venta/<int:venta_id>/tickets/', ver_tickets_view, name='ver_tickets'),
     path('ticket/<int:ticket_id>/descargar-qr/', descargar_qr_ticket, name='descargar_qr_ticket'),
+    path('ticket/<int:ticket_id>/descargar/', descargar_ticket_word, name='descargar_ticket'),
 ]

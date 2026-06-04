@@ -322,8 +322,8 @@
                     <span class="ticket-row-asiento">{{ ticket.asiento.fila }}{{ ticket.asiento.numero }}</span>
                     <span class="ticket-estado-badge badge-{{ ticket.estado_uso }}">{{ ticket.get_estado_uso_display }}</span>
                     {% if ticket.imagen_qr %}
-                    <a href="{% url 'compras:descargar_qr_ticket' ticket.id_ticket %}" class="btn-descargar-qr" title="Descargar QR">
-                        <i class="fas fa-download"></i>
+                    <a href="{% url 'compras:descargar_ticket' ticket.id_ticket %}" class="btn-descargar-qr" title="Descargar Ticket">
+                        <i class="fas fa-file-word"></i>
                     </a>
                     {% endif %}
                 </div>

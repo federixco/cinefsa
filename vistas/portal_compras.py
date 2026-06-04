@@ -372,3 +372,212 @@ def descargar_qr_venta(request, venta_id):
     response = HttpResponse(buffer.read(), content_type='application/zip')
     response['Content-Disposition'] = f'attachment; filename="CineFSA_Venta_{venta.id_venta}_QRs.zip"'
     return response
+
+
+# ─── VISTA 8: DESCARGAR TICKET COMPLETO COMO WORD (.docx) ────────────────────
+
+@login_required
+def descargar_ticket_word(request, ticket_id):
+    """
+    Genera y descarga un documento Word (.docx) con el ticket completo.
+
+    Usa una consulta SQL directa (raw) para obtener todos los datos del ticket
+    desde la base de datos, y luego construye el documento con python-docx.
+
+    Datos incluidos en el ticket:
+    - Película (título)
+    - Sala (nombre)
+    - Asiento (fila + número + tipo)
+    - Fecha y hora de la función
+    - Precio de la entrada
+    - Código QR (imagen embebida en el Word)
+    - Estado del ticket (pendiente / validado)
+    """
+    from django.db import connection
+    from docx import Document
+    from docx.shared import Inches, Pt, Cm, RGBColor
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.enum.table import WD_TABLE_ALIGNMENT
+    import os
+
+    # ── Consulta SQL directa para obtener TODOS los datos del ticket ─────
+    sql = """
+        SELECT
+            t.id_ticket,
+            t.codigo_qr,
+            t.estado_uso,
+            t.imagen_qr,
+            p.titulo        AS pelicula,
+            s.nombre_sala   AS sala,
+            a.fila           AS asiento_fila,
+            a.numero         AS asiento_numero,
+            a.tipo_asiento   AS tipo_asiento,
+            f.fecha          AS fecha_funcion,
+            f.hora_inicio    AS hora_funcion,
+            f.precio_entrada AS precio,
+            v.id_venta,
+            v.fecha_hora_transaccion,
+            v.monto_total,
+            v.usuario_id
+        FROM ticket t
+        INNER JOIN funcion f  ON t.funcion_id = f.id
+        INNER JOIN pelicula p ON f.pelicula_id = p.id
+        INNER JOIN sala s     ON f.sala_id = s.id
+        INNER JOIN asiento a  ON t.asiento_id = a.id
+        INNER JOIN venta v    ON t.venta_id = v.id_venta
+        WHERE t.id_ticket = %s
+          AND v.usuario_id = %s
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(sql, [ticket_id, request.user.id])
+        columnas = [col[0] for col in cursor.description]
+        row = cursor.fetchone()
+
+    if not row:
+        raise Http404("Ticket no encontrado.")
+
+    # Mapear columnas a un diccionario
+    datos = dict(zip(columnas, row))
+
+    # Mapear tipo de asiento
+    tipos_asiento = {'general': 'General', 'vip': 'VIP', 'discapacitado': 'Discapacitado'}
+    tipo_display = tipos_asiento.get(datos['tipo_asiento'], datos['tipo_asiento'])
+
+    # Mapear estado
+    estados = {'pendiente': 'Pendiente de Validación', 'validado': 'Ingreso Validado'}
+    estado_display = estados.get(datos['estado_uso'], datos['estado_uso'])
+
+    # ── Construir el documento Word ──────────────────────────────────────
+    doc = Document()
+
+    # Configurar márgenes más estrechos para que parezca un ticket
+    for section in doc.sections:
+        section.top_margin = Cm(1.5)
+        section.bottom_margin = Cm(1.5)
+        section.left_margin = Cm(2)
+        section.right_margin = Cm(2)
+
+    # ── Encabezado: CINEFSA ──────────────────────────────────────────────
+    header = doc.add_paragraph()
+    header.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = header.add_run('CINEFSA')
+    run.font.size = Pt(28)
+    run.font.bold = True
+    run.font.color.rgb = RGBColor(0, 0, 0)
+
+    subtitulo = doc.add_paragraph()
+    subtitulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = subtitulo.add_run('ENTRADA DE CINE')
+    run.font.size = Pt(10)
+    run.font.color.rgb = RGBColor(100, 100, 100)
+    run.font.bold = True
+
+    # Línea separadora
+    doc.add_paragraph('━' * 50).alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    # ── Título de la película ────────────────────────────────────────────
+    p_titulo = doc.add_paragraph()
+    p_titulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = p_titulo.add_run(datos['pelicula'])
+    run.font.size = Pt(20)
+    run.font.bold = True
+
+    doc.add_paragraph()  # Espacio
+
+    # ── Tabla con datos del ticket (sin bordes, limpia) ───────────────────
+    tabla = doc.add_table(rows=4, cols=2)
+    tabla.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+    campos = [
+        ('SALA',    datos['sala']),
+        ('FECHA',   str(datos['fecha_funcion'].strftime('%d/%m/%Y') if hasattr(datos['fecha_funcion'], 'strftime') else datos['fecha_funcion'])),
+        ('HORARIO', str(datos['hora_funcion'].strftime('%H:%M') if hasattr(datos['hora_funcion'], 'strftime') else datos['hora_funcion']) + ' hs'),
+        ('PRECIO',  f"${datos['precio']}"),
+    ]
+
+    for i, (label, valor) in enumerate(campos):
+        # Celda label
+        cell_label = tabla.cell(i, 0)
+        p = cell_label.paragraphs[0]
+        run = p.add_run(label)
+        run.font.size = Pt(8)
+        run.font.color.rgb = RGBColor(100, 100, 100)
+        run.font.bold = True
+
+        # Celda valor
+        cell_valor = tabla.cell(i, 1)
+        p = cell_valor.paragraphs[0]
+        run = p.add_run(valor)
+        run.font.size = Pt(13)
+        run.font.bold = True
+
+    doc.add_paragraph()  # Espacio
+
+    # ── Asiento destacado ────────────────────────────────────────────────
+    p_asiento = doc.add_paragraph()
+    p_asiento.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = p_asiento.add_run(f'BUTACA {datos["asiento_fila"]}{datos["asiento_numero"]}')
+    run.font.size = Pt(18)
+    run.font.bold = True
+
+    p_tipo = doc.add_paragraph()
+    p_tipo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = p_tipo.add_run(tipo_display)
+    run.font.size = Pt(10)
+    run.font.color.rgb = RGBColor(100, 100, 100)
+
+    # Línea separadora
+    doc.add_paragraph('━' * 50).alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    # ── Código QR (imagen embebida) ──────────────────────────────────────
+    if datos['imagen_qr']:
+        from django.conf import settings
+        qr_path = os.path.join(settings.MEDIA_ROOT, datos['imagen_qr'])
+        if os.path.exists(qr_path):
+            p_qr = doc.add_paragraph()
+            p_qr.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            run = p_qr.add_run()
+            run.add_picture(qr_path, width=Inches(2))
+
+    # Código UUID
+    p_codigo = doc.add_paragraph()
+    p_codigo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = p_codigo.add_run(str(datos['codigo_qr']))
+    run.font.size = Pt(7)
+    run.font.color.rgb = RGBColor(150, 150, 150)
+
+    # Estado
+    p_estado = doc.add_paragraph()
+    p_estado.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = p_estado.add_run(estado_display.upper())
+    run.font.size = Pt(9)
+    run.font.bold = True
+    if datos['estado_uso'] == 'validado':
+        run.font.color.rgb = RGBColor(6, 95, 70)
+    else:
+        run.font.color.rgb = RGBColor(146, 64, 14)
+
+    # ── Pie: info de la venta ────────────────────────────────────────────
+    doc.add_paragraph('━' * 50).alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p_pie = doc.add_paragraph()
+    p_pie.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = p_pie.add_run(f'Venta #{datos["id_venta"]}')
+    run.font.size = Pt(8)
+    run.font.color.rgb = RGBColor(130, 130, 130)
+
+    # ── Guardar y devolver como respuesta HTTP ───────────────────────────
+    buffer = BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+
+    pelicula_safe = datos['pelicula'].replace(' ', '_')[:30]
+    asiento_str = f"{datos['asiento_fila']}{datos['asiento_numero']}"
+    nombre = f"CineFSA_Ticket_{pelicula_safe}_{asiento_str}.docx"
+
+    response = HttpResponse(
+        buffer.read(),
+        content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{nombre}"'
+    return response
