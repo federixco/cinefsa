@@ -229,7 +229,6 @@ LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/'
 
 # LOGOUT_REDIRECT_URL: URL a la que Django redirige después de cerrar sesión.
-# LOGOUT_REDIRECT_URL: URL a la que Django redirige después de cerrar sesión.
 LOGOUT_REDIRECT_URL = '/auth/login/'
 
 

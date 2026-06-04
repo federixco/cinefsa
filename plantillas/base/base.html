@@ -66,6 +66,7 @@
                         </div>
                         <div class="dropdown-divider"></div>
                         <a href="{% url 'autenticacion:historial' %}" class="dropdown-item">Mi historial</a>
+                        <a href="{% url 'autenticacion:cambiar_password' %}" class="dropdown-item">Cambiar contraseña</a>
                         {% if user.is_staff %}
                         <a href="{% url 'panel:lista_salas' %}" class="dropdown-item">Panel Admin</a>
                         {% endif %}

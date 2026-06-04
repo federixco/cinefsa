@@ -24,6 +24,8 @@ Historial:
     se implementen los modelos Venta y Ticket en pasos posteriores).
 """
 
+import random
+import string
 # pyrefly: ignore [missing-import]
 from django.shortcuts import render, redirect
 # pyrefly: ignore [missing-import]
@@ -32,6 +34,9 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 # pyrefly: ignore [missing-import]
 from django.contrib import messages
+from django.utils.decorators import method_decorator
+from django.contrib.auth.views import PasswordChangeView
+from django.urls import reverse_lazy
 
 from formularios.autenticacion import FormularioRegistro, FormularioLogin
 from sistema_cine.models import Cliente
@@ -169,3 +174,84 @@ def historial_view(request):
         'ventas': ventas,
         'titulo_pagina': 'Mi historial',
     })
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  CAMBIO DE CONTRASEÑA
+# ══════════════════════════════════════════════════════════════════════════════
+
+@method_decorator(login_required, name='dispatch')
+class CambiarPasswordView(PasswordChangeView):
+    """
+    Vista orientada a objetos para que el usuario modifique su contraseña.
+    
+    Hereda de PasswordChangeView de Django, aprovechando su validación robusta:
+    - Verificación de contraseña actual.
+    - Reglas de complejidad para la nueva contraseña.
+    - Verificación de confirmación.
+    """
+    template_name = 'autenticacion/cambiar_password.html'
+    success_url = reverse_lazy('inicio')  # Redirige al inicio o historial
+
+    def form_valid(self, form):
+        """
+        Sobrescribe el método form_valid para inyectar un mensaje de éxito
+        antes de redirigir al usuario.
+        """
+        messages.success(self.request, '¡Tu contraseña ha sido actualizada correctamente!')
+        return super().form_valid(form)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  RECUPERACIÓN DE CONTRASEÑA (OPCIÓN 2: VALIDACIÓN DIRECTA)
+# ══════════════════════════════════════════════════════════════════════════════
+
+def recuperar_password_view(request):
+    """
+    Vista de recuperación de contraseña basada en validación de datos personales.
+    
+    Flujo:
+        1. Se pide el email y la fecha de nacimiento.
+        2. Si coinciden con la base de datos, se genera una clave aleatoria temporal.
+        3. Se guarda en la base de datos y se muestra en pantalla.
+    
+    Nota de seguridad: Esta opción no requiere envío de correos, pero es menos 
+    segura si la fecha de nacimiento es de conocimiento público.
+    """
+    if request.user.is_authenticated:
+        return redirect('/')
+
+    nueva_password = None
+    error = None
+
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        fecha_nacimiento = request.POST.get('fecha_nacimiento')
+
+        if email and fecha_nacimiento:
+            try:
+                from sistema_cine.models import Usuario, Cliente
+                from django.contrib.auth.hashers import make_password
+                
+                usuario = Usuario.objects.get(email=email)
+                cliente = Cliente.objects.get(usuario_id_usuario=usuario)
+
+                # Compara la fecha de nacimiento del modelo con la enviada por el formulario (YYYY-MM-DD)
+                if str(cliente.fecha_nacimiento) == fecha_nacimiento:
+                    # Genera la nueva contraseña: 'CineFSA' + 4 números aleatorios
+                    nueva_password = "CineFSA" + "".join(random.choices(string.digits, k=4))
+                    usuario.password = make_password(nueva_password)
+                    usuario.save()
+                else:
+                    error = "Los datos ingresados no coinciden con nuestros registros."
+            except (Usuario.DoesNotExist, Cliente.DoesNotExist):
+                error = "Los datos ingresados no coinciden con nuestros registros."
+        else:
+            error = "Por favor, completa todos los campos."
+
+    return render(request, 'autenticacion/recuperar_password.html', {
+        'titulo_pagina': 'Recuperar contraseña',
+        'nueva_password': nueva_password,
+        'error': error,
+    })
+
