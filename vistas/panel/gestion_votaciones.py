@@ -21,8 +21,8 @@ from django.views.decorators.http import require_POST
 from sistema_cine.models import Encuesta
 from formularios.panel import FormularioEncuesta
 
-# Reutilizar el decorador de seguridad definido en gestion_usuarios
-from vistas.panel.gestion_usuarios import solo_administrador
+# Decorador de seguridad centralizado
+from vistas.decoradores import solo_administrador
 
 
 # ══════════════════════════════════════════════════════════════════════════════

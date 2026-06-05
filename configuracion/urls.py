@@ -5,10 +5,12 @@ Aquí se definen todas las rutas (URLs) del sistema. Cada URL se asocia a una vi
 que procesa la petición HTTP y devuelve una respuesta (HTML, JSON, etc.).
 
 Estructura de URLs del proyecto:
-    /                   → Redirige al portal o al login según estado de sesión.
+    /                   → Página de inicio con cartelera.
     /admin/             → Panel de administración automático de Django.
     /auth/              → Autenticación: login, registro, logout, historial (RF-C01).
     /panel/             → URLs del panel interno (editor de salas, cartelera, etc.).
+    /compras/           → Compra de tickets y pagos (RF-C02).
+    /cine-club/         → Portal de votación Cine Club (RF-C04).
     /multimedia/...     → Archivos subidos (pósters, QR) — solo en desarrollo.
 """
 
@@ -16,7 +18,6 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.shortcuts import redirect
 from vistas.portal import inicio_view
 # ── RF-C04: Módulo de votación Cine Club ─────────────────────────────────────
 from vistas.votacion import votacion_view, emitir_voto_view
@@ -27,27 +28,23 @@ urlpatterns = [
     path('', inicio_view, name='inicio'),
 
     # Panel de administración nativo de Django.
-    # Útil para gestión rápida de datos durante el desarrollo.
     path('admin/', admin.site.urls),
 
     # URLs de autenticación (RF-C01): login, registro, logout, historial.
-    path('auth/', include('vistas.urls_autenticacion')),
+    path('auth/', include('vistas.autenticacion.urls')),
 
     # URLs del panel interno del complejo cinematográfico.
-    # Incluye: editor de salas, gestión de cartelera, validador QR, etc.
-    path('panel/', include('vistas.urls_panel')),
+    path('panel/', include('vistas.panel.urls')),
 
     # ── RF-C04: Portal de votación Cine Club ─────────────────────────────────
     path('cine-club/', votacion_view, name='cine_club'),
     path('cine-club/<int:encuesta_id>/votar/', emitir_voto_view, name='emitir_voto'),
 
     # URLs de compras y tickets
-    path('compras/', include('vistas.urls_compras')),
+    path('compras/', include('vistas.compras.urls')),
 ]
 
 # ─── SERVIR ARCHIVOS MULTIMEDIA EN DESARROLLO ─────────────────────────────────
-# En producción, el servidor web (Apache/Nginx) se encarga de servir estos archivos.
-# En desarrollo (DEBUG=True), Django los sirve directamente para facilitar las pruebas.
 if settings.DEBUG:
     import debug_toolbar
     urlpatterns += [path('__debug__/', include(debug_toolbar.urls))]

@@ -4,9 +4,19 @@ import tkinter as tk, subprocess, threading, webbrowser, socket, os, time, sys
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 PY  = sys.executable
-MYSQLD = r'c:\xampp\mysql\bin\mysqld.exe'
-MYSQLADMIN = r'c:\xampp\mysql\bin\mysqladmin.exe'
-MYSQL_INI = r'c:\xampp\mysql\bin\my.ini'
+import platform
+IS_WINDOWS = platform.system() == 'Windows'
+POPEN_KWARGS = {'creationflags': 0x08000000} if IS_WINDOWS else {}
+
+if IS_WINDOWS:
+    MYSQLD = r'c:\xampp\mysql\bin\mysqld.exe'
+    MYSQLADMIN = r'c:\xampp\mysql\bin\mysqladmin.exe'
+    MYSQL_INI = r'c:\xampp\mysql\bin\my.ini'
+else:
+    # Rutas típicas de XAMPP (LAMPP) en Linux
+    MYSQLD = '/opt/lampp/sbin/mysqld'
+    MYSQLADMIN = '/opt/lampp/bin/mysqladmin'
+    MYSQL_INI = '/opt/lampp/etc/my.cnf'
 
 def port_ok(p):
     try:
@@ -88,7 +98,7 @@ class App:
         def go():
             self._msg('Iniciando MySQL...')
             subprocess.Popen([MYSQLD, f'--defaults-file={MYSQL_INI}', '--standalone'],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=0x08000000)
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **POPEN_KWARGS)
             for _ in range(20):
                 time.sleep(0.5)
                 if port_ok(3306): self._msg('MySQL listo.'); return
@@ -99,7 +109,7 @@ class App:
         def go():
             self._msg('Deteniendo MySQL...')
             subprocess.run([MYSQLADMIN, '-u', 'root', 'shutdown'],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10, creationflags=0x08000000)
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10, **POPEN_KWARGS)
             self._msg('MySQL detenido.')
         self._bg(go)
 
@@ -108,7 +118,7 @@ class App:
             if not port_ok(3306): self._msg('Iniciá MySQL primero.'); return
             self._msg('Iniciando Django...')
             self.django_proc = subprocess.Popen([PY, os.path.join(DIR, 'manage.py'), 'runserver', '--noreload'],
-                cwd=DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=0x08000000)
+                cwd=DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **POPEN_KWARGS)
             for _ in range(20):
                 time.sleep(0.5)
                 if port_ok(8000): self._msg('Django listo → http://127.0.0.1:8000/'); return

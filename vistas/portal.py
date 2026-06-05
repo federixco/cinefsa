@@ -85,7 +85,7 @@ def inicio_view(request):
         # Si la función SQL aún no existe (no se corrió migrate), no romper la página
         pass
 
-    return render(request, 'portal_cliente/inicio.html', {
+    return render(request, 'portal/inicio.html', {
         'peliculas_cartelera': peliculas_cartelera,
         'peliculas_destacadas': peliculas_destacadas,
         'peliculas_proximamente': peliculas_proximamente,

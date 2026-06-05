@@ -14,7 +14,7 @@ Aquí se registran las rutas del panel de gestión:
 from django.urls import path
 
 # ── RF-A01: Editor de Salas ───────────────────────────────────────────────────
-from vistas.editor_sala import lista_salas, editor_sala, guardar_layout, crear_sala, toggle_estado_sala
+from vistas.panel.gestion_salas import lista_salas, editor_sala, guardar_layout, crear_sala, toggle_estado_sala
 
 # ── RF-A05: Gestión de Usuarios ───────────────────────────────────────────────
 from vistas.panel.gestion_usuarios import (
@@ -49,7 +49,7 @@ from vistas.panel.gestion_votaciones import (
 )
 
 # ── Validador QR de Tickets ───────────────────────────────────────────────
-from vistas.validador_qr import scanner_view, validar_ticket_api
+from vistas.panel.validador_qr import scanner_view, validar_ticket_api
 
 # app_name: Namespace para las URLs del panel.
 app_name = 'panel'

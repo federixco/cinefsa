@@ -70,7 +70,7 @@ def votacion_view(request):
             except Exception:
                 pass
 
-    return render(request, 'portal_cliente/cine_club.html', {
+    return render(request, 'portal/cine_club.html', {
         'titulo_pagina': 'Cine Club — Votación',
         'encuesta': encuesta,
         'resultados': resultados,

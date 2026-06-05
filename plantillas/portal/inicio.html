@@ -138,7 +138,7 @@
                                 {% for funcion in pelicula.funciones.all %}
                                     <button class="btn-horario btn-funcion"
                                             data-fecha="{{ funcion.fecha|date:'Y-m-d' }}"
-                                            onclick="confirmarCompra('{{ pelicula.titulo|escapejs }}', '{{ funcion.hora_inicio|time:'H:i' }}', '{% url 'compras:seleccion_asientos' funcion.id %}')">
+                                            onclick="confirmarCompra('{{ pelicula.titulo|escapejs }}', '{{ funcion.fecha|date:'d/m/Y' }}', '{{ funcion.hora_inicio|time:'H:i' }}', '{% url 'compras:seleccion_asientos' funcion.id %}')">
                                         <div class="hora-container">
                                             <i class="fas fa-clock"></i>
                                             <strong>{{ funcion.hora_inicio|time:"H:i" }}</strong>
@@ -274,21 +274,20 @@
             const botones = contenedor.querySelectorAll('.btn-funcion');
             let funcionesDelDia = 0;
             
-            // Resaltar botones del día seleccionado, atenuar los demás
+            // Mostrar los botones del día seleccionado (o todos si fechaSel es 'TODOS')
             botones.forEach(b => {
-                b.style.display = 'flex';
-                if(b.getAttribute('data-fecha') === fechaSel) {
+                if(fechaSel === 'TODOS' || b.getAttribute('data-fecha') === fechaSel) {
+                    b.style.display = 'flex';
                     b.style.opacity = '1';
-                    b.style.order = '-1'; // Los del día seleccionado van primero
+                    b.style.order = '0';
                     funcionesDelDia++;
                 } else {
-                    b.style.opacity = '0.45';
-                    b.style.order = '0';
+                    b.style.display = 'none';
                 }
             });
 
-            // Siempre mostrar la tarjeta si tiene funciones en la semana
-            pelicula.style.display = botones.length > 0 ? 'flex' : 'none';
+            // Mostrar la tarjeta solo si tiene funciones para este filtro
+            pelicula.style.display = funcionesDelDia > 0 ? 'flex' : 'none';
         });
     }
 
@@ -317,24 +316,26 @@
 
     // 2. Carrusel Hero scroll y expand
     function scrollAndFilter(peliculaId) {
+        // Deseleccionar el filtro de días para que muestre TODAS las funciones de la semana
+        filtrarPorFecha('TODOS', null);
+        
         // Encontrar la película y expandirla
         const peli = document.getElementById('pelicula-' + peliculaId);
         if(peli) {
-            // Asegurarnos de que no esté oculta por el filtro (podríamos limpiar el filtro)
             peli.style.display = 'flex'; 
             peli.classList.add('expandido');
+            const iconoTexto = peli.querySelector('.icono-expandir');
+            if (iconoTexto) {
+                iconoTexto.innerHTML = '▲ Ocultar sinopsis';
+            }
             peli.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }
 
     // 3. Modal de Confirmación
-    function confirmarCompra(titulo, horaStr, url) {
-        // Obtener la fecha del botón de día activo en el slider
-        const btnActivo = document.querySelector('.date-filter-btn.active');
-        const fechaDisplay = btnActivo ? btnActivo.getAttribute('data-fecha-display') : '';
-        
+    function confirmarCompra(titulo, fechaStr, horaStr, url) {
         document.getElementById('modalPeliculaTitulo').innerText = titulo;
-        document.getElementById('modalFecha').innerText = fechaDisplay;
+        document.getElementById('modalFecha').innerText = fechaStr;
         document.getElementById('modalHora').innerText = horaStr + ' hs';
         document.getElementById('modalBtnContinuar').href = url;
         

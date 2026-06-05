@@ -9,8 +9,8 @@ from django.contrib import messages
 from sistema_cine.models import Genero, Pelicula, Funcion
 from formularios.panel import FormularioGenero, FormularioPelicula, FormularioFuncion
 
-# Reutilizar el decorador de seguridad ya definido en el paquete
-from vistas.panel.gestion_usuarios import solo_administrador
+# Decorador de seguridad centralizado
+from vistas.decoradores import solo_administrador
 
 
 # ══════ GÉNEROS ══════════════════════════════════════════════════════════════

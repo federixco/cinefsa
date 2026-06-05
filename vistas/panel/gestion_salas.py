@@ -26,7 +26,7 @@ def lista_salas(request):
     # Obtenemos todas las salas de la base de datos, ordenadas por nombre.
     salas = Sala.objects.all().order_by('nombre_sala')
 
-    return render(request, 'panel_interno/lista_salas.html', {
+    return render(request, 'panel/salas/lista_salas.html', {
         'salas': salas
     })
 
@@ -96,7 +96,7 @@ def editor_sala(request, sala_id):
     Renderiza la interfaz del editor visual para una sala específica.
     """
     sala = get_object_or_404(Sala, id=sala_id)
-    return render(request, 'panel_interno/editor_sala.html', {
+    return render(request, 'panel/salas/editor_sala.html', {
         'sala': sala
     })
 

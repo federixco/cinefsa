@@ -87,6 +87,22 @@ class Funcion(models.Model):
         # Es el mecanismo que previene la superposición de proyecciones en un espacio físico.
         unique_together = ['sala', 'fecha', 'hora_inicio']
 
+    def save(self, *args, **kwargs):
+        """
+        Sobrescribe save para asegurar que si se le asigna una función
+        a una película que estaba como 'proximamente', esta pase
+        automáticamente al estado 'cartelera'.
+        """
+        # Actualizar estado de la película si corresponde
+        if self.pelicula_id:
+            from sistema_cine.models import Pelicula
+            pelicula = Pelicula.objects.get(id=self.pelicula_id)
+            if pelicula.estado == 'proximamente':
+                pelicula.estado = 'cartelera'
+                pelicula.save(update_fields=['estado'])
+                
+        super().save(*args, **kwargs)
+
     def __str__(self):
         """Representación: 'Película - Sala (DD/MM/YYYY HH:MM)'."""
         return f'{self.pelicula.titulo} - {self.sala.nombre_sala} ({self.fecha:%d/%m/%Y} {self.hora_inicio:%H:%M})'
