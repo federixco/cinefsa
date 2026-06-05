@@ -49,6 +49,4 @@ urlpatterns = [
 # En producción, el servidor web (Apache/Nginx) se encarga de servir estos archivos.
 # En desarrollo (DEBUG=True), Django los sirve directamente para facilitar las pruebas.
 if settings.DEBUG:
-    import debug_toolbar
-    urlpatterns += [path('__debug__/', include(debug_toolbar.urls))]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
