@@ -248,4 +248,26 @@ else:
     from decouple import config
 
 MERCADOPAGO_ACCESS_TOKEN = config('MERCADOPAGO_ACCESS_TOKEN', default='')
+
+# ─── MODO EXPOSICIÓN: VER CONSULTAS SQL EN TIEMPO REAL ────────────────────────
+# Esta configuración atrapa todas las consultas que hace el ORM de Django a la 
+# base de datos y las imprime en la consola del servidor (la negra).
+# Es ideal para mostrar en tiempo real cómo impacta el sistema a nivel de datos.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
 
