@@ -469,12 +469,13 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 .btn-horario {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    min-width: 90px;
+    gap: 0.15rem;
+    min-width: 80px;
     min-height: 50px;
-    padding: 0.6rem 1.2rem;
+    padding: 0.5rem 0.8rem;
     border: 2px solid #fbbf24;
     border-radius: 8px;
     background: rgba(251, 191, 36, 0.12);
@@ -484,6 +485,19 @@
     font-family: inherit;
     cursor: pointer;
     transition: all 0.2s ease;
+}
+
+.btn-horario .hora-container {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.btn-horario .fecha-text,
+.btn-horario .lugares-text {
+    font-size: 0.65rem;
+    opacity: 0.8;
+    font-weight: normal;
 }
 
 .btn-horario:hover {

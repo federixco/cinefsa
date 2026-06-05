@@ -46,6 +46,9 @@
                 <li><a href="{% url 'inicio' %}">Cartelera</a></li>
                 <li><a href="{% url 'inicio' %}#proximamente">Próximamente</a></li>
                 <li><a href="{% url 'cine_club' %}" class="nav-link-cineclub">🎞️ Cine Club</a></li>
+                {% if user.is_staff %}
+                <li><a href="{% url 'panel:crear_funcion' %}" style="color: var(--accent-primary); font-weight: 600;">➕ Crear Función</a></li>
+                {% endif %}
             </ul>
 
             <!-- Lado derecho del navbar -->
