@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',     # Sistema de mensajes flash (notificaciones temporales al usuario).
     'django.contrib.staticfiles',  # Gestión y servicio de archivos estáticos (CSS, JS, imágenes de UI).
     'sistema_cine',                # Aplicación principal del proyecto: modelos, vistas y lógica de negocio.
-    'debug_toolbar',               # Django Debug Toolbar: panel lateral con SQL, templates, cache, etc.
 ]
 
 
@@ -57,7 +56,6 @@ INSTALLED_APPS = [
 # Actúan como "filtros" que interceptan las peticiones antes de llegar a las vistas
 # y las respuestas antes de enviarse al cliente.
 MIDDLEWARE = [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',            # Django Debug Toolbar (debe ir lo más arriba posible).
     'django.middleware.security.SecurityMiddleware',              # Aplica cabeceras HTTP de seguridad (HSTS, etc.).
     'django.contrib.sessions.middleware.SessionMiddleware',       # Habilita el uso de sesiones en las vistas.
     'django.middleware.common.CommonMiddleware',                  # Normaliza URLs (agrega trailing slash, etc.).
