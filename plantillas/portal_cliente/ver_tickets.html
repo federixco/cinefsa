@@ -6,275 +6,394 @@
 {% block extra_css %}
 <style>
     .tickets-container {
-        max-width: 900px;
+        max-width: 800px;
         margin: 0 auto;
-        padding: 2rem;
+        padding: 2rem 1rem;
     }
 
-    .compra-header {
-        text-align: center;
-        margin-bottom: 2.5rem;
-    }
-
-    .compra-header .check-icon {
-        font-size: 3rem;
-        color: #10b981;
-        margin-bottom: 1rem;
-    }
-
-    .compra-header h1 {
-        font-size: 1.8rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .compra-header .venta-info {
-        color: var(--text-secondary);
-        font-size: 0.95rem;
-    }
-
-    .ticket-card {
-        background: var(--bg-surface);
-        border: 1px solid var(--border-color);
-        border-radius: 16px;
-        overflow: hidden;
-        margin-bottom: 1.5rem;
+    .action-bar {
         display: flex;
-        transition: all 0.3s ease;
+        justify-content: flex-end;
+        margin-bottom: 2rem;
     }
 
-    .ticket-card:hover {
-        border-color: rgba(147, 51, 234, 0.4);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    .btn-imprimir {
+        background: #8b5cf6;
+        color: #fff;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: background 0.2s;
     }
 
-    .ticket-info {
-        flex: 1;
-        padding: 1.5rem;
+    .btn-imprimir:hover {
+        background: #7c3aed;
+        color: #fff;
+    }
+
+    .ticket-wrapper {
+        background: #ffffff;
+        border-radius: 16px;
+        display: flex;
+        position: relative;
+        margin-bottom: 2.5rem;
+        color: #1f2937;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        overflow: hidden;
+    }
+
+    /* Agujero negro en el medio de la linea punteada */
+    .ticket-wrapper::before {
+        content: '';
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        background: var(--bg-background, #0f0a18); /* Color del fondo de la app */
+        border-radius: 50%;
+        left: 65%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2;
+    }
+
+    .ticket-left {
+        flex: 0 0 65%;
+        padding: 2rem 2.5rem;
+        position: relative;
+        border-right: 2px dashed #d1d5db;
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: space-between;
     }
 
-    .ticket-pelicula {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 0.75rem;
-    }
-
-    .ticket-detalle {
+    .ticket-right {
+        flex: 0 0 35%;
+        padding: 2rem;
         display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .ticket-header {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #8b5cf6;
+        text-transform: uppercase;
+        letter-spacing: 1px;
         margin-bottom: 0.5rem;
     }
 
-    .ticket-detalle-item {
+    .ticket-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+    }
+
+    .ticket-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .grid-item .label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #8b5cf6;
+        text-transform: uppercase;
+        margin-bottom: 0.3rem;
         display: flex;
         align-items: center;
         gap: 0.4rem;
-        font-size: 0.9rem;
-        color: var(--text-secondary);
     }
 
-    .ticket-detalle-item i {
-        color: var(--accent-primary);
-        width: 16px;
+    .grid-item .value {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #1f2937;
     }
 
-    .ticket-asiento-badge {
-        display: inline-block;
-        background: linear-gradient(135deg, rgba(147, 51, 234, 0.25), rgba(147, 51, 234, 0.1));
-        border: 1px solid var(--accent-primary);
-        color: #fff;
-        padding: 0.3rem 0.8rem;
+    .seat-badge {
+        display: inline-flex;
+        align-items: center;
+        background: #8b5cf6;
+        color: #ffffff;
+        padding: 0.6rem 1.2rem;
         border-radius: 8px;
         font-weight: 700;
-        font-size: 1.1rem;
-        margin-top: 0.5rem;
+        font-size: 1.2rem;
+        gap: 0.5rem;
+        align-self: flex-start;
     }
 
-    .ticket-estado {
-        display: inline-block;
-        padding: 0.2rem 0.6rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
+    .seat-type {
+        background: rgba(255,255,255,0.25);
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-top: 0.75rem;
+        margin-left: 0.5rem;
     }
 
-    .estado-pendiente {
-        background: rgba(251, 191, 36, 0.15);
-        color: #fbbf24;
-        border: 1px solid rgba(251, 191, 36, 0.3);
-    }
-
-    .estado-validado {
-        background: rgba(16, 185, 129, 0.15);
-        color: #10b981;
-        border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-
-    .ticket-qr {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1.5rem;
+    .qr-box {
         background: #fff;
-        min-width: 180px;
-        cursor: pointer;
-        transition: transform 0.2s;
+        padding: 0.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        margin-bottom: 0.5rem;
     }
 
-    .ticket-qr:hover {
-        transform: scale(1.03);
-    }
-
-    .ticket-qr img {
-        width: 150px;
-        height: 150px;
+    .qr-box img {
+        width: 140px;
+        height: 140px;
         image-rendering: pixelated;
     }
 
-    .ticket-codigo {
-        text-align: center;
-        font-size: 0.7rem;
-        color: var(--text-secondary);
-        margin-top: 0.5rem;
+    .qr-uuid {
+        font-size: 0.55rem;
+        color: #9ca3af;
+        margin-bottom: 1.5rem;
         word-break: break-all;
+        padding: 0 0.5rem;
     }
 
-    .acciones-footer {
+    .status-pill {
+        padding: 0.6rem 1rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
         text-align: center;
-        margin-top: 2rem;
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
+        width: 100%;
+        margin-bottom: 1rem;
     }
 
-    @media (max-width: 600px) {
-        .ticket-card {
+    .status-pill.pendiente {
+        background: #fef3c7;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+
+    .status-pill.validado {
+        background: #d1fae5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+
+    .download-link {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #8b5cf6;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition: color 0.2s;
+    }
+
+    .download-link:hover {
+        color: #7c3aed;
+    }
+
+    .bottom-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 3rem;
+    }
+
+    @media (max-width: 768px) {
+        .ticket-wrapper {
             flex-direction: column;
         }
-        .ticket-qr {
-            min-width: auto;
-            padding: 1rem;
+        .ticket-left {
+            border-right: none;
+            border-bottom: 2px dashed #d1d5db;
         }
+        .ticket-wrapper::before {
+            left: 50%;
+            top: 65%; /* Adjust based on actual height ratio */
+            transform: translate(-50%, -50%);
+        }
+    }
+    
+    @page {
+        size: landscape;
+        margin: 1cm;
+    }
+    
+    @media print {
+        body { background: #fff !important; margin: 0; padding: 0; }
+        nav, .bottom-actions, .action-bar, .download-link { display: none !important; }
+        
+        .tickets-container {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+        }
+
+        .ticket-wrapper { 
+            box-shadow: none !important; 
+            border: 2px solid #d1d5db !important; 
+            page-break-inside: avoid;
+            margin-bottom: 1.5cm !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+        }
+        
+        .ticket-left {
+            border-right: 2px dashed #d1d5db !important;
+        }
+
+        .ticket-wrapper::before { display: none !important; }
+        
+        /* Mantener colores originales en impresión */
+        .ticket-header { color: #8b5cf6 !important; }
+        .ticket-title { color: #111827 !important; }
+        .grid-item .label { color: #8b5cf6 !important; }
+        .grid-item .value { color: #1f2937 !important; }
+        .seat-badge { background: #8b5cf6 !important; color: #fff !important; }
+        .status-pill.pendiente { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fde68a !important; }
+        .status-pill.validado { background: #d1fae5 !important; color: #047857 !important; border: 1px solid #a7f3d0 !important; }
     }
 </style>
 {% endblock %}
 
 {% block contenido %}
 <div class="tickets-container">
-    
-    <div class="compra-header">
-        <div class="check-icon">✅</div>
-        <h1>¡Compra Exitosa!</h1>
-        <p class="venta-info">
-            Venta #{{ venta.id_venta }} · {{ venta.fecha_hora_transaccion|date:"d/m/Y H:i" }} · 
-            Total: <strong>${{ venta.monto_total }}</strong>
-        </p>
-    </div>
 
-    {% if user.empleado.exists %}
-    <div style="text-align: right; margin-bottom: 1rem;">
-        <button onclick="window.print()" class="btn btn-outline-light" style="font-size: 0.85rem;">
-            <i class="fas fa-print me-2"></i>Imprimir Tickets
+    <div class="action-bar" style="gap: 1rem;">
+        <button onclick="descargarTodos()" class="btn-imprimir" style="background: #10b981;">
+            <i class="fas fa-download"></i> Descargar Todos (PNG)
         </button>
+        {% if user.is_staff or user.is_superuser or user.empleado %}
+        <button onclick="window.print()" class="btn-imprimir">
+            <i class="fas fa-print"></i> Imprimir Tickets
+        </button>
+        {% endif %}
     </div>
-    {% endif %}
 
     {% for ticket in tickets %}
-    <div class="ticket-card">
-        <div class="ticket-info">
-            <div class="ticket-pelicula">{{ ticket.funcion.pelicula.titulo }}</div>
-            <div class="ticket-detalle">
-                <span class="ticket-detalle-item">
-                    <i class="fas fa-calendar-alt"></i>
-                    {{ ticket.funcion.fecha|date:"d/m/Y" }}
-                </span>
-                <span class="ticket-detalle-item">
-                    <i class="fas fa-clock"></i>
-                    {{ ticket.funcion.hora_inicio|time:"H:i" }} hs
-                </span>
-                <span class="ticket-detalle-item">
-                    <i class="fas fa-door-open"></i>
-                    {{ ticket.funcion.sala.nombre_sala }}
-                </span>
-            </div>
+    <div class="ticket-wrapper" id="ticket-{{ ticket.id_ticket }}">
+        <!-- Parte izquierda (Info) -->
+        <div class="ticket-left">
             <div>
-                <span class="ticket-asiento-badge">
-                    <i class="fas fa-chair"></i>
-                    Butaca {{ ticket.asiento.fila }}{{ ticket.asiento.numero }}
-                </span>
+                <div class="ticket-header">CINEFSA — ENTRADA DE CINE</div>
+                <div class="ticket-title">{{ ticket.funcion.pelicula.titulo }}</div>
+
+                <div class="ticket-grid">
+                    <div class="grid-item">
+                        <div class="label"><i class="fas fa-door-open"></i> SALA</div>
+                        <div class="value">{{ ticket.funcion.sala.nombre_sala }}</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="label"><i class="fas fa-calendar-alt"></i> FECHA</div>
+                        <div class="value">{{ ticket.funcion.fecha|date:"d/m/Y" }}</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="label"><i class="fas fa-clock"></i> HORARIO</div>
+                        <div class="value">{{ ticket.funcion.hora_inicio|time:"H:i" }} hs</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="label"><i class="fas fa-tag"></i> PRECIO</div>
+                        <div class="value">${{ ticket.funcion.precio_entrada }}</div>
+                    </div>
+                </div>
             </div>
-            <span class="ticket-estado estado-{{ ticket.estado_uso }}">
-                {{ ticket.get_estado_uso_display }}
-            </span>
-            {% if ticket.imagen_qr %}
-            <a href="{% url 'compras:descargar_ticket' ticket.id_ticket %}" class="btn btn-sm btn-outline-light mt-2" style="font-size: 0.8rem;">
-                <i class="fas fa-file-word me-1"></i>Descargar Ticket
-            </a>
-            {% endif %}
+
+            <div class="seat-badge">
+                <i class="fas fa-chair"></i>
+                Butaca {{ ticket.asiento.fila }}{{ ticket.asiento.numero }}
+                <span class="seat-type">{{ ticket.asiento.get_tipo_asiento_display }}</span>
+            </div>
         </div>
-        <div class="ticket-qr" onclick="ampliarQR('{{ ticket.imagen_qr.url }}', '{{ ticket.funcion.pelicula.titulo }}', '{{ ticket.asiento.fila }}{{ ticket.asiento.numero }}')">
+
+        <!-- Parte derecha (QR) -->
+        <div class="ticket-right">
             {% if ticket.imagen_qr %}
-                <div>
-                    <img src="{{ ticket.imagen_qr.url }}" alt="QR Ticket {{ ticket.id_ticket }}">
-                    <div class="ticket-codigo">{{ ticket.codigo_qr|truncatechars:20 }}</div>
-                </div>
+            <div class="qr-box">
+                <img src="{{ ticket.imagen_qr.url }}" alt="QR Ticket">
+            </div>
+            <div class="qr-uuid">{{ ticket.codigo_qr }}</div>
             {% else %}
-                <div style="color: #999; text-align: center;">
-                    <i class="fas fa-qrcode" style="font-size: 3rem;"></i>
-                    <p style="font-size: 0.8rem; margin-top: 0.5rem;">QR no disponible</p>
-                </div>
+            <div class="qr-box" style="display:flex; align-items:center; justify-content:center; color:#ccc;">
+                <i class="fas fa-qrcode fa-3x"></i>
+            </div>
+            <div class="qr-uuid">QR no disponible</div>
+            {% endif %}
+
+            <div class="status-pill {{ ticket.estado_uso }}">
+                {{ ticket.get_estado_uso_display }}
+            </div>
+
+            {% if ticket.imagen_qr %}
+            <button onclick="descargarTicket('ticket-{{ ticket.id_ticket }}')" class="download-link btn-descargar-png" style="background:none; border:none; padding:0; cursor:pointer;">
+                <i class="fas fa-download"></i> Descargar Imagen (PNG)
+            </button>
             {% endif %}
         </div>
     </div>
     {% endfor %}
 
-    <div class="acciones-footer">
-        <a href="{% url 'autenticacion:historial' %}" class="btn btn-outline-light px-4 py-2">
+    <!-- Botones inferiores -->
+    <div class="bottom-actions">
+        <a href="{% url 'autenticacion:historial' %}" class="btn btn-outline-light px-4 py-2" style="border-radius: 8px;">
             <i class="fas fa-history me-2"></i>Mi Historial
         </a>
-        <a href="{% url 'inicio' %}" class="btn btn-primary px-4 py-2">
+        <a href="{% url 'inicio' %}" class="btn btn-primary px-4 py-2" style="background: #8b5cf6; border: none; border-radius: 8px; font-weight: 600;">
             <i class="fas fa-film me-2"></i>Volver a Cartelera
         </a>
     </div>
 
 </div>
-
-<!-- Modal para ampliar QR -->
-<div class="modal fade" id="modalQR" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
-        <div class="modal-content" style="background: #1a1025; border: 1px solid rgba(147,51,234,0.3); border-radius: 16px;">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title text-white" id="modalQRTitulo">Código QR</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body text-center py-4">
-                <div style="background: #fff; border-radius: 12px; padding: 1.5rem; display: inline-block;">
-                    <img id="modalQRImagen" src="" alt="QR" style="width: 250px; height: 250px; image-rendering: pixelated;">
-                </div>
-                <p class="text-muted small mt-3" id="modalQRDetalle"></p>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
-    function ampliarQR(urlImagen, pelicula, asiento) {
-        if (!urlImagen) return;
-        document.getElementById('modalQRImagen').src = urlImagen;
-        document.getElementById('modalQRTitulo').innerText = pelicula;
-        document.getElementById('modalQRDetalle').innerText = 'Butaca ' + asiento;
-        const modal = new bootstrap.Modal(document.getElementById('modalQR'));
-        modal.show();
+    async function descargarTicket(ticketId) {
+        const ticketElement = document.getElementById(ticketId);
+        
+        // Ocultar botones de descarga para que no salgan en la foto
+        const btnDescargar = ticketElement.querySelector('.btn-descargar-png');
+        if(btnDescargar) btnDescargar.style.display = 'none';
+
+        const originalBoxShadow = ticketElement.style.boxShadow;
+        ticketElement.style.boxShadow = 'none'; // Quitar la sombra para el PNG
+        
+        try {
+            const canvas = await html2canvas(ticketElement, {
+                backgroundColor: '#ffffff',
+                scale: 2, // Mejor calidad
+                useCORS: true // Permite imágenes externas si las hay
+            });
+            const link = document.createElement('a');
+            link.download = ticketId + '.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        } finally {
+            // Restaurar diseño original
+            ticketElement.style.boxShadow = originalBoxShadow;
+            if(btnDescargar) btnDescargar.style.display = 'inline-flex';
+        }
+    }
+
+    async function descargarTodos() {
+        const tickets = document.querySelectorAll('.ticket-wrapper');
+        for (let i = 0; i < tickets.length; i++) {
+            await descargarTicket(tickets[i].id);
+            // Pausa chiquita entre descargas para no bloquear el navegador
+            await new Promise(r => setTimeout(r, 500));
+        }
     }
 </script>
 {% endblock %}

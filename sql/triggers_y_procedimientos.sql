@@ -38,7 +38,7 @@ BEGIN
     SET capacidad_maxima = (
         SELECT COUNT(*)
         FROM asiento
-        WHERE sala_id = NEW.sala_id
+        WHERE sala_id = NEW.sala_id AND estado_asiento = 'activo'
     )
     WHERE id = NEW.sala_id;
 END //
@@ -65,9 +65,37 @@ BEGIN
     SET capacidad_maxima = (
         SELECT COUNT(*)
         FROM asiento
-        WHERE sala_id = OLD.sala_id
+        WHERE sala_id = OLD.sala_id AND estado_asiento = 'activo'
     )
     WHERE id = OLD.sala_id;
+END //
+
+DELIMITER ;
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- TRIGGER 1C: Actualizar capacidad al ACTUALIZAR un asiento (Baja Lógica)
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Si un asiento cambia de estado (ej: activo a inactivo), se recalcula.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+DROP TRIGGER IF EXISTS trg_asiento_after_update;
+
+DELIMITER //
+
+CREATE TRIGGER trg_asiento_after_update
+AFTER UPDATE ON asiento
+FOR EACH ROW
+BEGIN
+    IF NEW.estado_asiento != OLD.estado_asiento THEN
+        UPDATE sala
+        SET capacidad_maxima = (
+            SELECT COUNT(*)
+            FROM asiento
+            WHERE sala_id = NEW.sala_id AND estado_asiento = 'activo'
+        )
+        WHERE id = NEW.sala_id;
+    END IF;
 END //
 
 DELIMITER ;
@@ -178,12 +206,12 @@ BEGIN
     DECLARE v_total_asientos INT DEFAULT 0;
     DECLARE v_tickets_vendidos INT DEFAULT 0;
 
-    -- Contar el total de asientos de la sala asignada a esta función
+    -- Contar el total de asientos ACTIVOS de la sala asignada a esta función
     SELECT COUNT(*)
     INTO v_total_asientos
     FROM asiento a
     INNER JOIN funcion f ON a.sala_id = f.sala_id
-    WHERE f.id = p_funcion_id;
+    WHERE f.id = p_funcion_id AND a.estado_asiento = 'activo';
 
     -- Contar los tickets ya emitidos para esta función
     SELECT COUNT(*)

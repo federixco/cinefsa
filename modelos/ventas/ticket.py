@@ -52,4 +52,4 @@ class Ticket(models.Model):
         unique_together = ('funcion', 'asiento')
 
     def __str__(self):
-        return f"Ticket {self.id_ticket} - F:{self.funcion.id_funcion} - A:{self.asiento.fila}{self.asiento.numero}"
+        return f"Ticket {self.id_ticket} - F:{self.funcion.id} - A:{self.asiento.fila}{self.asiento.numero}"

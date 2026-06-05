@@ -296,6 +296,9 @@
                 <div style="display: flex; align-items: center; gap: 0.75rem;">
                     <span class="venta-estado estado-{{ venta.estado_pago }}">{{ venta.get_estado_pago_display }}</span>
                     <span class="venta-monto">${{ venta.monto_total }}</span>
+                    <a href="{% url 'compras:ver_tickets' venta.id_venta %}" class="btn btn-sm" style="background: rgba(147, 51, 234, 0.15); color: #c084fc; border: 1px solid rgba(147, 51, 234, 0.3); font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 6px; text-decoration: none;" onclick="event.stopPropagation();">
+                        <i class="fas fa-ticket-alt"></i> Ver Tickets
+                    </a>
                     <span class="venta-toggle">▼</span>
                 </div>
             </div>
@@ -321,11 +324,6 @@
                     </div>
                     <span class="ticket-row-asiento">{{ ticket.asiento.fila }}{{ ticket.asiento.numero }}</span>
                     <span class="ticket-estado-badge badge-{{ ticket.estado_uso }}">{{ ticket.get_estado_uso_display }}</span>
-                    {% if ticket.imagen_qr %}
-                    <a href="{% url 'compras:descargar_ticket' ticket.id_ticket %}" class="btn-descargar-qr" title="Descargar Ticket">
-                        <i class="fas fa-file-word"></i>
-                    </a>
-                    {% endif %}
                 </div>
                 {% endfor %}
             </div>

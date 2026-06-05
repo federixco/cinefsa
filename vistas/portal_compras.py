@@ -41,7 +41,7 @@ def seleccion_asientos_view(request, funcion_id):
     """
     funcion = get_object_or_404(Funcion, id=funcion_id)
     sala = funcion.sala
-    asientos = sala.asientos.all()
+    asientos = sala.asientos.filter(estado_asiento='activo')
 
     asientos_ocupados_ids = Ticket.objects.filter(
         funcion=funcion

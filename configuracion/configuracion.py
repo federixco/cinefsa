@@ -238,6 +238,14 @@ LOGOUT_REDIRECT_URL = '/auth/login/'
 # El Access Token se lee desde el archivo .env en la raíz del proyecto.
 # Esto evita que quede expuesto al subir el código a GitHub.
 # Formato del .env: MERCADOPAGO_ACCESS_TOKEN=APP_USR-XXXXXXXX
-from decouple import config
+import os
+from decouple import Config, RepositoryEnv
+
+env_path = os.path.join(BASE_DIR, '.env')
+if os.path.exists(env_path):
+    config = Config(RepositoryEnv(env_path))
+else:
+    from decouple import config
+
 MERCADOPAGO_ACCESS_TOKEN = config('MERCADOPAGO_ACCESS_TOKEN', default='')
 
