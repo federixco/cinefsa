@@ -18,7 +18,6 @@ from vistas.autenticacion.views import (
     logout_view,
     historial_view,
     CambiarPasswordView,
-    recuperar_password_view,
 )
 
 
@@ -40,7 +39,4 @@ urlpatterns = [
 
     # Cambio de contraseña: Permite al usuario modificar su clave actual.
     path('cambiar-password/', CambiarPasswordView.as_view(), name='cambiar_password'),
-
-    # Recuperación de contraseña: Opción 2 (Email + Fecha de nacimiento).
-    path('recuperar-password/', recuperar_password_view, name='recuperar_password'),
 ]
