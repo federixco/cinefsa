@@ -1,0 +1,449 @@
+/*
+ * votacion.css — Estilos del portal de votación Cine Club (RF-C04).
+ *
+ * Diseño premium tipo "event landing page" con:
+ *   - Hero animado con cuenta regresiva y descripción del evento.
+ *   - Grid de tarjetas de películas candidatas con hover effects.
+ *   - Barras de progreso animadas para los resultados.
+ *   - Banner de registro para visitantes no autenticados.
+ *   - Estado de "ya votaste" con tu selección destacada.
+ */
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   HERO DEL CINE CLUB
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.cineclub-hero {
+    position: relative;
+    background: linear-gradient(135deg, #1a0a2e 0%, #0d0b14 40%, #1e0a38 100%);
+    border: 1px solid rgba(147, 51, 234, 0.2);
+    border-radius: 16px;
+    padding: 3rem 2.5rem;
+    margin-bottom: 2.5rem;
+    overflow: hidden;
+    text-align: center;
+}
+
+/* Fondo decorativo con efecto de estrellas/brillo */
+.cineclub-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(147, 51, 234, 0.12) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.cineclub-hero::after {
+    content: '🎬';
+    position: absolute;
+    top: 1.5rem;
+    right: 2rem;
+    font-size: 5rem;
+    opacity: 0.06;
+    pointer-events: none;
+}
+
+.cineclub-etiqueta {
+    display: inline-block;
+    background: rgba(147, 51, 234, 0.2);
+    border: 1px solid rgba(147, 51, 234, 0.4);
+    color: #c084fc;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+}
+
+.cineclub-titulo {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #f4f0ff;
+    letter-spacing: -0.5px;
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+}
+
+.cineclub-descripcion {
+    color: #a89bc2;
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto 1.5rem;
+}
+
+.cineclub-fecha-evento {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #fbbf24;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   BANNER DE REGISTRO — Visitantes no autenticados
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.banner-registro {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: linear-gradient(135deg, rgba(147, 51, 234, 0.15), rgba(124, 34, 212, 0.08));
+    border: 1px solid rgba(147, 51, 234, 0.35);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+}
+
+.banner-registro-icono {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.banner-registro-texto {
+    flex: 1;
+    min-width: 200px;
+}
+
+.banner-registro-texto h3 {
+    color: #f4f0ff;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.banner-registro-texto p {
+    color: #a89bc2;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.banner-registro-acciones {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.btn-registrarse {
+    background: linear-gradient(135deg, #9333ea, #7c22d4);
+    color: white;
+    text-decoration: none;
+    padding: 0.65rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(147, 51, 234, 0.35);
+    white-space: nowrap;
+}
+
+.btn-registrarse:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(147, 51, 234, 0.5);
+}
+
+.btn-iniciar-sesion-link {
+    color: #a89bc2;
+    text-decoration: none;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-iniciar-sesion-link:hover {
+    color: #f4f0ff;
+    border-color: rgba(255,255,255,0.25);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   TÍTULO DE SECCIÓN
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.seccion-votacion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.seccion-votacion-header h2 {
+    font-size: 1.4rem;
+    color: #f4f0ff;
+    margin: 0;
+}
+
+.votos-totales-badge {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #a89bc2;
+    padding: 0.3rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   GRID DE PELÍCULAS CANDIDATAS
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.candidatas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.candidata-card {
+    background: #1a1525;
+    border: 1px solid #2d2240;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.candidata-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(147, 51, 234, 0.5);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(147,51,234,0.2);
+}
+
+/* Tarjeta ganadora / con más votos */
+.candidata-card.es-ganadora {
+    border-color: rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+}
+
+/* Tarjeta elegida por el usuario */
+.candidata-card.mi-voto {
+    border-color: rgba(147, 51, 234, 0.7);
+    box-shadow: 0 0 24px rgba(147, 51, 234, 0.2);
+}
+
+.candidata-poster {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    display: block;
+}
+
+.candidata-poster-fallback {
+    width: 100%;
+    aspect-ratio: 2/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    font-weight: 800;
+    color: rgba(255,255,255,0.15);
+    background: linear-gradient(135deg, #261e38, #1a1525);
+}
+
+.candidata-cuerpo {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.candidata-titulo {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f4f0ff;
+    margin-bottom: 0.4rem;
+    line-height: 1.3;
+}
+
+.candidata-meta {
+    font-size: 0.8rem;
+    color: #a89bc2;
+    margin-bottom: 1rem;
+    flex: 1;
+}
+
+/* Botón de votar */
+.btn-votar {
+    width: 100%;
+    padding: 0.7rem;
+    background: linear-gradient(135deg, #9333ea, #7c22d4);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    box-shadow: 0 4px 10px rgba(147, 51, 234, 0.25);
+}
+
+.btn-votar:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(147, 51, 234, 0.4);
+}
+
+/* Botón deshabilitado (modo visitante) */
+.btn-votar-bloqueado {
+    width: 100%;
+    padding: 0.7rem;
+    background: rgba(255,255,255,0.04);
+    color: #a89bc2;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    font-size: 0.88rem;
+    cursor: not-allowed;
+    font-family: inherit;
+}
+
+/* Badge de "mi voto" */
+.badge-mi-voto {
+    width: 100%;
+    padding: 0.65rem;
+    background: rgba(147, 51, 234, 0.15);
+    border: 1px solid rgba(147, 51, 234, 0.4);
+    color: #c084fc;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   RESULTADOS — Barras de progreso animadas
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.resultados-seccion {
+    background: #1a1525;
+    border: 1px solid #2d2240;
+    border-radius: 12px;
+    padding: 1.75rem;
+    margin-bottom: 2.5rem;
+}
+
+.resultados-seccion h3 {
+    font-size: 1.1rem;
+    color: #f4f0ff;
+    margin-bottom: 1.25rem;
+}
+
+.resultado-item {
+    margin-bottom: 1.25rem;
+}
+
+.resultado-item:last-child {
+    margin-bottom: 0;
+}
+
+.resultado-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4rem;
+}
+
+.resultado-titulo-pelicula {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #f4f0ff;
+}
+
+.resultado-stats {
+    font-size: 0.82rem;
+    color: #a89bc2;
+}
+
+.barra-progreso-contenedor {
+    height: 8px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.barra-progreso-relleno {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #9333ea, #c084fc);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0; /* Se setea via JS para animación */
+}
+
+.barra-progreso-relleno.es-ganadora-barra {
+    background: linear-gradient(90deg, #d97706, #fbbf24);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ESTADO: SIN ENCUESTA ACTIVA
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.cineclub-vacio {
+    text-align: center;
+    padding: 5rem 2rem;
+}
+
+.cineclub-vacio-icono {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.4;
+}
+
+.cineclub-vacio h2 {
+    color: #f4f0ff;
+    margin-bottom: 0.75rem;
+}
+
+.cineclub-vacio p {
+    color: #a89bc2;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    .cineclub-titulo {
+        font-size: 1.6rem;
+    }
+
+    .candidatas-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1rem;
+    }
+
+    .banner-registro {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .banner-registro-acciones {
+        justify-content: center;
+    }
+}
+
+/* Enlace de Cine Club en navbar con color especial */
+.nav-link-cineclub {
+    color: #c084fc !important;
+    font-weight: 600 !important;
+}
+
+.nav-link-cineclub:hover {
+    color: #f4f0ff !important;
+}

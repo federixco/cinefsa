@@ -65,6 +65,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',     # Previene que el sitio sea embebido en iframes externos (clickjacking).
 ]
 
+# INTERNAL_IPS: IPs desde las que se muestra el Debug Toolbar.
+INTERNAL_IPS = ['127.0.0.1']
+
 # ROOT_URLCONF: Módulo Python que contiene la tabla de enrutamiento principal (urls.py).
 # Cada petición HTTP llega aquí primero para ser derivada a la vista correcta.
 ROOT_URLCONF = 'configuracion.urls'
@@ -225,3 +228,43 @@ LOGIN_REDIRECT_URL = '/'
 
 # LOGOUT_REDIRECT_URL: URL a la que Django redirige después de cerrar sesión.
 LOGOUT_REDIRECT_URL = '/auth/login/'
+
+
+# ─── MERCADO PAGO ─────────────────────────────────────────────────────────────
+# Credenciales de SANDBOX (pruebas).
+# El Access Token se lee desde el archivo .env en la raíz del proyecto.
+# Esto evita que quede expuesto al subir el código a GitHub.
+# Formato del .env: MERCADOPAGO_ACCESS_TOKEN=APP_USR-XXXXXXXX
+import os
+from decouple import Config, RepositoryEnv
+
+env_path = os.path.join(BASE_DIR, '.env')
+if os.path.exists(env_path):
+    config = Config(RepositoryEnv(env_path))
+else:
+    from decouple import config
+
+MERCADOPAGO_ACCESS_TOKEN = config('MERCADOPAGO_ACCESS_TOKEN', default='')
+
+# ─── MODO EXPOSICIÓN: VER CONSULTAS SQL EN TIEMPO REAL ────────────────────────
+# Esta configuración atrapa todas las consultas que hace el ORM de Django a la 
+# base de datos y las imprime en la consola del servidor (la negra).
+# Es ideal para mostrar en tiempo real cómo impacta el sistema a nivel de datos.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+

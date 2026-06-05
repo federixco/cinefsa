@@ -17,6 +17,7 @@ from vistas.autenticacion.views import (
     registro_view,
     logout_view,
     historial_view,
+    CambiarPasswordView,
 )
 
 
@@ -35,4 +36,7 @@ urlpatterns = [
 
     # Historial: lista de transacciones del usuario logueado.
     path('historial/', historial_view, name='historial'),
+
+    # Cambio de contraseña: Permite al usuario modificar su clave actual.
+    path('cambiar-password/', CambiarPasswordView.as_view(), name='cambiar_password'),
 ]

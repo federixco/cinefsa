@@ -1,0 +1,267 @@
+{% extends 'base/base_panel.html' %}
+{% load static %}
+
+{% block active_cartelera %}active{% endblock %}
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cartelera.css' %}">
+<style>
+    /* ── Quick-select de horarios ─────────────────────────────── */
+    .horarios-rapidos {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .btn-horario {
+        padding: 0.3rem 0.7rem;
+        background: rgba(147, 51, 234, 0.08);
+        color: var(--text-secondary);
+        border: 1px solid rgba(147, 51, 234, 0.2);
+        border-radius: 12px;
+        font-size: 0.82rem;
+        font-weight: 500;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all var(--transition-speed);
+    }
+
+    .btn-horario:hover {
+        background: rgba(147, 51, 234, 0.18);
+        color: var(--text-primary);
+        border-color: var(--accent-primary);
+    }
+
+    .btn-horario.seleccionado {
+        background: rgba(147, 51, 234, 0.25);
+        color: var(--accent-primary);
+        border-color: var(--accent-primary);
+        font-weight: 700;
+    }
+
+    .horarios-label {
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.3rem;
+        display: block;
+        opacity: 0.7;
+    }
+</style>
+{% endblock %}
+
+{% block panel_content %}
+<!--
+    panel/formulario_funcion.html — Crear / editar función (RF-A02).
+
+    Mejoras de UX:
+        - El campo de fecha tiene min="hoy" para evitar fechas pasadas (UI).
+        - El formulario también valida en el servidor (FormularioFuncion.clean()).
+        - Se agrega un panel de horarios rápidos (botones) para rellenar el input
+          de hora de forma cómoda sin necesidad de tipear. El input sigue siendo
+          editable para valores personalizados.
+-->
+
+<div class="cartelera-header">
+    <div>
+        <h1>{% if modo == 'crear' %}📅 Nueva Función{% else %}✏️ Editar Función{% endif %}</h1>
+        <p class="subtitulo">
+            {% if modo == 'crear' %}
+                Asigná película, sala, fecha y horario para la nueva proyección.
+            {% else %}
+                Editando función de <strong>{{ funcion.pelicula.titulo }}</strong>
+            {% endif %}
+        </p>
+    </div>
+    <div class="header-acciones">
+        <a href="{% url 'panel:listar_funciones' %}" class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+
+<div class="form-cartelera" style="max-width:600px;">
+
+    <!-- Errores generales (non_field_errors = conflictos de horario del clean()) -->
+    {% if formulario_funcion.non_field_errors %}
+    <div class="errores-generales" id="errores-conflicto-horario">
+        <p>⚠️ No se puede programar la función:</p>
+        <ul>
+            {% for error in formulario_funcion.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post"
+          action="{% if modo == 'crear' %}{% url 'panel:crear_funcion' %}{% else %}{% url 'panel:editar_funcion' funcion.pk %}{% endif %}"
+          id="form-funcion">
+        {% csrf_token %}
+
+        <!-- ── Película ──────────────────────────────────────────── -->
+        <div class="form-campo">
+            <label for="{{ formulario_funcion.pelicula.id_for_label }}">
+                {{ formulario_funcion.pelicula.label }}
+            </label>
+            {{ formulario_funcion.pelicula }}
+            {% if formulario_funcion.pelicula.errors %}
+                <ul class="errores-campo">{% for e in formulario_funcion.pelicula.errors %}<li>⚠️ {{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+        </div>
+
+        <!-- ── Sala ─────────────────────────────────────────────── -->
+        <div class="form-campo">
+            <label for="{{ formulario_funcion.sala.id_for_label }}">
+                {{ formulario_funcion.sala.label }}
+            </label>
+            {{ formulario_funcion.sala }}
+            <p class="help-text">Solo se muestran salas con estado <strong>Activa</strong>.</p>
+            {% if formulario_funcion.sala.errors %}
+                <ul class="errores-campo">{% for e in formulario_funcion.sala.errors %}<li>⚠️ {{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+        </div>
+
+        <!-- ── Fecha ──────────────────────────────────────────────
+             Se agrega min="hoy" via JS para bloquear fechas pasadas
+             directamente en el selector del navegador (doble protección:
+             UI + validación en el servidor). -->
+        <div class="form-campo">
+            <label for="{{ formulario_funcion.fecha.id_for_label }}">
+                {{ formulario_funcion.fecha.label }}
+            </label>
+            {{ formulario_funcion.fecha }}
+            {% if formulario_funcion.fecha.errors %}
+                <ul class="errores-campo" id="errores-fecha">{% for e in formulario_funcion.fecha.errors %}<li>⚠️ {{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+        </div>
+
+        <!-- ── Hora de inicio ─────────────────────────────────────
+             Input[type=time] para tipeo manual + botones de horario
+             rápido para los horarios más comunes del cine. -->
+        <div class="form-campo">
+            <label for="{{ formulario_funcion.hora_inicio.id_for_label }}">
+                {{ formulario_funcion.hora_inicio.label }}
+            </label>
+
+            <!-- Input de hora (se puede tipear manualmente) -->
+            {{ formulario_funcion.hora_inicio }}
+
+            <!-- Selector rápido de horarios habituales -->
+            <span class="horarios-label" style="margin-top:0.6rem;">⚡ Horarios rápidos:</span>
+            <div class="horarios-rapidos" id="panel-horarios-rapidos">
+                <button type="button" class="btn-horario" data-hora="14:00" id="btn-hora-1400">14:00</button>
+                <button type="button" class="btn-horario" data-hora="15:00" id="btn-hora-1500">15:00</button>
+                <button type="button" class="btn-horario" data-hora="16:00" id="btn-hora-1600">16:00</button>
+                <button type="button" class="btn-horario" data-hora="16:30" id="btn-hora-1630">16:30</button>
+                <button type="button" class="btn-horario" data-hora="17:00" id="btn-hora-1700">17:00</button>
+                <button type="button" class="btn-horario" data-hora="18:00" id="btn-hora-1800">18:00</button>
+                <button type="button" class="btn-horario" data-hora="19:00" id="btn-hora-1900">19:00</button>
+                <button type="button" class="btn-horario" data-hora="19:30" id="btn-hora-1930">19:30</button>
+                <button type="button" class="btn-horario" data-hora="20:00" id="btn-hora-2000">20:00</button>
+                <button type="button" class="btn-horario" data-hora="21:00" id="btn-hora-2100">21:00</button>
+                <button type="button" class="btn-horario" data-hora="21:30" id="btn-hora-2130">21:30</button>
+                <button type="button" class="btn-horario" data-hora="22:00" id="btn-hora-2200">22:00</button>
+                <button type="button" class="btn-horario" data-hora="23:00" id="btn-hora-2300">23:00</button>
+                <button type="button" class="btn-horario" data-hora="23:30" id="btn-hora-2330">23:30</button>
+            </div>
+
+            {% if formulario_funcion.hora_inicio.errors %}
+                <ul class="errores-campo" id="errores-hora">{% for e in formulario_funcion.hora_inicio.errors %}<li>⚠️ {{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+        </div>
+
+        <!-- ── Precio ────────────────────────────────────────────── -->
+        <div class="form-campo">
+            <label for="{{ formulario_funcion.precio_entrada.id_for_label }}">
+                {{ formulario_funcion.precio_entrada.label }}
+            </label>
+            {{ formulario_funcion.precio_entrada }}
+            <p class="help-text">El precio puede variar por tipo de función (matinée, 3D, trasnoche, etc.).</p>
+            {% if formulario_funcion.precio_entrada.errors %}
+                <ul class="errores-campo">{% for e in formulario_funcion.precio_entrada.errors %}<li>⚠️ {{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+        </div>
+
+        <!-- ── Botones ─────────────────────────────────────────── -->
+        <div class="form-acciones">
+            <button type="submit" class="btn btn-primary" id="btn-guardar-funcion">
+                {% if modo == 'crear' %}📅 Programar función{% else %}💾 Guardar cambios{% endif %}
+            </button>
+            <a href="{% url 'panel:listar_funciones' %}" class="btn-cancelar">Cancelar</a>
+        </div>
+
+    </form>
+</div>
+
+{% endblock panel_content %}
+
+{% block extra_js %}
+<script>
+/**
+ * formulario_funcion.js — Mejoras de UX para el formulario de función.
+ *
+ * 1. Restricción de fecha mínima: se establece 'min' en el input de fecha
+ *    con la fecha de hoy para que el selector del navegador bloquee fechas pasadas.
+ *    (Doble protección: también se valida en el servidor en FormularioFuncion.clean())
+ *
+ * 2. Horarios rápidos: los botones del panel de horarios rápidos rellenan
+ *    automáticamente el input[type="time"] al hacer clic. El botón seleccionado
+ *    recibe la clase 'seleccionado' para indicar visualmente cuál está activo.
+ *    Si el usuario tipea manualmente, ningún botón queda marcado.
+ */
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ── 1. Fecha mínima = hoy ─────────────────────────────────────────────────
+    const inputFecha = document.getElementById('campo-funcion-fecha');
+    if (inputFecha) {
+        // Calcular la fecha de hoy en formato YYYY-MM-DD (requerido por input[type=date])
+        const hoy = new Date();
+        const anio = hoy.getFullYear();
+        const mes  = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dia  = String(hoy.getDate()).padStart(2, '0');
+        inputFecha.min = `${anio}-${mes}-${dia}`;
+    }
+
+    // ── 2. Horarios rápidos ───────────────────────────────────────────────────
+    const inputHora   = document.getElementById('campo-funcion-hora-inicio');
+    const botonesHora = document.querySelectorAll('.btn-horario');
+
+    if (inputHora && botonesHora.length > 0) {
+
+        // Al hacer clic en un botón de horario, rellenar el input y marcar el botón
+        botonesHora.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const hora = btn.getAttribute('data-hora');
+                inputHora.value = hora;
+
+                // Marcar solo el botón clickeado
+                botonesHora.forEach(b => b.classList.remove('seleccionado'));
+                btn.classList.add('seleccionado');
+            });
+        });
+
+        // Si el usuario tipea en el input, limpiar la selección de botones
+        inputHora.addEventListener('input', function () {
+            botonesHora.forEach(b => b.classList.remove('seleccionado'));
+
+            // Si el valor coincide con algún botón, marcarlo
+            botonesHora.forEach(function (btn) {
+                if (btn.getAttribute('data-hora') === inputHora.value) {
+                    btn.classList.add('seleccionado');
+                }
+            });
+        });
+
+        // Al cargar la página en modo editar, marcar el botón si el horario coincide
+        if (inputHora.value) {
+            botonesHora.forEach(function (btn) {
+                if (btn.getAttribute('data-hora') === inputHora.value) {
+                    btn.classList.add('seleccionado');
+                }
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

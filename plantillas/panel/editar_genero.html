@@ -1,0 +1,54 @@
+{% extends 'base/base_panel.html' %}
+{% load static %}
+
+{% block active_cartelera %}active{% endblock %}
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cartelera.css' %}">
+{% endblock %}
+
+{% block panel_content %}
+<!--
+    panel/editar_genero.html — Formulario de edición de género (RF-A02).
+-->
+<div class="cartelera-header">
+    <div>
+        <h1>✏️ Editar Género</h1>
+        <p class="subtitulo">Modificando: <strong>{{ genero.descripcion }}</strong></p>
+    </div>
+    <div class="header-acciones">
+        <a href="{% url 'panel:listar_generos' %}" class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+
+<div class="form-cartelera" style="max-width:500px;">
+    <form method="post"
+          action="{% url 'panel:editar_genero' genero.pk %}"
+          id="form-editar-genero">
+        {% csrf_token %}
+
+        <div class="form-campo">
+            <label for="{{ formulario_genero.descripcion.id_for_label }}">
+                {{ formulario_genero.descripcion.label }}
+            </label>
+            {{ formulario_genero.descripcion }}
+            {% if formulario_genero.descripcion.errors %}
+                <ul class="errores-campo" id="errores-descripcion-genero">
+                    {% for error in formulario_genero.descripcion.errors %}
+                        <li>⚠️ {{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div class="form-acciones">
+            <button type="submit" class="btn btn-primary" id="btn-guardar-genero">
+                💾 Guardar cambios
+            </button>
+            <a href="{% url 'panel:listar_generos' %}" class="btn-cancelar">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+{% endblock panel_content %}

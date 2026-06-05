@@ -35,15 +35,24 @@
 
             <div class="sidebar-section">
                 <span class="sidebar-section-title">Contenido</span>
-                <a href="#" class="sidebar-link disabled">
+                <!-- RF-A02: Enlace a Gestión de Cartelera (ahora activo) -->
+                <a href="{% url 'panel:listar_peliculas' %}" class="sidebar-link {% block active_cartelera %}{% endblock %}">
                     <span class="sidebar-icon">🎞️</span>
                     <span class="sidebar-text">Cartelera</span>
-                    <span class="sidebar-badge">Próx.</span>
                 </a>
                 <a href="#" class="sidebar-link disabled">
                     <span class="sidebar-icon">🎟️</span>
                     <span class="sidebar-text">Ventas</span>
                     <span class="sidebar-badge">Próx.</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <span class="sidebar-section-title">Cine Club</span>
+                <!-- RF-A04: Monitor de Votaciones -->
+                <a href="{% url 'panel:monitor_votaciones' %}" class="sidebar-link {% block active_votaciones %}{% endblock %}">
+                    <span class="sidebar-icon">🗳️</span>
+                    <span class="sidebar-text">Votaciones</span>
                 </a>
             </div>
         </nav>

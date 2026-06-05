@@ -1,0 +1,184 @@
+{% extends 'base/base_panel.html' %}
+{% load static %}
+
+{% block active_cartelera %}active{% endblock %}
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/panel_usuarios.css' %}">
+<link rel="stylesheet" href="{% static 'css/cartelera.css' %}">
+{% endblock %}
+
+{% block panel_content %}
+<!--
+    panel/gestion_funciones.html — Cartelera de funciones (RF-A02).
+    Secciones:
+        1. Encabezado con botón para programar nueva función.
+        2. Tabla de funciones próximas (cartelera activa).
+        3. Historial colapsable con <details>.
+
+    NOTA TÉCNICA: Los botones de eliminar usan el atributo data-titulo
+    para mostrar el nombre en el confirm de JS, evitando conflictos de
+    comillas entre HTML, Django template tags y JavaScript.
+-->
+
+<div class="cartelera-header">
+    <div>
+        <h1>📅 Gestión de Funciones</h1>
+        <p class="subtitulo">Programá proyecciones asignando película, sala, fecha y horario.</p>
+    </div>
+    <div class="header-acciones">
+        <a href="{% url 'panel:listar_peliculas' %}" class="btn btn-secondary" id="btn-ir-peliculas">
+            🎬 Películas
+        </a>
+        <a href="{% url 'panel:crear_funcion' %}" class="btn btn-primary" id="btn-nueva-funcion">
+            + Programar función
+        </a>
+    </div>
+</div>
+
+<!-- ══════ FUNCIONES PRÓXIMAS ══════════════════════════════════════════════ -->
+<div class="tabla-container">
+    <div class="tabla-info">
+        <span class="resultado-count">
+            Funciones programadas: <strong>{{ funciones_proximas|length }}</strong>
+        </span>
+    </div>
+
+    {% if funciones_proximas %}
+    <table class="tabla-cartelera" id="tabla-funciones-proximas">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Película</th>
+                <th>Sala</th>
+                <th>Precio</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for funcion in funciones_proximas %}
+            <tr id="fila-funcion-{{ funcion.pk }}">
+                <td><strong>{{ funcion.fecha|date:"d/m/Y" }}</strong></td>
+                <td>{{ funcion.hora_inicio|time:"H:i" }}</td>
+                <td>
+                    <span class="col-titulo">{{ funcion.pelicula.titulo }}</span>
+                    <br>
+                    <small style="color:var(--text-secondary);">
+                        {{ funcion.pelicula.duracion_minutos }} min &middot; {{ funcion.pelicula.get_clasificacion_display }}
+                    </small>
+                </td>
+                <td><span class="badge badge-sala">{{ funcion.sala.nombre_sala }}</span></td>
+                <td><span class="badge badge-precio">${{ funcion.precio_entrada }}</span></td>
+                <td>
+                    <div class="acciones-cell">
+                        <a href="{% url 'panel:editar_funcion' funcion.pk %}"
+                           class="btn-editar-row"
+                           id="btn-editar-funcion-{{ funcion.pk }}">
+                            ✏️ Editar
+                        </a>
+                        <!-- data-titulo evita conflictos de comillas en onclick -->
+                        <form method="post"
+                              action="{% url 'panel:eliminar_funcion' funcion.pk %}"
+                              id="form-eliminar-funcion-{{ funcion.pk }}"
+                              style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="btn-eliminar-row btn-confirmar-eliminar"
+                                    id="btn-eliminar-funcion-{{ funcion.pk }}"
+                                    data-titulo="{{ funcion.pelicula.titulo }}">
+                                🗑️ Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state" id="estado-vacio-funciones">
+        <div class="empty-icon">📅</div>
+        <p>No hay funciones programadas. ¡Programá la primera desde el botón "+ Programar función"!</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ══════ HISTORIAL (colapsable con <details>) ═════════════════════════════ -->
+{% if funciones_pasadas %}
+<details class="historial-container" id="detalle-historial">
+    <summary id="btn-toggle-historial">
+        🕒 Historial de funciones pasadas ({{ funciones_pasadas|length }})
+    </summary>
+
+    <div class="tabla-container">
+        <table class="tabla-cartelera tabla-pasadas" id="tabla-funciones-pasadas">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Película</th>
+                    <th>Sala</th>
+                    <th>Precio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for funcion in funciones_pasadas %}
+                <tr id="fila-funcion-pasada-{{ funcion.pk }}">
+                    <td>{{ funcion.fecha|date:"d/m/Y" }}</td>
+                    <td>{{ funcion.hora_inicio|time:"H:i" }}</td>
+                    <td>{{ funcion.pelicula.titulo }}</td>
+                    <td><span class="badge badge-sala">{{ funcion.sala.nombre_sala }}</span></td>
+                    <td><span class="badge badge-precio">${{ funcion.precio_entrada }}</span></td>
+                    <td>
+                        <div class="acciones-cell">
+                            <a href="{% url 'panel:editar_funcion' funcion.pk %}"
+                               class="btn-editar-row"
+                               id="btn-editar-funcion-pasada-{{ funcion.pk }}">
+                                ✏️ Editar
+                            </a>
+                            <form method="post"
+                                  action="{% url 'panel:eliminar_funcion' funcion.pk %}"
+                                  id="form-eliminar-funcion-pasada-{{ funcion.pk }}"
+                                  style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="btn-eliminar-row btn-confirmar-eliminar"
+                                        id="btn-eliminar-funcion-pasada-{{ funcion.pk }}"
+                                        data-titulo="{{ funcion.pelicula.titulo }}">
+                                    🗑️ Eliminar
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</details>
+{% endif %}
+
+{% endblock panel_content %}
+
+{% block extra_js %}
+<script>
+/**
+ * Confirmación de eliminación de función.
+ * Usa data-titulo para mostrar el nombre de la película en el mensaje,
+ * evitando conflictos de comillas entre HTML/Django/JavaScript.
+ */
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.btn-confirmar-eliminar').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            const titulo = btn.getAttribute('data-titulo') || 'esta función';
+            if (!confirm('¿Eliminar la función de «' + titulo + '»? Esta acción no se puede deshacer.')) {
+                e.preventDefault();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

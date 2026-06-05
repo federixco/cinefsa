@@ -1,0 +1,547 @@
+/*
+ * cartelera.css — Estilos del módulo de Gestión de Cartelera (RF-A02)
+ * =====================================================================
+ * Usa las variables CSS globales definidas en base.css (:root).
+ * Se carga en todas las plantillas del módulo de cartelera.
+ */
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HEADER DE SECCIÓN (reutilizable en generos, películas y funciones)
+   ══════════════════════════════════════════════════════════════════════════ */
+.cartelera-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.cartelera-header h1 {
+    margin-bottom: 0.25rem;
+}
+
+.cartelera-header .subtitulo {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.header-acciones {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TABLA GENÉRICA DE CARTELERA
+   Usada en listado de géneros, películas y funciones.
+   ══════════════════════════════════════════════════════════════════════════ */
+.tabla-container {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.tabla-info {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tabla-info .resultado-count {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.tabla-info .resultado-count strong {
+    color: var(--text-primary);
+}
+
+.tabla-cartelera {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-cartelera thead th {
+    background-color: rgba(0, 0, 0, 0.15);
+    padding: 0.85rem 1.25rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.tabla-cartelera tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    transition: background-color var(--transition-speed);
+}
+
+.tabla-cartelera tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.tabla-cartelera tbody tr:last-child {
+    border-bottom: none;
+}
+
+.tabla-cartelera tbody td {
+    padding: 0.85rem 1.25rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    vertical-align: middle;
+}
+
+.tabla-cartelera .col-titulo {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Tabla de funciones pasadas: más tenue */
+.tabla-pasadas td {
+    opacity: 0.65;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BADGES DE ESTADO / CLASIFICACIÓN
+   ══════════════════════════════════════════════════════════════════════════ */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Clasificación etaria */
+.badge-ATP  { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.badge-13   { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+.badge-16   { background: rgba(251, 146, 60, 0.15); color: #fb923c; }
+.badge-18   { background: rgba(239, 68, 68, 0.15);  color: #f87171; }
+
+/* Géneros como chips */
+.badge-genero {
+    background: rgba(147, 51, 234, 0.12);
+    color: var(--accent-primary);
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin: 0.1rem;
+    display: inline-block;
+}
+
+/* Clásica */
+.badge-clasica {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}
+
+/* Funciones count */
+.badge-funciones {
+    background: rgba(6, 182, 212, 0.15);
+    color: #22d3ee;
+    font-weight: 700;
+}
+
+/* Sala */
+.badge-sala {
+    background: rgba(99, 102, 241, 0.15);
+    color: #818cf8;
+}
+
+/* Precio */
+.badge-precio {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    font-weight: 700;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MINIATURA DE PÓSTER
+   ══════════════════════════════════════════════════════════════════════════ */
+.poster-mini {
+    width: 36px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.sin-poster {
+    width: 36px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BOTONES DE ACCIÓN INLINE (editar / eliminar)
+   ══════════════════════════════════════════════════════════════════════════ */
+.acciones-cell {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.btn-editar-row {
+    padding: 0.3rem 0.7rem;
+    background: rgba(245, 158, 11, 0.1);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all var(--transition-speed);
+}
+
+.btn-editar-row:hover {
+    background: rgba(245, 158, 11, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-eliminar-row {
+    padding: 0.3rem 0.7rem;
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all var(--transition-speed);
+}
+
+.btn-eliminar-row:hover {
+    background: rgba(239, 68, 68, 0.2);
+    transform: translateY(-1px);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ESTADO VACÍO (sin registros)
+   ══════════════════════════════════════════════════════════════════════════ */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-secondary);
+}
+
+.empty-state .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.4;
+}
+
+.empty-state p {
+    font-size: 0.95rem;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FORMULARIO DE CREACIÓN RÁPIDA (géneros inline en el listado)
+   ══════════════════════════════════════════════════════════════════════════ */
+.crear-rapido-container {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.crear-rapido-container h2 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.crear-rapido-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.crear-rapido-row .modal-input {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FORMULARIOS DE CREACIÓN / EDICIÓN (película y función)
+   ══════════════════════════════════════════════════════════════════════════ */
+.form-cartelera {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    max-width: 720px;
+}
+
+.form-campo {
+    margin-bottom: 1.25rem;
+}
+
+.form-campo label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+}
+
+.form-campo input[type="text"],
+.form-campo input[type="number"],
+.form-campo input[type="date"],
+.form-campo input[type="time"],
+.form-campo select,
+.form-campo textarea {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: border-color var(--transition-speed);
+    box-sizing: border-box;
+}
+
+.form-campo input:focus,
+.form-campo select:focus,
+.form-campo textarea:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.15);
+}
+
+.form-campo textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Inputs de tipo file */
+.form-campo input[type="file"] {
+    padding: 0.4rem 0;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+}
+
+/* Checkbox */
+.form-campo-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    margin-bottom: 1.25rem;
+}
+
+.form-campo-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--accent-primary);
+}
+
+.form-campo-checkbox label {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    margin: 0;
+}
+
+/* Géneros: checkboxes en grilla */
+.generos-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+}
+
+.generos-grid label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(147, 51, 234, 0.08);
+    border: 1px solid rgba(147, 51, 234, 0.2);
+    padding: 0.3rem 0.7rem;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all var(--transition-speed);
+}
+
+.generos-grid label:hover {
+    background: rgba(147, 51, 234, 0.15);
+    color: var(--text-primary);
+    border-color: var(--accent-primary);
+}
+
+/* Fila con dos campos lado a lado */
+.form-fila-dos {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.form-fila-dos .form-campo {
+    flex: 1;
+    min-width: 160px;
+}
+
+/* Vista previa del póster actual al editar */
+.poster-preview {
+    margin-bottom: 0.75rem;
+}
+
+.poster-preview img {
+    max-height: 120px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.poster-preview p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.35rem;
+}
+
+/* Errores de campo */
+.errores-campo {
+    list-style: none;
+    padding: 0;
+    margin: 0.35rem 0 0;
+}
+
+.errores-campo li {
+    color: #f87171;
+    font-size: 0.82rem;
+}
+
+/* Errores generales (non_field_errors — conflictos de horario) */
+.errores-generales {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: var(--border-radius);
+    padding: 0.85rem 1.25rem;
+    margin-bottom: 1.5rem;
+    color: #fbbf24;
+    font-size: 0.9rem;
+}
+
+.errores-generales p {
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+
+.errores-generales ul {
+    margin: 0;
+    padding-left: 1.2rem;
+}
+
+/* Help text bajo los campos */
+.help-text {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-top: 0.3rem;
+    opacity: 0.7;
+}
+
+/* Barra de acciones del formulario */
+.form-acciones {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border-color);
+    flex-wrap: wrap;
+}
+
+.btn-cancelar {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 0.4rem 0;
+    transition: color var(--transition-speed);
+}
+
+.btn-cancelar:hover {
+    color: var(--text-primary);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HISTORIAL DE FUNCIONES — details/summary colapsable
+   ══════════════════════════════════════════════════════════════════════════ */
+.historial-container {
+    margin-top: 2rem;
+}
+
+.historial-container summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding: 0.6rem 0;
+    font-size: 0.95rem;
+    user-select: none;
+    transition: color var(--transition-speed);
+}
+
+.historial-container summary:hover {
+    color: var(--text-primary);
+}
+
+.historial-container[open] summary {
+    margin-bottom: 1rem;
+}
+
+/* Input de búsqueda genérico para el módulo */
+.modal-input {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: border-color var(--transition-speed);
+    box-sizing: border-box;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.15);
+}

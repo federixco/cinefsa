@@ -1,0 +1,190 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block titulo %}Cine Club — Votación{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/votacion.css' %}">
+{% endblock %}
+
+{% block contenido %}
+
+{% if encuesta %}
+
+<!-- ═══════════════════════════════════════════════════════════
+     HERO — Información de la encuesta activa
+     ═══════════════════════════════════════════════════════════ -->
+<section class="cineclub-hero" id="cineclub-hero">
+    <span class="cineclub-etiqueta">⭐ Cine Club — Votación Activa</span>
+    <h1 class="cineclub-titulo">{{ encuesta.titulo }}</h1>
+    {% if encuesta.descripcion %}
+    <p class="cineclub-descripcion">{{ encuesta.descripcion }}</p>
+    {% endif %}
+    <div class="cineclub-fecha-evento">
+        📅 Evento especial: {{ encuesta.fecha_evento|date:"d \d\e F \d\e Y" }}
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     BANNER DE REGISTRO — Solo visible para visitantes
+     ═══════════════════════════════════════════════════════════ -->
+{% if not user.is_authenticated %}
+<div class="banner-registro" id="banner-registro-votacion" role="alert">
+    <div class="banner-registro-icono">🔒</div>
+    <div class="banner-registro-texto">
+        <h3>¡Registrate para votar!</h3>
+        <p>Para participar en el Cine Club y votar por tu película favorita, necesitás tener una cuenta en CineFSA. ¡Es gratis y solo toma un minuto!</p>
+    </div>
+    <div class="banner-registro-acciones">
+        <a href="{% url 'autenticacion:registro' %}" class="btn-registrarse" id="btn-cineclub-registro">
+            Crear cuenta gratis
+        </a>
+        <a href="{% url 'autenticacion:login' %}" class="btn-iniciar-sesion-link" id="btn-cineclub-login">
+            Ya tengo cuenta
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════════════
+     MENSAJES FLASH
+     ═══════════════════════════════════════════════════════════ -->
+{% if messages %}
+<div class="flash-messages" style="margin-bottom: 1.5rem;">
+    {% for message in messages %}
+    <div class="flash-msg {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════════════
+     RESULTADOS PARCIALES — Solo si el usuario ya votó
+     ═══════════════════════════════════════════════════════════ -->
+{% if ya_voto and resultados %}
+<div class="resultados-seccion" id="resultados-votacion">
+    <h3>📊 Resultados parciales — {{ encuesta.total_votos }} voto{{ encuesta.total_votos|pluralize }}</h3>
+    {% for item in resultados %}
+    <div class="resultado-item" id="resultado-{{ item.pelicula.pk }}">
+        <div class="resultado-header">
+            <span class="resultado-titulo-pelicula">
+                {% if forloop.first %}🏆 {% endif %}{{ item.pelicula.titulo }}
+                {% if item.pelicula == voto_del_usuario.pelicula %}
+                <span style="color: #c084fc; font-size: 0.75rem;">(Tu voto)</span>
+                {% endif %}
+            </span>
+            <span class="resultado-stats">{{ item.cantidad }} voto{{ item.cantidad|pluralize }} · {{ item.porcentaje }}%</span>
+        </div>
+        <div class="barra-progreso-contenedor">
+            <div class="barra-progreso-relleno {% if forloop.first %}es-ganadora-barra{% endif %}"
+                 data-porcentaje="{{ item.porcentaje }}"
+                 id="barra-{{ item.pelicula.pk }}">
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════════════
+     PELÍCULAS CANDIDATAS — Grid de tarjetas para votar
+     ═══════════════════════════════════════════════════════════ -->
+<div class="seccion-votacion-header">
+    <h2>🎬 Películas candidatas</h2>
+    {% if ya_voto %}
+    <span class="votos-totales-badge">✅ Tu voto fue registrado</span>
+    {% elif user.is_authenticated %}
+    <span class="votos-totales-badge">Elegí tu favorita</span>
+    {% else %}
+    <span class="votos-totales-badge">{{ encuesta.total_votos }} voto{{ encuesta.total_votos|pluralize }} emitido{{ encuesta.total_votos|pluralize }}</span>
+    {% endif %}
+</div>
+
+<div class="candidatas-grid" id="grid-candidatas">
+    {% for pelicula in encuesta.peliculas.all %}
+
+    <div class="candidata-card {% if ya_voto and voto_del_usuario.pelicula.pk == pelicula.pk %}mi-voto{% endif %}"
+         id="candidata-{{ pelicula.pk }}">
+
+        <!-- Póster de la película -->
+        {% if pelicula.imagen_poster %}
+        <img src="{{ pelicula.imagen_poster.url }}"
+             alt="Póster de {{ pelicula.titulo }}"
+             class="candidata-poster">
+        {% else %}
+        <div class="candidata-poster-fallback">{{ pelicula.titulo|first }}</div>
+        {% endif %}
+
+        <div class="candidata-cuerpo">
+            <h3 class="candidata-titulo">{{ pelicula.titulo }}</h3>
+            <p class="candidata-meta">
+                {{ pelicula.duracion_minutos }} min
+                &nbsp;·&nbsp;
+                {{ pelicula.clasificacion }}
+                {% for genero in pelicula.generos.all %}{% if forloop.first %}&nbsp;·&nbsp;{% endif %}{{ genero.descripcion }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </p>
+
+            <!-- Botón según estado del usuario -->
+            {% if ya_voto %}
+                {% if voto_del_usuario.pelicula.pk == pelicula.pk %}
+                <div class="badge-mi-voto">✅ Tu elección</div>
+                {% endif %}
+            {% elif user.is_authenticated %}
+                <form method="post"
+                      action="{% url 'emitir_voto' encuesta.pk %}"
+                      id="form-voto-{{ pelicula.pk }}">
+                    {% csrf_token %}
+                    <input type="hidden" name="pelicula_id" value="{{ pelicula.pk }}">
+                    <button type="submit"
+                            class="btn-votar"
+                            id="btn-votar-{{ pelicula.pk }}"
+                            onclick="return confirm('¿Votar por «{{ pelicula.titulo }}»? No podrás cambiar tu voto.')">
+                        Votar por esta película
+                    </button>
+                </form>
+            {% else %}
+                <button class="btn-votar-bloqueado"
+                        id="btn-bloqueado-{{ pelicula.pk }}"
+                        onclick="document.getElementById('banner-registro-votacion').scrollIntoView({behavior:'smooth'})">
+                    🔒 Registrate para votar
+                </button>
+            {% endif %}
+
+        </div>
+    </div>
+
+    {% empty %}
+    <p style="color: var(--text-secondary); grid-column: 1/-1; text-align: center; padding: 2rem;">
+        Esta encuesta no tiene películas candidatas todavía.
+    </p>
+    {% endfor %}
+</div>
+
+{% else %}
+<!-- ═══════════════════════════════════════════════════════════
+     SIN ENCUESTA ACTIVA
+     ═══════════════════════════════════════════════════════════ -->
+<div class="cineclub-vacio" id="cineclub-sin-encuesta">
+    <div class="cineclub-vacio-icono">🎞️</div>
+    <h2>No hay votaciones activas por el momento</h2>
+    <p>
+        El equipo de CineFSA está preparando la próxima edición del Cine Club.
+        Volvé pronto para votar por tu película clásica favorita.
+    </p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* Anima las barras de progreso de resultados al cargar. */
+document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(function () {
+        document.querySelectorAll('.barra-progreso-relleno').forEach(function (barra) {
+            let pct = barra.getAttribute('data-porcentaje') || '0';
+            barra.style.width = pct.replace(',', '.') + '%';
+        });
+    }, 150);
+});
+</script>
+{% endblock %}

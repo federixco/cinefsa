@@ -27,56 +27,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
-import functools
 
 from sistema_cine.models import Usuario, Empleado, Administrador
 from formularios.panel import FormularioBusquedaUsuario, FormularioAsignarEmpleado
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-#  DECORADOR DE PROTECCIÓN: SOLO ADMINISTRADOR
-# ══════════════════════════════════════════════════════════════════════════════
-
-def solo_administrador(funcion_vista):
-    """
-    Decorador que restringe el acceso exclusivamente a Administradores.
-
-    Combina dos verificaciones en orden:
-        1. @login_required implícito: si el usuario no está logueado, redirige
-           automáticamente a LOGIN_URL (definido en configuracion.py).
-        2. Verificación de rol: comprueba si el usuario logueado tiene un
-           registro en la tabla 'administrador'. Si no lo tiene (es decir,
-           es un cliente o empleado), redirige al inicio con mensaje de error.
-
-    Uso:
-        @solo_administrador
-        def mi_vista(request):
-            ...
-
-    Esto garantiza que ningún cliente ni empleado pueda acceder al panel,
-    incluso si conoce la URL directamente.
-    """
-    @login_required  # Paso 1: verificar que el usuario esté autenticado
-    @functools.wraps(funcion_vista)  # Preserva el nombre y docstring de la vista original
-    def vista_protegida(request, *args, **kwargs):
-        # Paso 2: verificar que el usuario tenga registro en la tabla 'administrador'
-        # La relación inversa 'administrador' viene del related_name del modelo Administrador
-        tiene_rol_admin = Administrador.objects.filter(
-            usuario_id_usuario=request.user
-        ).exists()
-
-        if not tiene_rol_admin:
-            # El usuario existe pero no es administrador → acceso denegado
-            messages.error(
-                request,
-                'Acceso denegado. Esta sección es exclusiva para administradores.'
-            )
-            return redirect('inicio')
-
-        # Si pasó ambas verificaciones, ejecutar la vista normalmente
-        return funcion_vista(request, *args, **kwargs)
-
-    return vista_protegida
+from vistas.decoradores import solo_administrador
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -172,29 +126,18 @@ def panel_usuarios_view(request):
 
 def _generar_id_validador():
     """
-    Genera el próximo id_validador en formato EMP-XXXX (secuencial).
-
-    Busca el mayor número existente entre los id_validador con formato EMP-XXXX,
-    lo incrementa en 1 y devuelve el nuevo código formateado con zero-padding
-    a 4 dígitos. Si no hay empleados previos, empieza desde EMP-0001.
+    Genera el próximo id_validador en formato emp-XXX llamando
+    al procedimiento almacenado de la base de datos (sp_generar_id_validador).
 
     Retorna:
-        str: Código en formato 'EMP-0001', 'EMP-0002', etc.
+        str: Código generado por MySQL, por ejemplo 'emp-001'.
     """
-    ultimo_numero = 0
-    empleados = Empleado.objects.filter(
-        id_validador__startswith='EMP-'
-    ).values_list('id_validador', flat=True)
-
-    for codigo in empleados:
-        try:
-            numero = int(codigo.split('-')[1])
-            if numero > ultimo_numero:
-                ultimo_numero = numero
-        except (IndexError, ValueError):
-            continue
-
-    return f'EMP-{ultimo_numero + 1:04d}'
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute("CALL sp_generar_id_validador(@nuevo_id)")
+        cursor.execute("SELECT @nuevo_id")
+        resultado = cursor.fetchone()
+        return resultado[0] if resultado and resultado[0] else 'emp-001'
 
 
 @solo_administrador

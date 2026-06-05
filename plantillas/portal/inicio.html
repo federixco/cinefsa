@@ -1,0 +1,346 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block titulo %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/inicio.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         HERO SECTION — Películas destacadas (Carousel)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    {% if peliculas_destacadas %}
+    <section class="hero-carousel-wrapper">
+        <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
+            <div class="carousel-indicators">
+                {% for pelicula in peliculas_destacadas %}
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></button>
+                {% endfor %}
+            </div>
+            <div class="carousel-inner">
+                {% for pelicula in peliculas_destacadas %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}"{% if pelicula.imagen_poster %} style="background-image: linear-gradient(to right, rgba(10,5,20,0.95) 40%, rgba(10,5,20,0.4) 100%), url('{{ pelicula.imagen_poster.url }}'); background-size: cover; background-position: center;"{% endif %}>
+                    <section class="hero" style="min-height: 50vh; display: flex; align-items: center;">
+                        <div class="hero-content" style="flex: 1;">
+                            <span class="hero-badge">En cartelera ahora</span>
+                            <h1>{{ pelicula.titulo }}</h1>
+
+                            <div class="hero-meta">
+                                {% for genero in pelicula.generos.all %}
+                                    <span class="hero-meta-item">{{ genero.descripcion }}</span>
+                                    {% if not forloop.last %}<span class="hero-meta-separator">·</span>{% endif %}
+                                {% endfor %}
+                                <span class="hero-meta-separator">|</span>
+                                <span class="hero-meta-item">{{ pelicula.duracion_minutos }} min</span>
+                                <span class="hero-meta-separator">|</span>
+                                <span class="hero-clasificacion clasificacion-{% if pelicula.clasificacion == 'ATP' %}atp{% elif pelicula.clasificacion == '+13' %}13{% elif pelicula.clasificacion == '+16' %}16{% else %}18{% endif %}">
+                                    {{ pelicula.clasificacion }}
+                                </span>
+                            </div>
+
+                            <p class="hero-sinopsis">{{ pelicula.sinopsis|truncatewords:40 }}</p>
+
+                            <a href="#pelicula-{{ pelicula.id }}" class="btn btn-primary" onclick="scrollAndFilter('{{ pelicula.id }}')">Ver funciones disponibles</a>
+                        </div>
+                        {% if pelicula.imagen_poster %}
+                        <div class="hero-poster" style="flex-shrink: 0; margin-left: 2rem;">
+                            <img src="{{ pelicula.imagen_poster.url }}" alt="{{ pelicula.titulo }}" style="height: 320px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);">
+                        </div>
+                        {% endif %}
+                    </section>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguiente</span>
+            </button>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         FILTRO DE DÍAS — Botones cuadrados de selección
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <section class="date-slider-container" style="padding: 1.5rem 2rem;">
+        <div class="date-slider-scroll" id="date-slider">
+            {% for dia in dias_slider %}
+            <button class="date-filter-btn {% if forloop.first %}active{% endif %}" 
+                    data-fecha="{{ dia|date:'Y-m-d' }}"
+                    data-fecha-display="{{ dia|date:'d/m/Y' }}"
+                    onclick="filtrarPorFecha('{{ dia|date:'Y-m-d' }}', this)">
+                <span class="date-filter-day">{% if forloop.first %}HOY{% elif forloop.counter == 2 %}MAÑANA{% else %}{{ dia|date:"l"|upper }}{% endif %}</span>
+                <span class="date-filter-num">{{ dia|date:"d" }}</span>
+                <span class="date-filter-month">{{ dia|date:"M"|upper }}</span>
+            </button>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         CARTELERA — Películas en exhibición
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <section class="seccion-cartelera" id="cartelera">
+        <div class="seccion-header">
+            <h2>Cartelera</h2>
+            <div class="genero-filtros">
+                <a href="{% url 'inicio' %}"
+                   class="genero-pill {% if not filtro_genero %}active{% endif %}">Todas</a>
+                {% for genero in generos %}
+                <a href="{% url 'inicio' %}?genero={{ genero.id }}"
+                   class="genero-pill {% if filtro_genero == genero.id|stringformat:'d' %}active{% endif %}"
+                >{{ genero.descripcion }}</a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="peliculas-grid">
+            {% for pelicula in peliculas_cartelera %}
+            <div class="pelicula-card" id="pelicula-{{ pelicula.id }}">
+                <div class="pelicula-poster">
+                    {% if pelicula.imagen_poster %}
+                        <img src="{{ pelicula.imagen_poster.url }}" alt="Póster de {{ pelicula.titulo }}">
+                    {% else %}
+                        <div class="poster-fallback fb-{% cycle '1' '2' '3' '4' '5' '6' %}">
+                            {{ pelicula.titulo|first }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="pelicula-info">
+                    <h3 class="pelicula-titulo">{{ pelicula.titulo }}</h3>
+                    <div class="pelicula-meta">
+                        <span class="pelicula-duracion">{{ pelicula.duracion_minutos }} min</span>
+                        <span class="hero-clasificacion clasificacion-{% if pelicula.clasificacion == 'ATP' %}atp{% elif pelicula.clasificacion == '+13' %}13{% elif pelicula.clasificacion == '+16' %}16{% else %}18{% endif %}">
+                            {{ pelicula.clasificacion }}
+                        </span>
+                    </div>
+                    <div class="pelicula-generos">
+                        {% for genero in pelicula.generos.all %}
+                        <span class="pelicula-genero-tag">{{ genero.descripcion }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Detalle extra (se muestra al expandir) -->
+                    <div class="pelicula-detalle-extra">
+                        <p class="pelicula-sinopsis-texto">{{ pelicula.sinopsis }}</p>
+                        
+                        <div class="mt-3">
+                            <h4 class="fs-6 fw-bold mb-2 text-warning">Funciones Disponibles:</h4>
+                            <div class="d-flex flex-wrap gap-2 contenedor-funciones">
+                                {% for funcion in pelicula.funciones.all %}
+                                    <button class="btn-horario btn-funcion"
+                                            data-fecha="{{ funcion.fecha|date:'Y-m-d' }}"
+                                            onclick="confirmarCompra('{{ pelicula.titulo|escapejs }}', '{{ funcion.fecha|date:'d/m/Y' }}', '{{ funcion.hora_inicio|time:'H:i' }}', '{% url 'compras:seleccion_asientos' funcion.id %}')">
+                                        <div class="hora-container">
+                                            <i class="fas fa-clock"></i>
+                                            <strong>{{ funcion.hora_inicio|time:"H:i" }}</strong>
+                                        </div>
+                                        <small class="fecha-text">{{ funcion.fecha|date:'d/m' }}</small>
+                                        {% for key, val in disponibilidad.items %}
+                                            {% if key == funcion.id %}
+                                                <small class="lugares-text">{{ val }} lugares</small>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </button>
+                                {% empty %}
+                                    <p class="text-muted small msj-vacio">No hay horarios publicados.</p>
+                                {% endfor %}
+                            </div> <!-- Closes contenedor-funciones -->
+                        </div> <!-- Closes mt-3 -->
+                    </div> <!-- Closes pelicula-detalle-extra -->
+
+                    <span class="icono-expandir">▼ Ver sinopsis</span>
+                </div> <!-- Closes pelicula-info -->
+            </div> <!-- Closes pelicula-card -->
+            {% empty %}
+            <div class="cartelera-vacia">
+                <h3>No hay películas en cartelera</h3>
+                <p>Pronto se publicarán las funciones disponibles.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         PRÓXIMAMENTE — Películas sin funciones programadas
+         ═══════════════════════════════════════════════════════════════════════ -->
+    {% if peliculas_proximamente %}
+    <section class="seccion-cartelera" id="proximamente">
+        <div class="seccion-header">
+            <h2>Próximamente</h2>
+        </div>
+
+        <div class="peliculas-grid">
+            {% for pelicula in peliculas_proximamente %}
+            <div class="pelicula-card" id="prox-{{ pelicula.id }}" style="opacity: 0.7;">
+                <div class="pelicula-poster">
+                    {% if pelicula.imagen_poster %}
+                        <img src="{{ pelicula.imagen_poster.url }}" alt="Póster de {{ pelicula.titulo }}">
+                    {% else %}
+                        <div class="poster-fallback fb-{{ forloop.counter }}">
+                            {{ pelicula.titulo|first }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="pelicula-info">
+                    <h3 class="pelicula-titulo">{{ pelicula.titulo }}</h3>
+                    <div class="pelicula-meta">
+                        <span class="pelicula-duracion">{{ pelicula.duracion_minutos }} min</span>
+                        <span class="hero-clasificacion clasificacion-{% if pelicula.clasificacion == 'ATP' %}atp{% elif pelicula.clasificacion == '+13' %}13{% elif pelicula.clasificacion == '+16' %}16{% else %}18{% endif %}">
+                            {{ pelicula.clasificacion }}
+                        </span>
+                    </div>
+                    <div class="pelicula-generos">
+                        {% for genero in pelicula.generos.all %}
+                        <span class="pelicula-genero-tag">{{ genero.descripcion }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Detalle extra (se muestra al expandir) -->
+                    <div class="pelicula-detalle-extra">
+                        <p class="pelicula-sinopsis-texto">{{ pelicula.sinopsis }}</p>
+                    </div>
+
+                    <span class="icono-expandir">▼ Ver sinopsis</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         MODAL DE CONFIRMACIÓN
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="modal fade" id="modalConfirmarCompra" tabindex="-1" aria-labelledby="modalConfirmarCompraLabel" aria-hidden="true" data-bs-theme="dark">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white" style="border: 2px solid var(--accent-primary); box-shadow: 0 0 20px rgba(147, 51, 234, 0.5);">
+          <div class="modal-header border-secondary">
+            <h5 class="modal-title text-warning fw-bold" id="modalConfirmarCompraLabel">¡ATENCIÓN!</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center py-4">
+            <h4 class="mb-3" style="line-height: 1.5;">
+                ESTÁS POR ELEGIR<br>
+                <span class="text-warning fw-bold fs-2" id="modalPeliculaTitulo">Pelicula</span><br>
+                EL DÍA <span class="text-warning fw-bold fs-4" id="modalFecha">Fecha</span><br>
+                A LAS <span class="text-warning fw-bold fs-2" id="modalHora">Horas</span>
+            </h4>
+            <p class="text-muted small">Serás redirigido a la selección de butacas.</p>
+          </div>
+          <div class="modal-footer border-secondary d-flex justify-content-between">
+            <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+            <a href="#" id="modalBtnContinuar" class="btn btn-primary fw-bold px-4">Elegir Asientos</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         FOOTER
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <footer class="site-footer">
+        <p><span class="footer-brand">CineFSA</span> &copy; 2026</p>
+        <p>Universidad de la Cuenca del Plata &middot; Lic. en Sistemas de Información</p>
+        <p>Proyecto académico &middot; Todos los derechos reservados</p>
+    </footer>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 1. Filtrado dinámico por fechas
+    function filtrarPorFecha(fechaSel, btn) {
+        // Quitar active de todos los botones y ponérselo al cliqueado
+        document.querySelectorAll('.date-filter-btn').forEach(b => b.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+
+        // Recorrer todas las películas
+        const peliculas = document.querySelectorAll('.pelicula-card');
+        
+        peliculas.forEach(pelicula => {
+            const contenedor = pelicula.querySelector('.contenedor-funciones');
+            if(!contenedor) return;
+            
+            const botones = contenedor.querySelectorAll('.btn-funcion');
+            let funcionesDelDia = 0;
+            
+            // Mostrar los botones del día seleccionado (o todos si fechaSel es 'TODOS')
+            botones.forEach(b => {
+                if(fechaSel === 'TODOS' || b.getAttribute('data-fecha') === fechaSel) {
+                    b.style.display = 'flex';
+                    b.style.opacity = '1';
+                    b.style.order = '0';
+                    funcionesDelDia++;
+                } else {
+                    b.style.display = 'none';
+                }
+            });
+
+            // Mostrar la tarjeta solo si tiene funciones para este filtro
+            pelicula.style.display = funcionesDelDia > 0 ? 'flex' : 'none';
+        });
+    }
+
+    // Ejecutar filtro para el primer día automáticamente al cargar
+    document.addEventListener('DOMContentLoaded', () => {
+        const primerDiaBtn = document.querySelector('.date-filter-btn.active');
+        if(primerDiaBtn) {
+            filtrarPorFecha(primerDiaBtn.getAttribute('data-fecha'), primerDiaBtn);
+        }
+
+        // Expandir película
+        const cards = document.querySelectorAll('.pelicula-card');
+        cards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                // No expandir si hizo clic en un botón de función
+                if(e.target.closest('.btn-funcion') || e.target.closest('a')) return;
+                
+                this.classList.toggle('expandido');
+                const iconoTexto = this.querySelector('.icono-expandir');
+                if (iconoTexto) {
+                    iconoTexto.innerHTML = this.classList.contains('expandido') ? '▲ Ocultar sinopsis' : '▼ Ver sinopsis';
+                }
+            });
+        });
+    });
+
+    // 2. Carrusel Hero scroll y expand
+    function scrollAndFilter(peliculaId) {
+        // Deseleccionar el filtro de días para que muestre TODAS las funciones de la semana
+        filtrarPorFecha('TODOS', null);
+        
+        // Encontrar la película y expandirla
+        const peli = document.getElementById('pelicula-' + peliculaId);
+        if(peli) {
+            peli.style.display = 'flex'; 
+            peli.classList.add('expandido');
+            const iconoTexto = peli.querySelector('.icono-expandir');
+            if (iconoTexto) {
+                iconoTexto.innerHTML = '▲ Ocultar sinopsis';
+            }
+            peli.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    // 3. Modal de Confirmación
+    function confirmarCompra(titulo, fechaStr, horaStr, url) {
+        document.getElementById('modalPeliculaTitulo').innerText = titulo;
+        document.getElementById('modalFecha').innerText = fechaStr;
+        document.getElementById('modalHora').innerText = horaStr + ' hs';
+        document.getElementById('modalBtnContinuar').href = url;
+        
+        const modal = new bootstrap.Modal(document.getElementById('modalConfirmarCompra'));
+        modal.show();
+    }
+</script>
+{% endblock %}

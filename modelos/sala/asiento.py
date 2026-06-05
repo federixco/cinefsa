@@ -79,6 +79,21 @@ class Asiento(models.Model):
         verbose_name='Posición Y'
     )
 
+    # estado_asiento: Controla la "Baja Lógica" de la butaca.
+    # 'activo': Existe actualmente en la sala y se puede comprar.
+    # 'inactivo': Fue eliminada del layout por el admin, pero se mantiene en BD
+    # para no corromper el historial de tickets vendidos previamente.
+    ESTADO_CHOICES = [
+        ('activo', 'Activo'),
+        ('inactivo', 'Inactivo'),
+    ]
+    estado_asiento = models.CharField(
+        max_length=15,
+        choices=ESTADO_CHOICES,
+        default='activo',
+        verbose_name='Estado'
+    )
+
     # ─── CONFIGURACIÓN DEL MODELO ─────────────────────────────────────────────
 
     class Meta:

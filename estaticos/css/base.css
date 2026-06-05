@@ -75,19 +75,22 @@ body {
 }
 
 /* â”€â”€â”€ NAVBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.navbar {
+.cinefsa-navbar {
     background: linear-gradient(180deg, #1e1530 0%, var(--bg-surface) 100%);
     border-bottom: 1px solid rgba(147, 51, 234, 0.25);
     padding: 0 2rem;
     height: 64px;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 1030;
     backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
 }
 
 .nav-container {
     max-width: 1200px;
+    width: 100%;
     margin: 0 auto;
     height: 100%;
     display: flex;
@@ -201,7 +204,7 @@ body {
 }
 
 /* â”€â”€â”€ MENÃš DESPLEGABLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.dropdown-menu {
+.cinefsa-dropdown {
     display: none;
     position: absolute;
     top: calc(100% + 12px);
@@ -211,12 +214,12 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 12px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-    z-index: 200;
+    z-index: 1050;
     overflow: hidden;
     animation: slideDown 0.2s ease;
 }
 
-.dropdown-menu.show {
+.cinefsa-dropdown.show {
     display: block;
 }
 
@@ -572,4 +575,110 @@ h1 {
     background-color: rgba(245, 158, 11, 0.1);
     border: 1px solid rgba(245, 158, 11, 0.25);
     color: #fbbf24;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   FORMULARIOS Y AUTENTICACIÓN
+   ────────────────────────────────────────────────────────────────────────── */
+#tarjeta-login, #tarjeta-registro {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 2.5rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    max-width: 450px;
+    margin: 3rem auto;
+    text-align: center;
+}
+
+#tarjeta-login h1, #tarjeta-registro h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+#tarjeta-login p, #tarjeta-registro p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+/* Inputs bonitos */
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form input[type="date"] {
+    width: 100%;
+    padding: 0.85rem 1.2rem;
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: all var(--transition-speed);
+    margin-top: 0.5rem;
+}
+
+form input[type="text"]:focus,
+form input[type="email"]:focus,
+form input[type="password"]:focus,
+form input[type="date"]:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
+}
+
+form label {
+    display: block;
+    text-align: left;
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+form div {
+    margin-bottom: 1.25rem;
+    text-align: left;
+}
+
+/* Botones de auth */
+#btn-iniciar-sesion, #btn-crear-cuenta {
+    width: 100%;
+    padding: 0.85rem;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+    margin-top: 1rem;
+}
+
+#btn-iniciar-sesion:hover, #btn-crear-cuenta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(147, 51, 234, 0.5);
+}
+
+#tarjeta-login > p:last-child, #tarjeta-registro > p:last-child {
+    margin-top: 1.5rem;
+    margin-bottom: 0;
+}
+
+#enlace-ir-registro, #enlace-ir-login {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+#enlace-ir-registro:hover, #enlace-ir-login:hover {
+    text-decoration: underline;
+}
+
+form small {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    opacity: 0.8;
 }

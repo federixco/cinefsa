@@ -1,0 +1,342 @@
+{% extends 'base/base_panel.html' %}
+{% load static %}
+
+{% block active_votaciones %}active{% endblock %}
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/panel_usuarios.css' %}">
+<style>
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.9rem;
+        margin-bottom: 1.25rem;
+        transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--text-primary); }
+
+    .form-page-header {
+        margin-bottom: 2rem;
+    }
+    .form-page-header h1 { margin: 0 0 0.25rem; font-size: 1.5rem; }
+    .form-page-header p { color: var(--text-secondary); margin: 0; font-size: 0.9rem; }
+
+    .encuesta-form-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 2rem;
+        max-width: 800px;
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .form-section:last-of-type {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    .form-section-title {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: var(--accent-primary);
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+    }
+
+    .form-grupo { margin-bottom: 1.25rem; }
+    .form-grupo:last-child { margin-bottom: 0; }
+
+    .form-grupo label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 0.4rem;
+    }
+    .form-grupo input[type="text"],
+    .form-grupo input[type="date"],
+    .form-grupo input[type="datetime-local"],
+    .form-grupo textarea,
+    .form-grupo select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: var(--bg-main);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        font-family: inherit;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        box-sizing: border-box;
+    }
+    .form-grupo input:focus,
+    .form-grupo textarea:focus,
+    .form-grupo select:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.15);
+    }
+    .form-grupo textarea { resize: vertical; min-height: 90px; }
+
+    .form-row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    @media (max-width: 600px) {
+        .form-row-2 { grid-template-columns: 1fr; }
+    }
+
+    /* Checkboxes de películas */
+    .peliculas-check-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    .peliculas-check-list li { list-style: none; }
+    .peliculas-check-list label {
+        display: flex !important;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.6rem 0.75rem;
+        background: var(--bg-main);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-size: 0.875rem !important;
+        color: var(--text-secondary) !important;
+        font-weight: 500 !important;
+        margin-bottom: 0 !important;
+    }
+    .peliculas-check-list label:hover {
+        border-color: rgba(147, 51, 234, 0.4);
+        color: var(--text-primary) !important;
+    }
+    .peliculas-check-list input[type="checkbox"] {
+        accent-color: var(--accent-primary);
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+    }
+
+    /* Toggle activa */
+    .check-activa-group {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+        background: rgba(147, 51, 234, 0.06);
+        border: 1px solid rgba(147, 51, 234, 0.2);
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    .check-activa-group input[type="checkbox"] {
+        accent-color: var(--accent-primary);
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+    .check-activa-group label {
+        font-size: 0.92rem !important;
+        font-weight: 600 !important;
+        color: var(--text-primary) !important;
+        margin: 0 !important;
+        cursor: pointer;
+    }
+
+    /* Errores */
+    .field-errors { margin-top: 0.4rem; list-style: none; padding: 0; }
+    .field-errors li {
+        color: #f87171;
+        font-size: 0.82rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .field-errors li::before { content: '⚠ '; }
+
+    /* Acciones */
+    .form-acciones {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.75rem;
+        flex-wrap: wrap;
+    }
+
+    .aviso-sin-clasicas {
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        color: #fbbf24;
+        padding: 0.85rem 1rem;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Badge de modo edición */
+    .modo-edicion-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #60a5fa;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block panel_content %}
+
+<a href="{% url 'panel:monitor_votaciones' %}" class="back-link" id="back-monitor-form">
+    ← Volver al monitor
+</a>
+
+<div class="form-page-header">
+    <h1>
+        {% if modo == 'editar' %}
+            ✏️ Editar encuesta
+            <span class="modo-edicion-badge">Modo edición</span>
+        {% else %}
+            🗳️ Nueva encuesta de votación
+        {% endif %}
+    </h1>
+    <p>
+        {% if modo == 'editar' %}
+            Modificá los datos de la encuesta. Los votos ya emitidos no se verán afectados.
+        {% else %}
+            Completá los datos para crear una nueva encuesta de Cine Club.
+        {% endif %}
+    </p>
+</div>
+
+<div class="encuesta-form-card" id="card-formulario-encuesta">
+    <form method="post"
+          action="{% if modo == 'editar' %}{% url 'panel:editar_encuesta' encuesta.pk %}{% else %}{% url 'panel:crear_encuesta' %}{% endif %}"
+          id="form-encuesta">
+        {% csrf_token %}
+
+        <!-- Errores generales -->
+        {% if formulario.non_field_errors %}
+        <div style="margin-bottom:1.25rem;">
+            {% for error in formulario.non_field_errors %}
+            <div class="flash-msg error">⚠️ {{ error }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- ── SECCIÓN 1: Información básica ──────────────────────────── -->
+        <div class="form-section">
+            <p class="form-section-title">📝 Información básica</p>
+
+            <div class="form-grupo" id="grupo-titulo">
+                <label for="{{ formulario.titulo.id_for_label }}">{{ formulario.titulo.label }}</label>
+                {{ formulario.titulo }}
+                {% if formulario.titulo.errors %}
+                <ul class="field-errors">{% for e in formulario.titulo.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                {% endif %}
+            </div>
+
+            <div class="form-grupo" id="grupo-descripcion">
+                <label for="{{ formulario.descripcion.id_for_label }}">{{ formulario.descripcion.label }}</label>
+                {{ formulario.descripcion }}
+            </div>
+
+            <div class="form-grupo" id="grupo-fecha-evento">
+                <label for="{{ formulario.fecha_evento.id_for_label }}">{{ formulario.fecha_evento.label }}</label>
+                {{ formulario.fecha_evento }}
+                {% if formulario.fecha_evento.errors %}
+                <ul class="field-errors">{% for e in formulario.fecha_evento.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ── SECCIÓN 2: Período de votación ─────────────────────────── -->
+        <div class="form-section">
+            <p class="form-section-title">🗓️ Período de votación</p>
+
+            <div class="form-row-2">
+                <div class="form-grupo" id="grupo-fecha-inicio">
+                    <label for="{{ formulario.fecha_inicio.id_for_label }}">{{ formulario.fecha_inicio.label }}</label>
+                    {{ formulario.fecha_inicio }}
+                    {% if formulario.fecha_inicio.errors %}
+                    <ul class="field-errors">{% for e in formulario.fecha_inicio.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-grupo" id="grupo-fecha-fin">
+                    <label for="{{ formulario.fecha_fin.id_for_label }}">{{ formulario.fecha_fin.label }}</label>
+                    {{ formulario.fecha_fin }}
+                    {% if formulario.fecha_fin.errors %}
+                    <ul class="field-errors">{% for e in formulario.fecha_fin.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ── SECCIÓN 3: Películas candidatas ───────────────────────── -->
+        <div class="form-section">
+            <p class="form-section-title">🎬 Películas candidatas</p>
+
+            {% if formulario.peliculas.field.queryset.count == 0 %}
+            <div class="aviso-sin-clasicas" id="aviso-sin-clasicas">
+                ⚠️ No hay películas marcadas como "clásicas". Primero marcalas en la gestión de cartelera.
+            </div>
+            {% else %}
+            <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:0.75rem;">
+                Solo se muestran las películas marcadas como "clásicas" en la gestión de cartelera.
+            </p>
+            <ul class="peliculas-check-list" id="lista-peliculas-clasicas">
+                {% for checkbox in formulario.peliculas %}
+                <li>{{ checkbox }}</li>
+                {% endfor %}
+            </ul>
+            {% if formulario.peliculas.errors %}
+            <ul class="field-errors">{% for e in formulario.peliculas.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+            {% endif %}
+        </div>
+
+        <!-- ── SECCIÓN 4: Estado ──────────────────────────────────────── -->
+        <div class="form-section">
+            <p class="form-section-title">⚙️ Estado</p>
+            <label class="check-activa-group" for="{{ formulario.esta_activa.id_for_label }}" id="grupo-esta-activa">
+                {{ formulario.esta_activa }}
+                <span style="font-size:0.92rem; font-weight:600; color:var(--text-primary);">
+                    {{ formulario.esta_activa.label }}
+                </span>
+            </label>
+        </div>
+
+        <!-- Acciones -->
+        <div class="form-acciones">
+            <button type="submit" class="btn btn-primary" id="btn-guardar-encuesta">
+                {% if modo == 'editar' %}💾 Guardar cambios{% else %}🗳️ Crear encuesta{% endif %}
+            </button>
+            <a href="{% url 'panel:monitor_votaciones' %}" class="btn btn-secondary" id="btn-cancelar-encuesta">
+                Cancelar
+            </a>
+        </div>
+
+    </form>
+</div>
+
+{% endblock panel_content %}
