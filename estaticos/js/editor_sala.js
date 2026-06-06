@@ -186,14 +186,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const newFilas = parseInt(inputFilas.value);
         const newColumnas = parseInt(inputColumnas.value);
 
-        // Validación: las dimensiones deben estar entre 1 y 30.
-        // 30x30 = 900 celdas máximo, un límite razonable para el rendimiento del DOM.
         if (newFilas < 1 || newFilas > 30 || newColumnas < 1 || newColumnas > 30) {
             alert('Las dimensiones deben estar entre 1 y 30.');
             return;
         }
 
-        // Confirmación del usuario: redimensionar destruye el layout actual no guardado.
+        // Verificar que no se excluyan asientos bloqueados
+        let maxFilaBloqueada = 0;
+        let maxColBloqueada = 0;
+        Object.values(bloqueadosMap).forEach(b => {
+            if (b.fila > maxFilaBloqueada) maxFilaBloqueada = b.fila;
+            if (b.columna > maxColBloqueada) maxColBloqueada = b.columna;
+        });
+
+        if (newFilas < maxFilaBloqueada || newColumnas < maxColBloqueada) {
+            alert(
+                `⚠️ No se puede reducir a ${newFilas}x${newColumnas}.\n\n` +
+                `Hay asientos con tickets vendidos hasta la fila ${maxFilaBloqueada} y columna ${maxColBloqueada}.\n` +
+                `Las dimensiones mínimas son ${maxFilaBloqueada} filas x ${maxColBloqueada} columnas.`
+            );
+            inputFilas.value = Math.max(newFilas, maxFilaBloqueada);
+            inputColumnas.value = Math.max(newColumnas, maxColBloqueada);
+            return;
+        }
+
         if (confirm('¿Seguro que deseas redimensionar? Se perderá el layout actual no guardado.')) {
             filas = newFilas;
             columnas = newColumnas;
