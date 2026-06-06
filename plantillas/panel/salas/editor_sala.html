@@ -58,6 +58,7 @@
                 <li><span>General:</span> <span id="stat-general">0</span></li>
                 <li><span>VIP:</span> <span id="stat-vip">0</span></li>
                 <li><span>Discapacitados:</span> <span id="stat-discapacitado">0</span></li>
+                <li style="color: #ef4444;"><span>🔒 Bloqueados:</span> <span id="stat-bloqueados">0</span></li>
                 <li class="stat-total"><span>Total asignadas:</span> <span id="stat-total">0</span></li>
             </ul>
         </div>
@@ -98,6 +99,8 @@
     const CAPACIDAD_MAXIMA = {{ sala.capacidad_maxima }};
     // Parseo seguro de JSON en caso de que este vacio (None/null)
     const LAYOUT_GUARDADO = {{ sala.layout_config|default:"null"|safe }};
+    // Asientos bloqueados: tienen tickets vendidos para funciones futuras
+    const ASIENTOS_BLOQUEADOS = {{ asientos_bloqueados_json|safe }};
 </script>
 <script src="{% static 'js/editor_sala.js' %}"></script>
 {% endblock %}

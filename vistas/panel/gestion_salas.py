@@ -94,10 +94,59 @@ def toggle_estado_sala(request, sala_id):
 def editor_sala(request, sala_id):
     """
     Renderiza la interfaz del editor visual para una sala específica.
+    Consulta qué asientos tienen tickets vendidos para funciones futuras
+    y los pasa al template como 'asientos bloqueados' para que el admin
+    no pueda eliminarlos.
     """
+    from django.utils import timezone
+    from sistema_cine.models import Ticket
+
     sala = get_object_or_404(Sala, id=sala_id)
+
+    # Buscar asientos de esta sala que tienen tickets para funciones de hoy o futuras
+    # Luego filtramos por horario: si la función de hoy ya terminó, no bloquear
+    from datetime import datetime, timedelta
+    hoy = timezone.now().date()
+    ahora = timezone.now()
+
+    tickets_futuros = Ticket.objects.filter(
+        asiento__sala=sala,
+        funcion__fecha__gte=hoy,
+    ).select_related('funcion', 'funcion__pelicula', 'asiento', 'venta')
+
+    # Construir mapa: asiento_id → info del bloqueo (para el JS del editor)
+    bloqueados_map = {}
+    for t in tickets_futuros:
+        # Calcular cuándo termina la función (fecha + hora_inicio + duración)
+        inicio_funcion = datetime.combine(t.funcion.fecha, t.funcion.hora_inicio)
+        inicio_funcion = timezone.make_aware(inicio_funcion) if timezone.is_naive(inicio_funcion) else inicio_funcion
+        duracion = timedelta(minutes=t.funcion.pelicula.duracion_minutos or 120)
+        fin_funcion = inicio_funcion + duracion
+
+        # Si la función ya terminó, este asiento ya se puede editar
+        if fin_funcion <= ahora:
+            continue
+
+        aid = t.asiento_id
+        info = {
+            'fila': t.asiento.posicion_y,
+            'columna': t.asiento.posicion_x,
+            'asiento_label': f'{t.asiento.fila}{t.asiento.numero}',
+            'pelicula': t.funcion.pelicula.titulo,
+            'fecha': t.funcion.fecha.strftime('%d/%m/%Y'),
+            'hora': t.funcion.hora_inicio.strftime('%H:%M'),
+            'venta_id': t.venta_id if t.venta else None,
+        }
+        # Si un asiento tiene múltiples tickets (distintas funciones), guardar todos
+        if aid not in bloqueados_map:
+            bloqueados_map[aid] = info
+
+    # Convertir a lista para el template/JS
+    asientos_bloqueados = list(bloqueados_map.values())
+
     return render(request, 'panel/salas/editor_sala.html', {
-        'sala': sala
+        'sala': sala,
+        'asientos_bloqueados_json': json.dumps(asientos_bloqueados),
     })
 
 
@@ -179,8 +228,34 @@ def guardar_layout(request, sala_id):
                         )
 
                 # Baja Lógica: Ocultar los asientos que se quitaron del diseño visual
+                # PERO proteger los que tienen tickets para funciones que aún no terminaron
+                from django.utils import timezone
+                from sistema_cine.models import Ticket
+                from datetime import datetime, timedelta
+
+                ahora = timezone.now()
+                hoy = ahora.date()
                 asientos_a_ocultar = [a for clave, a in asientos_actuales.items() if clave not in asientos_a_mantener and a.estado_asiento == 'activo']
+                
                 for asiento in asientos_a_ocultar:
+                    # Buscar tickets para funciones que aún no terminaron
+                    tickets_activos = Ticket.objects.filter(
+                        asiento=asiento,
+                        funcion__fecha__gte=hoy,
+                    ).select_related('funcion', 'funcion__pelicula')
+                    
+                    tiene_funcion_activa = False
+                    for t in tickets_activos:
+                        inicio = datetime.combine(t.funcion.fecha, t.funcion.hora_inicio)
+                        inicio = timezone.make_aware(inicio) if timezone.is_naive(inicio) else inicio
+                        duracion = timedelta(minutes=t.funcion.pelicula.duracion_minutos or 120)
+                        if inicio + duracion > ahora:
+                            tiene_funcion_activa = True
+                            break
+                    
+                    if tiene_funcion_activa:
+                        # No desactivar: forzar que siga en el layout
+                        continue
                     asiento.estado_asiento = 'inactivo'
                     asiento.save()
 

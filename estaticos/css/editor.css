@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * editor.css â€” Estilos especÃ­ficos del Editor DinÃ¡mico de Salas (RF-A01)
  * ======================================================================
  *
@@ -474,4 +474,90 @@
     /* Verde (#10b981) */
     box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.2);
     /* Mismo efecto 3D */
+}
+
+/* BLOQUEADO: Asiento con tickets vendidos para funciones futuras.
+   No se puede modificar ni eliminar. Color rojo con candado. */
+.seat.bloqueado {
+    background-color: #dc2626 !important;
+    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.3) !important;
+    cursor: not-allowed !important;
+    border: 2px solid #fca5a5;
+    font-size: 0.7rem;
+    animation: pulso-bloqueado 2s ease-in-out infinite;
+}
+
+.seat.bloqueado:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 12px rgba(220, 38, 38, 0.5) !important;
+}
+
+.seat.bloqueado:active {
+    transform: scale(1.0);
+}
+
+@keyframes pulso-bloqueado {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.seat.shake {
+    animation: shake 0.4s ease-in-out !important;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-4px); }
+    40% { transform: translateX(4px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(3px); }
+}
+.seat.bloqueado {
+    position: relative;
+}
+
+.tooltip-bloqueado {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e1b2e;
+    border: 1px solid #dc2626;
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    width: 220px;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+.tooltip-bloqueado::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #dc2626;
+}
+
+.tooltip-bloqueado strong {
+    display: block;
+    color: #fca5a5;
+    font-size: 0.8rem;
+    margin-bottom: 0.4rem;
+    white-space: nowrap;
+}
+
+.tooltip-bloqueado span {
+    display: block;
+    color: #e5e7eb;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+.seat.bloqueado:hover .tooltip-bloqueado {
+    display: block;
 }
