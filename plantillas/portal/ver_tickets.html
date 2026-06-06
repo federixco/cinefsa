@@ -152,8 +152,8 @@
     }
 
     .qr-box img {
-        width: 140px;
-        height: 140px;
+        width: 180px;
+        height: 180px;
         image-rendering: pixelated;
     }
 
@@ -262,8 +262,7 @@
         .grid-item .label { color: #8b5cf6 !important; }
         .grid-item .value { color: #1f2937 !important; }
         .seat-badge { background: #8b5cf6 !important; color: #fff !important; }
-        .status-pill.pendiente { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fde68a !important; }
-        .status-pill.validado { background: #d1fae5 !important; color: #047857 !important; border: 1px solid #a7f3d0 !important; }
+        .status-pill { display: none !important; }
     }
 </style>
 {% endblock %}
@@ -363,9 +362,11 @@
     async function descargarTicket(ticketId) {
         const ticketElement = document.getElementById(ticketId);
         
-        // Ocultar botones de descarga para que no salgan en la foto
+        // Ocultar botones de descarga y pill de estado para que no salgan en la foto
         const btnDescargar = ticketElement.querySelector('.btn-descargar-png');
         if(btnDescargar) btnDescargar.style.display = 'none';
+        const statusPill = ticketElement.querySelector('.status-pill');
+        if(statusPill) statusPill.style.display = 'none';
 
         const originalBoxShadow = ticketElement.style.boxShadow;
         ticketElement.style.boxShadow = 'none'; // Quitar la sombra para el PNG
@@ -384,6 +385,7 @@
             // Restaurar diseño original
             ticketElement.style.boxShadow = originalBoxShadow;
             if(btnDescargar) btnDescargar.style.display = 'inline-flex';
+            if(statusPill) statusPill.style.display = '';
         }
     }
 
