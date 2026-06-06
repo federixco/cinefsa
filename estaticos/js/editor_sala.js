@@ -67,11 +67,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const statGeneral = document.getElementById('stat-general');
     const statVip = document.getElementById('stat-vip');
     const statDiscapacitado = document.getElementById('stat-discapacitado');
+    const statBloqueados = document.getElementById('stat-bloqueados');
     const statTotal = document.getElementById('stat-total');
 
     // Alerta de capacidad (actualmente no se usa activamente, pero está preparada
     // para mostrar un mensaje si se excede la capacidad máxima de la sala).
     const alertaCapacidad = document.getElementById('alerta-capacidad');
+
+    // ── Mapa de asientos bloqueados (con tickets vendidos) ──
+    // Se indexa por 'fila,columna' para búsqueda O(1) al renderizar.
+    const bloqueadosMap = {};
+    if (typeof ASIENTOS_BLOQUEADOS !== 'undefined' && ASIENTOS_BLOQUEADOS) {
+        ASIENTOS_BLOQUEADOS.forEach(b => {
+            bloqueadosMap[`${b.fila},${b.columna}`] = b;
+        });
+    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // SECCIÓN 2: ESTADO INTERNO DEL EDITOR
@@ -232,8 +242,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 // se busca en el array si existe un asiento en esta posición (fila, columna).
                 let tipo = 'pasillo';
                 if (matrizGuardada) {
-                    // .find() busca el primer elemento que coincida con fila Y columna.
-                    // Complejidad O(n) por cada celda — aceptable para grillas pequeñas (≤900 celdas).
                     const savedSeat = matrizGuardada.find(s => s.fila === f && s.columna === c);
                     if (savedSeat) tipo = savedSeat.tipo;
                 }
@@ -241,18 +249,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Aplicar la clase CSS y contenido visual correspondiente al tipo.
                 aplicarTipoAsiento(seat, tipo);
 
-                // ── Eventos de interacción para el sistema de pintado ──
-                // mousedown: Al hacer clic sobre la celda, aplicar el pincel actual.
-                seat.addEventListener('mousedown', () => aplicarPincel(seat));
+                // ── Verificar si el asiento está bloqueado (tiene tickets) ──
+                const claveBloqueo = `${f},${c}`;
+                if (bloqueadosMap[claveBloqueo]) {
+                    const infoBloqueo = bloqueadosMap[claveBloqueo];
+                    seat.classList.add('bloqueado');
+                    seat.dataset.bloqueado = 'true';
+                    seat.dataset.infoBloqueo = JSON.stringify(infoBloqueo);
+                    seat.innerHTML = '🔒';
 
-                // mouseenter: Al pasar el mouse sobre la celda MIENTRAS se arrastra
-                // (isDragging === true), aplicar el pincel. Esto crea el efecto de
-                // "pintar arrastrando" como en un editor de imágenes.
+                    // Tooltip personalizado
+                    const ventaTexto = infoBloqueo.venta_id ? `<span>🧾 Venta #${infoBloqueo.venta_id}</span>` : '';
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip-bloqueado';
+                    tooltip.innerHTML = `
+                        <strong>⚠️ Butaca ${infoBloqueo.asiento_label}</strong>
+                        <span>🎬 ${infoBloqueo.pelicula}</span>
+                        <span>📅 ${infoBloqueo.fecha} — ${infoBloqueo.hora}hs</span>
+                        ${ventaTexto}
+                    `;
+                    seat.appendChild(tooltip);
+                }
+
+                // ── Eventos de interacción para el sistema de pintado ──
+                seat.addEventListener('mousedown', () => aplicarPincel(seat));
                 seat.addEventListener('mouseenter', () => {
                     if (isDragging) aplicarPincel(seat);
                 });
 
-                // Agregar la celda al contenedor de la grilla en el DOM.
                 gridContainer.appendChild(seat);
             }
         }
@@ -270,6 +294,8 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function llenarGrilla(tipo) {
         document.querySelectorAll('.seat').forEach(seat => {
+            // No tocar asientos bloqueados
+            if (seat.dataset.bloqueado === 'true') return;
             aplicarTipoAsiento(seat, tipo);
         });
         actualizarEstadisticas();
@@ -283,6 +309,12 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {HTMLElement} seatElement - El <div> de la celda sobre la que se hizo clic/arrastró.
      */
     function aplicarPincel(seatElement) {
+        // Si el asiento está bloqueado, sacudir visualmente y no modificar
+        if (seatElement.dataset.bloqueado === 'true') {
+            seatElement.classList.add('shake');
+            setTimeout(() => seatElement.classList.remove('shake'), 400);
+            return;
+        }
         aplicarTipoAsiento(seatElement, pincelActual);
         actualizarEstadisticas();
     }
@@ -337,21 +369,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Recorrer TODAS las celdas y clasificarlas según su data-attribute 'tipo'.
         // Las celdas tipo 'pasillo' no se cuentan (son espacios vacíos).
+        let countBloqueados = 0;
         seats.forEach(seat => {
+            if (seat.dataset.bloqueado === 'true') {
+                countBloqueados++;
+            }
             const tipo = seat.dataset.tipo;
             if (tipo === 'general') countGeneral++;
             else if (tipo === 'vip') countVip++;
             else if (tipo === 'discapacitado') countDiscapacitado++;
         });
 
-        // Total de butacas asignadas (excluyendo pasillos).
-        // Este valor se usará como capacidad_maxima de la sala al guardar.
         const totalAsignadas = countGeneral + countVip + countDiscapacitado;
 
-        // Actualizar los textos de los contadores en el sidebar del editor.
         statGeneral.textContent = countGeneral;
         statVip.textContent = countVip;
         statDiscapacitado.textContent = countDiscapacitado;
+        if (statBloqueados) statBloqueados.textContent = countBloqueados;
         statTotal.textContent = totalAsignadas;
 
         return true;
