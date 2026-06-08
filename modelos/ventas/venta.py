@@ -11,6 +11,7 @@ class Venta(models.Model):
     METODOS_PAGO = [
         ('mercado_pago', 'Mercado Pago'),
         ('tarjeta', 'Tarjeta de Crédito/Débito'),
+        ('efectivo', 'Efectivo en Boletería'),
     ]
 
     ESTADOS_PAGO = [

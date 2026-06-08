@@ -17,7 +17,7 @@ from sistema_cine.models import Funcion, Asiento, Venta, Ticket
 from servicios.qr_service import generar_qr_ticket
 
 
-def confirmar_compra(request, compra):
+def confirmar_compra(request, compra, metodo_pago='mercado_pago'):
     """
     Lógica compartida para confirmar una compra una vez que el pago fue aprobado.
     Verifica asientos libres, crea Venta + Tickets + QR.
@@ -25,6 +25,7 @@ def confirmar_compra(request, compra):
     Args:
         request: HttpRequest (para obtener el usuario y limpiar sesión).
         compra: dict con 'funcion_id', 'asientos_ids', 'monto_total'.
+        metodo_pago: str (por defecto 'mercado_pago', se puede usar 'efectivo').
 
     Returns:
         dict con 'status' y datos adicionales.
@@ -50,7 +51,7 @@ def confirmar_compra(request, compra):
             venta = Venta.objects.create(
                 usuario=request.user,
                 monto_total=monto_total,
-                metodo_pago='mercado_pago',
+                metodo_pago=metodo_pago,
                 estado_pago='aprobado',
             )
 

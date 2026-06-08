@@ -222,6 +222,12 @@
                     <button id="btn-pagar" class="btn w-100 py-3 fw-bold disabled" onclick="iniciarPago()" style="background: linear-gradient(135deg, #009EE3, #00B1EA); color: white; border: none; border-radius: 10px; font-size: 1.05rem; transition: all 0.3s ease; opacity: 0.5; cursor: not-allowed;">
                         <i class="fas fa-lock me-2"></i> Pagar con Mercado Pago
                     </button>
+
+                    {% if request.user.empleado or request.user.administrador %}
+                    <button id="btn-pagar-efectivo" class="btn w-100 py-3 mt-3 fw-bold disabled" onclick="iniciarPagoEfectivo()" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 10px; font-size: 1.05rem; transition: all 0.3s ease; opacity: 0.5; cursor: not-allowed;">
+                        <i class="fas fa-money-bill-wave me-2"></i> Cobrar en Efectivo
+                    </button>
+                    {% endif %}
                 </div>
 
                 <!-- FASE 2: Esperando pago (oculto al inicio) -->
@@ -342,14 +348,28 @@
         document.getElementById('monto-total').innerText = total;
         
         const btnPagar = document.getElementById('btn-pagar');
+        const btnEfectivo = document.getElementById('btn-pagar-efectivo');
+
         if (cantidad > 0) {
             btnPagar.classList.remove('disabled');
             btnPagar.style.opacity = '1';
             btnPagar.style.cursor = 'pointer';
+            
+            if (btnEfectivo) {
+                btnEfectivo.classList.remove('disabled');
+                btnEfectivo.style.opacity = '1';
+                btnEfectivo.style.cursor = 'pointer';
+            }
         } else {
             btnPagar.classList.add('disabled');
             btnPagar.style.opacity = '0.5';
             btnPagar.style.cursor = 'not-allowed';
+
+            if (btnEfectivo) {
+                btnEfectivo.classList.add('disabled');
+                btnEfectivo.style.opacity = '0.5';
+                btnEfectivo.style.cursor = 'not-allowed';
+            }
         }
     }
 
@@ -403,6 +423,68 @@
             btnPagar.classList.remove('disabled');
             btnPagar.innerHTML = '<i class="fas fa-lock me-2"></i> Pagar con Mercado Pago';
             btnPagar.style.opacity = '1';
+
+            if (error.message.includes('comprados') || error.message.includes('Recargá')) {
+                setTimeout(() => window.location.reload(), 3000);
+            }
+        }
+    }
+
+    // ─── FASE 1.5: PAGO DIRECTO EN EFECTIVO (Boletería) ──────────────────────
+
+    async function iniciarPagoEfectivo() {
+        if (seleccionados.length === 0) return;
+
+        const btnEfectivo = document.getElementById('btn-pagar-efectivo');
+        btnEfectivo.classList.add('disabled');
+        btnEfectivo.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Procesando cobro...';
+        
+        const csrfToken = '{{ csrf_token }}';
+
+        try {
+            const response = await fetch("{% url 'compras:procesar_pago_efectivo' funcion.id %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    asientos_ids: seleccionados
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.status === 'approved') {
+                // Pago exitoso inmediato
+                document.getElementById('fase-seleccion').style.display = 'none';
+                document.getElementById('fase-esperando').style.display = 'block';
+                
+                const estado = document.getElementById('estado-polling');
+                const resultado = document.getElementById('resultado-verificacion');
+                
+                document.querySelector('.spinner-mp').style.display = 'none';
+                document.querySelector('.btn-cancelar-pago').style.display = 'none';
+                document.querySelector('#fase-esperando h5').innerText = 'Cobro procesado';
+                document.querySelector('#fase-esperando p').innerText = 'El ticket ha sido emitido en efectivo.';
+
+                estado.innerHTML = '<i class="fas fa-check-circle me-1" style="color: #00b341;"></i> <span style="color: #00b341;">¡Pago confirmado!</span>';
+                resultado.style.display = 'block';
+                resultado.className = 'resultado-verificacion success';
+                resultado.innerHTML = '<i class="fas fa-check-circle me-1"></i> ' + data.mensaje + ' Redirigiendo...';
+                
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 1500);
+
+            } else {
+                throw new Error(data.error || 'Error al procesar el cobro.');
+            }
+        } catch (error) {
+            mostrarError(error.message);
+            btnEfectivo.classList.remove('disabled');
+            btnEfectivo.innerHTML = '<i class="fas fa-money-bill-wave me-2"></i> Cobrar en Efectivo';
+            btnEfectivo.style.opacity = '1';
 
             if (error.message.includes('comprados') || error.message.includes('Recargá')) {
                 setTimeout(() => window.location.reload(), 3000);

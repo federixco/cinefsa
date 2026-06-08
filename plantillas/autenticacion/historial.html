@@ -295,6 +295,14 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.75rem;">
                     <span class="venta-estado estado-{{ venta.estado_pago }}">{{ venta.get_estado_pago_display }}</span>
+                    <span class="venta-metodo" style="background: rgba(255,255,255,0.05); padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.1);">
+                        {% if venta.metodo_pago == 'efectivo' %}
+                            <i class="fas fa-money-bill-wave me-1" style="color: #10b981;"></i> 
+                        {% else %}
+                            <i class="fas fa-wallet me-1" style="color: #009EE3;"></i> 
+                        {% endif %}
+                        {{ venta.get_metodo_pago_display }}
+                    </span>
                     <span class="venta-monto">${{ venta.monto_total }}</span>
                     <a href="{% url 'compras:ver_tickets' venta.id_venta %}" class="btn btn-sm" style="background: rgba(147, 51, 234, 0.15); color: #c084fc; border: 1px solid rgba(147, 51, 234, 0.3); font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 6px; text-decoration: none;" onclick="event.stopPropagation();">
                         <i class="fas fa-ticket-alt"></i> Ver Tickets

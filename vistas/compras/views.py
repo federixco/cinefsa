@@ -170,6 +170,58 @@ def verificar_pago_view(request):
         })
 
 
+# ─── VISTA 3.5: PROCESAR PAGO EN EFECTIVO (Boletería) ────────────────────────
+
+@login_required
+@require_POST
+def procesar_pago_efectivo_view(request, funcion_id):
+    """
+    Procesa el pago inmediatamente en efectivo.
+    Solo permitido si el usuario tiene rol Empleado o Administrador.
+    Bypassa Mercado Pago y genera los tickets al instante.
+    """
+    # Verificar roles
+    es_empleado = hasattr(request.user, 'empleado')
+    es_admin = hasattr(request.user, 'administrador')
+    
+    if not (es_empleado or es_admin):
+        return JsonResponse({'error': 'No tenés permisos para cobrar en efectivo.'}, status=403)
+
+    funcion = get_object_or_404(Funcion, id=funcion_id)
+
+    try:
+        data = json.loads(request.body)
+        asientos_ids = data.get('asientos_ids', [])
+
+        if not asientos_ids:
+            return JsonResponse({'error': 'No seleccionaste ningún asiento.'}, status=400)
+
+        # Verificar que los asientos existen
+        asientos = Asiento.objects.filter(id__in=asientos_ids)
+        if asientos.count() != len(asientos_ids):
+            return JsonResponse({'error': 'Algunos asientos no son válidos.'}, status=400)
+
+        monto_total = len(asientos_ids) * funcion.precio_entrada
+
+        # Armar objeto compra como lo espera confirmar_compra
+        compra = {
+            'funcion_id': funcion_id,
+            'asientos_ids': asientos_ids,
+            'monto_total': str(monto_total)
+        }
+
+        # Confirmar compra directamente
+        resultado = confirmar_compra(request, compra, metodo_pago='efectivo')
+        
+        if resultado.get('status') == 'approved':
+            return JsonResponse(resultado)
+        else:
+            return JsonResponse({'error': resultado.get('mensaje', 'Error al confirmar compra')}, status=409)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 # ─── VISTA 4: VER TICKETS ────────────────────────────────────────────────────
 
 @login_required
