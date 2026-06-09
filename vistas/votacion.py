@@ -39,43 +39,41 @@ def votacion_view(request):
        - Se muestra un mensaje informativo.
     """
 
-    # Buscar la encuesta activa más reciente (activa manualmente y dentro del período)
+    # Buscar todas las encuestas activas dentro del período
     ahora = timezone.now()
-    encuesta = Encuesta.objects.filter(
+    encuestas = Encuesta.objects.filter(
         esta_activa=True,
         fecha_inicio__lte=ahora,
         fecha_fin__gte=ahora
-    ).prefetch_related('peliculas').first()
+    ).prefetch_related('peliculas').order_by('fecha_evento')
 
-    # Estado del usuario respecto a la votación
-    ya_voto = False
-    voto_del_usuario = None
-    resultados = []
     cliente = None
+    if request.user.is_authenticated:
+        try:
+            cliente = request.user.cliente.first()
+        except Exception:
+            pass
 
-    if encuesta:
-        # Calcular resultados para mostrar siempre (o solo si ya votó)
-        resultados = encuesta.resultados()
-
-        # Verificar si el usuario autenticado ya votó en esta encuesta
-        if request.user.is_authenticated:
-            try:
-                cliente = request.user.cliente.first()
-                if cliente:
-                    voto_del_usuario = Voto.objects.filter(
-                        cliente=cliente,
-                        encuesta=encuesta
-                    ).first()
-                    ya_voto = voto_del_usuario is not None
-            except Exception:
-                pass
+    # Preparar datos de cada encuesta: resultados y estado de voto del cliente
+    encuestas_datos = []
+    for encuesta in encuestas:
+        ya_voto = False
+        voto_del_usuario = None
+        
+        if cliente:
+            voto_del_usuario = Voto.objects.filter(cliente=cliente, encuesta=encuesta).first()
+            ya_voto = voto_del_usuario is not None
+            
+        encuestas_datos.append({
+            'encuesta': encuesta,
+            'resultados': encuesta.resultados(),
+            'ya_voto': ya_voto,
+            'voto_del_usuario': voto_del_usuario
+        })
 
     return render(request, 'portal/cine_club.html', {
         'titulo_pagina': 'Cine Club — Votación',
-        'encuesta': encuesta,
-        'resultados': resultados,
-        'ya_voto': ya_voto,
-        'voto_del_usuario': voto_del_usuario,
+        'encuestas_datos': encuestas_datos,
         'cliente': cliente,
     })
 

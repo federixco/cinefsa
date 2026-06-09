@@ -44,6 +44,7 @@ urlpatterns = [
     path('compras/', include('vistas.compras.urls')),
 ]
 
-# ─── SERVIR ARCHIVOS MULTIMEDIA EN DESARROLLO ─────────────────────────────────
+# ─── SERVIR ARCHIVOS MULTIMEDIA Y DEBUG TOOLBAR EN DESARROLLO ────────────────
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += [path('__debug__/', include('debug_toolbar.urls'))]

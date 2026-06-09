@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',     # Sistema de mensajes flash (notificaciones temporales al usuario).
     'django.contrib.staticfiles',  # Gestión y servicio de archivos estáticos (CSS, JS, imágenes de UI).
     'sistema_cine',                # Aplicación principal del proyecto: modelos, vistas y lógica de negocio.
+    'debug_toolbar',               # Barra lateral de depuración (Muestra SQL, tiempo de carga, etc.)
 ]
 
 
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
 # y las respuestas antes de enviarse al cliente.
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',              # Aplica cabeceras HTTP de seguridad (HSTS, etc.).
+    'debug_toolbar.middleware.DebugToolbarMiddleware',            # Intercepta los requests para dibujar el Toolbar.
     'django.contrib.sessions.middleware.SessionMiddleware',       # Habilita el uso de sesiones en las vistas.
     'django.middleware.common.CommonMiddleware',                  # Normaliza URLs (agrega trailing slash, etc.).
     'django.middleware.csrf.CsrfViewMiddleware',                  # Protege formularios contra ataques CSRF.
@@ -247,21 +249,30 @@ else:
 MERCADOPAGO_ACCESS_TOKEN = config('MERCADOPAGO_ACCESS_TOKEN', default='')
 
 # ─── MODO EXPOSICIÓN: VER CONSULTAS SQL EN TIEMPO REAL ────────────────────────
-# Esta configuración atrapa todas las consultas que hace el ORM de Django a la 
-# base de datos y las imprime en la consola del servidor (la negra).
-# Es ideal para mostrar en tiempo real cómo impacta el sistema a nivel de datos.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'sql_format': {
+            'format': '[{asctime}] {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
         },
+        'file_sql': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'sql_queries.log',
+            'formatter': 'sql_format',
+        },
     },
     'loggers': {
         'django.db.backends': {
-            'handlers': ['console'],
+            'handlers': ['console', 'file_sql'],
             'level': 'DEBUG',
             'propagate': False,
         },

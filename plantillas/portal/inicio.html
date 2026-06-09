@@ -144,11 +144,7 @@
                                             <strong>{{ funcion.hora_inicio|time:"H:i" }}</strong>
                                         </div>
                                         <small class="fecha-text">{{ funcion.fecha|date:'d/m' }}</small>
-                                        {% for key, val in disponibilidad.items %}
-                                            {% if key == funcion.id %}
-                                                <small class="lugares-text">{{ val }} lugares</small>
-                                            {% endif %}
-                                        {% endfor %}
+                                        <small class="lugares-text">{{ funcion.asientos_libres }} lugares</small>
                                     </button>
                                 {% empty %}
                                     <p class="text-muted small msj-vacio">No hay horarios publicados.</p>

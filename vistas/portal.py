@@ -36,10 +36,14 @@ def inicio_view(request):
     # Generar la lista de fechas para el frontend
     dias_slider = [hoy + datetime.timedelta(days=i) for i in range(7)]
 
+    from django.db.models.expressions import RawSQL
     # Filtramos funciones que ocurren en los próximos 7 días
+    # Inyectamos la función MySQL 'fn_asientos_disponibles' directamente en la consulta ORM
     funciones_activas = Funcion.objects.filter(
         fecha__gte=hoy,
         fecha__lte=fecha_limite
+    ).annotate(
+        asientos_libres=RawSQL("fn_asientos_disponibles(funcion.id)", [])
     ).order_by('fecha', 'hora_inicio')
     
     ids_peliculas_con_funcion = Funcion.objects.filter(
@@ -72,19 +76,6 @@ def inicio_view(request):
     # Todos los géneros (para los filtros)
     generos = Genero.objects.all()
 
-    # ─── Disponibilidad de asientos (usa fn_asientos_disponibles de MySQL) ─────
-    # Genera un diccionario {funcion_id: asientos_disponibles} para cada función activa.
-    disponibilidad = {}
-    try:
-        with connection.cursor() as cursor:
-            for funcion in funciones_activas:
-                cursor.execute("SELECT fn_asientos_disponibles(%s)", [funcion.id])
-                resultado = cursor.fetchone()
-                disponibilidad[funcion.id] = resultado[0] if resultado else 0
-    except Exception:
-        # Si la función SQL aún no existe (no se corrió migrate), no romper la página
-        pass
-
     return render(request, 'portal/inicio.html', {
         'peliculas_cartelera': peliculas_cartelera,
         'peliculas_destacadas': peliculas_destacadas,
@@ -92,6 +83,5 @@ def inicio_view(request):
         'generos': generos,
         'filtro_genero': filtro_genero,
         'dias_slider': dias_slider,
-        'disponibilidad': disponibilidad,
         'titulo_pagina': 'Cartelera',
     })
