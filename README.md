@@ -15,7 +15,7 @@ Desarrollado con **Django 4.2 LTS** · **MySQL/MariaDB** · **Mercado Pago** · 
 
 ---
 
-## 📖 Descripción
+## Descripción
 
 CineFSA es un sistema web completo que permite gestionar todas las operaciones de un complejo de cines:
 desde la cartelera de películas y la venta de entradas con pasarela de pago, hasta un editor visual de salas
@@ -24,9 +24,9 @@ en tiempo real y la integración con Django Debug Toolbar para análisis de cons
 
 ---
 
-## ✨ Funcionalidades Principales
+## Funcionalidades Principales
 
-### 🎟️ Portal Público (Clientes)
+### Portal Público (Clientes)
 
 | Módulo | Descripción |
 |---|---|
@@ -36,7 +36,7 @@ en tiempo real y la integración con Django Debug Toolbar para análisis de cons
 | **Historial de Compras** | Cada usuario puede consultar su historial de ventas y descargar sus tickets QR |
 | **Autenticación** | Registro, inicio de sesión por email, cierre de sesión y cambio de contraseña |
 
-### 🛠️ Panel de Administración
+### Panel de Administración
 
 | Módulo | Descripción |
 |---|---|
@@ -46,7 +46,7 @@ en tiempo real y la integración con Django Debug Toolbar para análisis de cons
 | **Monitor de Votaciones** | Dashboard con todas las encuestas, estadísticas en tiempo real, barras de progreso con porcentajes y ganador destacado |
 | **Validador QR de Tickets** | Escáner de cámara para que los empleados validen tickets en la entrada. Controla ventana horaria (30 min antes a 15 min después de la función) y detecta tickets ya utilizados |
 
-### 🔐 Seguridad y Concurrencia
+### Seguridad y Concurrencia
 
 | Mecanismo | Descripción |
 |---|---|
@@ -57,7 +57,7 @@ en tiempo real y la integración con Django Debug Toolbar para análisis de cons
 
 ---
 
-## 🏗️ Arquitectura del Sistema
+## Arquitectura del Sistema
 
 ```
 cinefsa/
@@ -301,12 +301,5 @@ Disponible automáticamente en el navegador al acceder a cualquier página. Perm
 
 ## 📄 Licencia
 
-Este proyecto fue desarrollado como Trabajo Integrador Final para la carrera de Analista de Sistemas.
+Este proyecto fue desarrollado como Trabajo Integrador Final para las materias de Base de datos I y Programación III de la carrera Licenciatura en sistemas de información.
 
----
-
-<div align="center">
-
-**Hecho con ❤️ y mucho ☕ en Formosa, Argentina**
-
-</div>
