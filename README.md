@@ -1,4 +1,4 @@
-# 🎬 CineFSA — Sistema de Gestión Cinematográfica
+#Sistema Web de Gestión Cinematográfica
 
 <div align="center">
 
@@ -17,7 +17,7 @@ Desarrollado con **Django 4.2 LTS** · **MySQL/MariaDB** · **Mercado Pago** · 
 
 ## Descripción
 
-CineFSA es un sistema web completo que permite gestionar todas las operaciones de un complejo de cines:
+Es un sistema web completo que permite gestionar todas las operaciones de un complejo de cines:
 desde la cartelera de películas y la venta de entradas con pasarela de pago, hasta un editor visual de salas
 y un módulo de votación comunitaria (Cine Club). Incluye herramientas de desarrollo como un monitor SQL
 en tiempo real y la integración con Django Debug Toolbar para análisis de consultas.
@@ -60,7 +60,7 @@ en tiempo real y la integración con Django Debug Toolbar para análisis de cons
 ## Arquitectura del Sistema
 
 ```
-cinefsa/
+sistema/
 │
 ├── configuracion/          # Configuración global de Django (settings, urls, wsgi)
 ├── sistema_cine/           # App principal (puente técnico para modelos y migraciones)
