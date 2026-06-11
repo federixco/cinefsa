@@ -1,4 +1,4 @@
-#Sistema Web de Gestión Cinematográfica
+## Sistema Web de Gestión Cinematográfica
 
 <div align="center">
 
@@ -115,7 +115,7 @@ sistema/
 
 ---
 
-## 🗄️ Base de Datos — Objetos Nativos SQL
+## Base de Datos — Objetos Nativos SQL
 
 El sistema aprovecha las capacidades nativas de MySQL mediante triggers, funciones y procedimientos almacenados:
 
@@ -130,7 +130,7 @@ El sistema aprovecha las capacidades nativas de MySQL mediante triggers, funcion
 
 ---
 
-## 🔧 Requisitos Previos
+##  Requisitos Previos
 
 - **Python 3.10+** — [Descargar](https://www.python.org/downloads/)
 - **XAMPP** con MySQL/MariaDB 10.4+ — [Descargar](https://www.apachefriends.org/es/index.html)
@@ -138,7 +138,7 @@ El sistema aprovecha las capacidades nativas de MySQL mediante triggers, funcion
 
 ---
 
-## 🚀 Instalación y Configuración
+## Instalación y Configuración
 
 ### 1. Clonar el repositorio
 
@@ -209,7 +209,7 @@ Abrí tu navegador en **http://127.0.0.1:8000/**
 
 ---
 
-## 🖥️ Herramientas de Desarrollo
+##  Herramientas de Desarrollo
 
 ### Launcher GUI
 
@@ -240,7 +240,7 @@ Disponible automáticamente en el navegador al acceder a cualquier página. Perm
 
 ---
 
-## 📦 Dependencias
+## Dependencias
 
 | Paquete | Versión | Uso |
 |---|---|---|
@@ -255,7 +255,7 @@ Disponible automáticamente en el navegador al acceder a cualquier página. Perm
 
 ---
 
-## 🗺️ Mapa de Rutas
+## Mapa de Rutas
 
 | Ruta | Descripción | Acceso |
 |---|---|---|
@@ -278,7 +278,7 @@ Disponible automáticamente en el navegador al acceder a cualquier página. Perm
 
 ---
 
-## 👥 Roles del Sistema
+## Roles del Sistema
 
 ```
                     ┌──────────────┐
@@ -299,7 +299,7 @@ Disponible automáticamente en el navegador al acceder a cualquier página. Perm
 
 ---
 
-## 📄 Licencia
+## Licencia
 
 Este proyecto fue desarrollado como Trabajo Integrador Final para las materias de Base de datos I y Programación III de la carrera Licenciatura en sistemas de información.
 
