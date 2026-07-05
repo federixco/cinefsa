@@ -223,7 +223,7 @@
                         <i class="fas fa-lock me-2"></i> Pagar con Mercado Pago
                     </button>
 
-                    {% if request.user.empleado or request.user.administrador %}
+                    {% if es_empleado %}
                     <button id="btn-pagar-efectivo" class="btn w-100 py-3 mt-3 fw-bold disabled" onclick="iniciarPagoEfectivo()" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 10px; font-size: 1.05rem; transition: all 0.3s ease; opacity: 0.5; cursor: not-allowed;">
                         <i class="fas fa-money-bill-wave me-2"></i> Cobrar en Efectivo
                     </button>

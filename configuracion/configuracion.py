@@ -101,6 +101,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',  # Inyecta el objeto {{ request }} (URL actual, usuario, etc.).
                 'django.contrib.auth.context_processors.auth', # Inyecta {{ user }} y {{ perms }} (roles del usuario logueado).
                 'django.contrib.messages.context_processors.messages', # Inyecta {{ messages }} para mostrar notificaciones.
+                'configuracion.context_processors.roles_usuario', # Inyecta {{ es_empleado }} (booleano de rol).
             ],
         },
     },

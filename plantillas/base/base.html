@@ -73,7 +73,7 @@
                         {% if user.is_staff %}
                         <a href="{% url 'panel:lista_salas' %}" class="dropdown-item">Panel Admin</a>
                         {% endif %}
-                        {% if user.empleado.exists %}
+                        {% if es_empleado %}
                         <a href="{% url 'panel:scanner_qr' %}" class="dropdown-item" style="color: var(--accent-primary);">
                             <i class="fas fa-qrcode" style="margin-right: 0.3rem;"></i>Validar Tickets
                         </a>
@@ -92,6 +92,59 @@
             </div>
         </div>
     </nav>
+
+    <!-- Mensajes flash del sistema (success, info, error) -->
+    {% if messages %}
+    <div id="flash-messages-portal" style="position: fixed; top: 5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; max-width: 380px;">
+        {% for message in messages %}
+        <div class="flash-portal-msg flash-{{ message.tags }}" style="
+            padding: 0.85rem 1.2rem;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            animation: slideInRight 0.3s ease;
+            {% if 'error' in message.tags or 'warning' in message.tags %}
+                background: rgba(220, 38, 38, 0.15);
+                border: 1px solid rgba(220, 38, 38, 0.4);
+                color: #f87171;
+            {% elif 'success' in message.tags %}
+                background: rgba(16, 185, 129, 0.15);
+                border: 1px solid rgba(16, 185, 129, 0.4);
+                color: #34d399;
+            {% else %}
+                background: rgba(99, 102, 241, 0.15);
+                border: 1px solid rgba(99, 102, 241, 0.4);
+                color: #a5b4fc;
+            {% endif %}
+        ">{{ message }}</div>
+        {% endfor %}
+    </div>
+    <style>
+        @keyframes slideInRight {
+            from { transform: translateX(120%); opacity: 0; }
+            to   { transform: translateX(0);    opacity: 1; }
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateX(120%); }
+        }
+    </style>
+    <script>
+        // Auto-dismiss: oculta cada mensaje tras 4 segundos
+        document.addEventListener('DOMContentLoaded', function () {
+            const msgs = document.querySelectorAll('.flash-portal-msg');
+            msgs.forEach(function(msg, i) {
+                setTimeout(function() {
+                    msg.style.animation = 'fadeOut 0.4s ease forwards';
+                    setTimeout(function() { msg.remove(); }, 400);
+                }, 3500 + i * 300);
+            });
+        });
+    </script>
+    {% endif %}
 
     <!-- Contenido principal -->
     <main class="main-content">

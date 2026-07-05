@@ -13,6 +13,7 @@ Formularios:
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.password_validation import MinimumLengthValidator
 from sistema_cine.models import Usuario
 from datetime import date
 
@@ -77,6 +78,20 @@ class FormularioRegistro(UserCreationForm):
             'placeholder': 'Repetí tu contraseña',
         }),
     )
+
+    # ─── VALIDACIONES PERSONALIZADAS ──────────────────────────────────────────
+
+    def clean_password1(self):
+        """
+        Valida que la contraseña tenga al menos 8 caracteres.
+        Se ejecuta automáticamente al hacer formulario.is_valid().
+        """
+        password = self.cleaned_data.get('password1')
+        if password and len(password) < 8:
+            raise forms.ValidationError(
+                'La contraseña debe tener al menos 8 caracteres.'
+            )
+        return password
 
     # ─── CONFIGURACIÓN DEL FORMULARIO ─────────────────────────────────────────
 

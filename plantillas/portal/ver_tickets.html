@@ -274,11 +274,9 @@
         <button onclick="descargarTodos()" class="btn-imprimir" style="background: #10b981;">
             <i class="fas fa-download"></i> Descargar Todos (PNG)
         </button>
-        {% if user.is_staff or user.is_superuser or user.empleado %}
         <button onclick="window.print()" class="btn-imprimir">
             <i class="fas fa-print"></i> Imprimir Tickets
         </button>
-        {% endif %}
     </div>
 
     {% for ticket in tickets %}
